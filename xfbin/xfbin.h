@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../binary/binary.h"
+#include "../binary/binary/binary.h"
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
