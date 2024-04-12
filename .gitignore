@@ -2,3 +2,4 @@ compile.bat
 main.cpp
 PlayerColorParam.bin.xfbin
 settings.json
+xfbin_cpp.exe
