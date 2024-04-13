@@ -65,7 +65,7 @@ struct nuccChunk {
     std::uint32_t map_index;
     std::uint16_t version;      /** May differ from XFBIN version. */
     std::uint16_t unk;          /** @note Unknown, but may be animation-related. */
-    Binary binary_data;
+    binary binary_data;
 
     nuccChunk() {
         
@@ -127,7 +127,7 @@ public:
     }
 
 private:
-    Binary file;
+    binary file;
 
     void compare_error(bool comparison, Error error) {
         if (comparison) throw std::runtime_error(get_error_str(error));
@@ -182,7 +182,7 @@ struct nuccChunkIndex {
 
     nuccChunkIndex(nuccChunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.set_pos(0);
+        metadata->binary_data.cursor = 0;
         if (metadata->type != nuccChunkType::Index) 
             throw std::runtime_error("Cannot initialise nuccChunkIndex with non-nuccChunkIndex data.");
 
@@ -228,7 +228,7 @@ struct nuccChunkPage {
 
     nuccChunkPage(nuccChunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.set_pos(0);
+        metadata->binary_data.cursor = 0;
         if (metadata->type != nuccChunkType::Page) 
             throw std::runtime_error("Cannot initialise nuccChunkPage with non-nuccChunkPage data.");
 
@@ -249,7 +249,7 @@ struct nuccChunkBinary {
 
     nuccChunkBinary(nuccChunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.set_pos(0);
+        metadata->binary_data.cursor = 0;
         if (metadata->type != nuccChunkType::Binary) 
             throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
     }
@@ -266,7 +266,7 @@ void XFBIN::read() {
     file.b_read<std::uint64_t>(std::endian::big); // Unknown purpose.
 
     // Read chunks.
-    for (int i = 0; file.get_pos() < file.data.size(); i++) {
+    for (int i = 0; file.cursor < file.get_size(); i++) {
         chunks.push_back({});
         chunks[i].xfbin = this;
         chunks[i].size = file.b_read<std::uint32_t>(std::endian::big);
@@ -278,7 +278,7 @@ void XFBIN::read() {
         chunks[i].map_index = file.b_read<std::uint32_t>(std::endian::big);
         chunks[i].version = file.b_read<std::uint16_t>(std::endian::big);
         chunks[i].unk = file.b_read<std::uint16_t>(std::endian::big);
-        chunks[i].binary_data.load(file.data, file.get_pos(), file.get_pos() + chunks[i].size);
+        chunks[i].binary_data.load(file.data, file.cursor, file.cursor + chunks[i].size);
         file.b_move(chunks[i].size);
     }
 
