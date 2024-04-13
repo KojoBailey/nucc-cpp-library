@@ -27,3 +27,48 @@ Below is a list of all the things this library **can already** do...
 - CRC32 hashing, used in the CC2 games for various things, including some XFBIN data.
 - Encryption and decryption, once again used in some XFBIN files.
 - And much more...
+
+## How To Use
+With this library, rather than all the difference `nuccChunk` types being parsed when a XFBIN file is loaded into the class, you must create different `nuccChunk-Type` objects yourself, and initialise them with the `nuccChunk` you want.
+```cpp
+// Creates an `nuccChunkBinary` object using the 3rd `nuccChunk` stored in the `xfbin` object.
+nuccChunkBinary binary_chunk{ xfbin.chunks[2] };
+```
+
+However, you may not initialise an `nuccChunk-Type` object with a `nuccChunk` of a different type.
+```cpp
+// Checks if type matches nuccChunkBinary first.
+if ( xfbin.chunks[2].type == nuccChunkType::Binary )
+  nuccChunkBinary binary_chunk{ xfbin.chunks[2] };
+```
+
+If you do try to do otherwise, the object will throw a runtime error, which may be useful for debugging purposes:
+```
+terminate called after throwing an instance of 'std::runtime_error'
+  what():  Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.
+```
+
+## Examples
+A lot of us learn best from examples, so here are some common (and not so common) tasks you may want to do with this library.
+
+### Drag-and-Drop Loading
+This can take an XFBIN file dragged onto the application and immediately parse it into an `XFBIN` object.
+```cpp
+using kojo::XFBIN;
+
+int main(int argc, char* argv[]) {
+    XFBIN xfbin;
+    xfbin.load(argv[1]);
+}
+```
+
+### Iterating through Chunks
+This iterates through all of an XFBIN's chunks, looking for nuccChunkPages and outputting their `map_offset` value to the console if found.
+```cpp
+for (auto& chunk : xfbin.chunks) {
+    if (chunk.type == kojo::nuccChunkType::Page) {
+        kojo::nuccChunkPage page{&chunk};
+        std::cout << page.map_offset << "\n";
+    }
+}
+```
