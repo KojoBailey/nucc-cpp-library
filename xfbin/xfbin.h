@@ -203,7 +203,7 @@ struct nuccChunkIndex {
         for (int i = 0; i < name_count; i++)
             names.push_back(metadata->binary_data.read<std::string>());
 
-        metadata->binary_data.align(4);
+        metadata->binary_data.align_by(4);
 
         for (int i = 0; i < map_count; i++)
             maps.push_back({
