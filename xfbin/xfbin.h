@@ -1,11 +1,19 @@
-#pragma once
+#ifndef KOJO_NUCC_PLUS_PLUS
+#define KOJO_NUCC_PLUS_PLUS
 
 #include "../binary/binary/binary.h"
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <unordered_map>
 
+/**
+ * TO DO
+ * - Writing
+ * - More chunk support
+*/
+
 namespace kojo {
+namespace nucc {
 
 /**
  * List of CyberConnect2 games that use XFBIN files.
@@ -26,12 +34,12 @@ enum class CC2_Game {
  * List of NUCC chunk types used in XFBINs.
 */
 enum class nuccChunkType {
-    Null = 0,
-    Index,
-    Page,
+    Null = 0,   // Unnecessary to support
+    Index,      // Supported
+    Page,       // Supported
     Anm,
     Billboard,
-    Binary,
+    Binary,     // WIP
     Camera,
     Clump,
     Coord,
@@ -42,7 +50,7 @@ enum class nuccChunkType {
     Nub,
     Particle,
     Sprite,
-    Texture,
+    Texture,    // WIP
     Trail
 };
 
@@ -66,10 +74,6 @@ struct nuccChunk {
     std::uint16_t version;      /** May differ from XFBIN version. */
     std::uint16_t unk;          /** @note Unknown, but may be animation-related. */
     binary binary_data;
-
-    nuccChunk() {
-        
-    }
 };
 
 /**
@@ -125,6 +129,7 @@ public:
     XFBIN(const char* input_name) {
         name = (std::string)input_name;
     }
+    ~XFBIN();
 
 private:
     binary file;
@@ -189,30 +194,30 @@ struct nuccChunkIndex {
         // Quick way of filling out all consecutive uint32 variables.
         std::uint32_t* buffer = &type_count;
         for (int i = 0; i < 10; i++)
-            buffer[i] = metadata->binary_data.b_read<std::uint32_t>(std::endian::big);
+            buffer[i] = metadata->binary_data.read<std::uint32_t>(std::endian::big);
 
         for (int i = 0; i < type_count; i++)
-            types.push_back(metadata->binary_data.b_read<std::string>());
+            types.push_back(metadata->binary_data.read<std::string>());
         for (int i = 0; i < path_count; i++)
-            paths.push_back(metadata->binary_data.b_read<std::string>());
+            paths.push_back(metadata->binary_data.read<std::string>());
         for (int i = 0; i < name_count; i++)
-            names.push_back(metadata->binary_data.b_read<std::string>());
+            names.push_back(metadata->binary_data.read<std::string>());
 
-        metadata->binary_data.b_align(4);
+        metadata->binary_data.align(4);
 
         for (int i = 0; i < map_count; i++)
             maps.push_back({
-                metadata->binary_data.b_read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.b_read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.b_read<std::uint32_t>(std::endian::big)
+                metadata->binary_data.read<std::uint32_t>(std::endian::big),
+                metadata->binary_data.read<std::uint32_t>(std::endian::big),
+                metadata->binary_data.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < extra_indices_count; i++)
             extra_indices.push_back({
-                metadata->binary_data.b_read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.b_read<std::uint32_t>(std::endian::big)
+                metadata->binary_data.read<std::uint32_t>(std::endian::big),
+                metadata->binary_data.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < map_indices_count; i++)
-            map_indices.push_back(metadata->binary_data.b_read<std::uint32_t>(std::endian::big));
+            map_indices.push_back(metadata->binary_data.read<std::uint32_t>(std::endian::big));
     }
 };
 
@@ -232,8 +237,8 @@ struct nuccChunkPage {
         if (metadata->type != nuccChunkType::Page) 
             throw std::runtime_error("Cannot initialise nuccChunkPage with non-nuccChunkPage data.");
 
-        map_offset = metadata->binary_data.b_read<std::uint32_t>(std::endian::big);
-        extra_offset = metadata->binary_data.b_read<std::uint32_t>(std::endian::big);
+        map_offset = metadata->binary_data.read<std::uint32_t>(std::endian::big);
+        extra_offset = metadata->binary_data.read<std::uint32_t>(std::endian::big);
     }
 };
 
@@ -255,31 +260,66 @@ struct nuccChunkBinary {
     }
 };
 
+struct Texture {
+    std::uint32_t total_size, data_size;
+    std::uint16_t header_size;
+    std::uint8_t minimap_count;
+    std::uint8_t pixel_format;
+    std::uint16_t width, height;
+    const std::string magic = "GIDX";
+    std::uint32_t hash_id;
+    std::vector<char> data;
+};
+
+struct NUT {
+    const std::string magic = "NTP3";
+    std::uint16_t version;
+    std::uint16_t count;
+    std::vector<Texture> textures;
+};
+
+struct nuccChunkTexture {
+    nuccChunk* metadata;
+
+    std::uint16_t unk0;
+    std::uint16_t width, height;
+    std::uint16_t unk6;
+    std::uint32_t size;
+    NUT nut;
+
+    nuccChunkTexture(nuccChunk* chunk) {
+        metadata = chunk;
+        metadata->binary_data.cursor = 0;
+        if (metadata->type != nuccChunkType::Texture) 
+            throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
+    }
+};
+
 void XFBIN::read() {
     // Read header.
-    std::string read_magic = file.b_read<std::string>(4);
+    std::string read_magic = file.read<std::string>(4);
     compare_error(magic != read_magic, Error::BAD_MAGIC);
 
-    version = file.b_read<std::uint32_t>(std::endian::big);
+    version = file.read<std::uint32_t>(std::endian::big);
     compare_error(version != 121, Error::UNSUPPORTED);
 
-    file.b_read<std::uint64_t>(std::endian::big); // Unknown purpose.
+    file.read<std::uint64_t>(std::endian::big); // Unknown purpose.
 
     // Read chunks.
-    for (int i = 0; file.cursor < file.get_size(); i++) {
+    for (int i = 0; file.cursor < file.size(); i++) {
         chunks.push_back({});
         chunks[i].xfbin = this;
-        chunks[i].size = file.b_read<std::uint32_t>(std::endian::big);
+        chunks[i].size = file.read<std::uint32_t>(std::endian::big);
         if (i == 0) { // If nuccChunkIndex, chunk header size won't suffice (honestly, a design flaw).
-            file.b_move(44);
-            chunks[i].size += file.b_read<std::uint32_t>(std::endian::big) * 8;
-            file.b_move(-48);
+            file.move(44);
+            chunks[i].size += file.read<std::uint32_t>(std::endian::big) * 8;
+            file.move(-48);
         }
-        chunks[i].map_index = file.b_read<std::uint32_t>(std::endian::big);
-        chunks[i].version = file.b_read<std::uint16_t>(std::endian::big);
-        chunks[i].unk = file.b_read<std::uint16_t>(std::endian::big);
+        chunks[i].map_index = file.read<std::uint32_t>(std::endian::big);
+        chunks[i].version = file.read<std::uint16_t>(std::endian::big);
+        chunks[i].unk = file.read<std::uint16_t>(std::endian::big);
         chunks[i].binary_data.load(file.data, file.cursor, file.cursor + chunks[i].size);
-        file.b_move(chunks[i].size);
+        file.move(chunks[i].size);
     }
 
     // Read nuccChunkIndex.
@@ -320,4 +360,11 @@ void XFBIN::read() {
     }
 }
 
+XFBIN::~XFBIN() {
+    if (index != nullptr) delete[] index;
 }
+
+}
+}
+
+#endif // KOJO_NUCC_PLUS_PLUS
