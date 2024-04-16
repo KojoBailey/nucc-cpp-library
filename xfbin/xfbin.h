@@ -18,7 +18,7 @@ namespace nucc {
 /**
  * List of CyberConnect2 games that use XFBIN files.
 */
-enum class CC2_Game {
+enum class Game {
     // In order from old to new.
     UNKNOWN = 0,
     NSUNS3, /** Naruto Shippuden: Ultimate Ninja Storm 3 */
@@ -33,7 +33,7 @@ enum class CC2_Game {
 /**
  * List of NUCC chunk types used in XFBINs.
 */
-enum class nuccChunkType {
+enum class ChunkType {
     Null = 0,   // Unnecessary to support
     Index,      // Supported
     Page,       // Supported
@@ -56,16 +56,15 @@ enum class nuccChunkType {
 
 // Forward declaration.
 class XFBIN;
-struct nuccChunkIndex;
+struct ChunkIndex;
 
 /**
  * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
- * 
  * @post Must be defined before the XFBIN class. Forward declaration doesn't solve this.
 */
-struct nuccChunk {
+struct Chunk {
     XFBIN* xfbin;               /** @note May be unnecessary and therefore removed. */
-    nuccChunkType type;         /** @warning Must match the struct used (e.g. `Binary` for `nuccChunkBinary`). */
+    ChunkType type;         /** @warning Must match the struct used (e.g. `Binary` for `nuccChunkBinary`). */
     std::string path;           /** Internal chunk file path. @note Can usually be used to uniquely ID chunks. */
     std::string name;           /** Chunk name. @warning Typically the same across game versions, so not reliable for IDs. */
 
@@ -73,7 +72,8 @@ struct nuccChunk {
     std::uint32_t map_index;
     std::uint16_t version;      /** May differ from XFBIN version. */
     std::uint16_t unk;          /** @note Unknown, but may be animation-related. */
-    binary binary_data;
+    
+    binary data;
 };
 
 /**
@@ -84,12 +84,12 @@ public:
     // VARIABLES ↓↓↓
 
     std::string name;                           /** External filename, not included within the XFBIN file itself. */
-    CC2_Game game;                              /** Game that the XFBIN is from. */
+    Game game;                              /** Game that the XFBIN is from. */
 
     const std::string magic = "NUCC";           /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version;                      /** e.g. `121` = 1.2.1 */
-    std::vector<nuccChunk> chunks;              /** @note First chunk is always `nuccChunkIndex`. */
-    nuccChunkIndex* index;
+    std::vector<Chunk> chunks;              /** @note First chunk is always `nuccChunkIndex`. */
+    ChunkIndex* index;
 
     std::uint32_t running_map_offset = 0;       /** Running total for page chunk map offsets. */
     std::uint32_t running_extra_offset = 0;     /** Running total for page extra map offsets. */
@@ -118,8 +118,12 @@ public:
         file.load(input_path);
         read();
     }
+    void load(std::vector<char>& vector_data, size_t start = 0, size_t end = -1) {
+        file.load(vector_data, start, end);
+        read();
+    }
 
-    nuccChunk* get_chunk(size_t index) {
+    Chunk* get_chunk(size_t index) {
         return &chunks[index];
     }
 
@@ -144,8 +148,8 @@ private:
 /**
  * Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to.
 */
-struct nuccChunkIndex {
-    nuccChunk* metadata;
+struct ChunkIndex {
+    Chunk* metadata;
 
     std::uint32_t type_count;
     std::uint32_t type_size;
@@ -185,39 +189,39 @@ struct nuccChunkIndex {
         return names[maps[map_indices[map_index + metadata->xfbin->running_map_offset]].name_index];
     }
 
-    nuccChunkIndex(nuccChunk* chunk) {
+    ChunkIndex(Chunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.cursor = 0;
-        if (metadata->type != nuccChunkType::Index) 
+        metadata->data.cursor = 0;
+        if (metadata->type != ChunkType::Index) 
             throw std::runtime_error("Cannot initialise nuccChunkIndex with non-nuccChunkIndex data.");
 
         // Quick way of filling out all consecutive uint32 variables.
         std::uint32_t* buffer = &type_count;
         for (int i = 0; i < 10; i++)
-            buffer[i] = metadata->binary_data.read<std::uint32_t>(std::endian::big);
+            buffer[i] = metadata->data.read<std::uint32_t>(std::endian::big);
 
         for (int i = 0; i < type_count; i++)
-            types.push_back(metadata->binary_data.read<std::string>());
+            types.push_back(metadata->data.read<std::string>());
         for (int i = 0; i < path_count; i++)
-            paths.push_back(metadata->binary_data.read<std::string>());
+            paths.push_back(metadata->data.read<std::string>());
         for (int i = 0; i < name_count; i++)
-            names.push_back(metadata->binary_data.read<std::string>());
+            names.push_back(metadata->data.read<std::string>());
 
-        metadata->binary_data.align_by(4);
+        metadata->data.align_by(4);
 
         for (int i = 0; i < map_count; i++)
             maps.push_back({
-                metadata->binary_data.read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.read<std::uint32_t>(std::endian::big)
+                metadata->data.read<std::uint32_t>(std::endian::big),
+                metadata->data.read<std::uint32_t>(std::endian::big),
+                metadata->data.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < extra_indices_count; i++)
             extra_indices.push_back({
-                metadata->binary_data.read<std::uint32_t>(std::endian::big),
-                metadata->binary_data.read<std::uint32_t>(std::endian::big)
+                metadata->data.read<std::uint32_t>(std::endian::big),
+                metadata->data.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < map_indices_count; i++)
-            map_indices.push_back(metadata->binary_data.read<std::uint32_t>(std::endian::big));
+            map_indices.push_back(metadata->data.read<std::uint32_t>(std::endian::big));
     }
 };
 
@@ -225,37 +229,38 @@ struct nuccChunkIndex {
  * Separates chunks into distinct groups.
  * @note Might be because of clumps.
 */
-struct nuccChunkPage {
-    nuccChunk* metadata;
+struct ChunkPage {
+    Chunk* metadata;
 
     std::uint32_t map_offset;
     std::uint32_t extra_offset;
 
-    nuccChunkPage(nuccChunk* chunk) {
-        metadata = chunk;
-        metadata->binary_data.cursor = 0;
-        if (metadata->type != nuccChunkType::Page) 
+    ChunkPage(Chunk& chunk) {
+        metadata = &chunk;
+        metadata->data.cursor = 0;
+        if (metadata->type != ChunkType::Page) 
             throw std::runtime_error("Cannot initialise nuccChunkPage with non-nuccChunkPage data.");
 
-        map_offset = metadata->binary_data.read<std::uint32_t>(std::endian::big);
-        extra_offset = metadata->binary_data.read<std::uint32_t>(std::endian::big);
+        map_offset = metadata->data.read<std::uint32_t>(std::endian::big);
+        extra_offset = metadata->data.read<std::uint32_t>(std::endian::big);
     }
 };
 
 /**
  * Contains miscellaneous binary data, including formats not explicitly supported like XML.
 */
-struct nuccChunkBinary {
-    nuccChunk* metadata;
+struct ChunkBinary {
+    Chunk* metadata;
 
     /* Only one is of these two is to be used. */
+    std::uint32_t size;
     std::vector<char> binary_data;
     nlohmann::ordered_json json_data;
 
-    nuccChunkBinary(nuccChunk* chunk) {
+    ChunkBinary(Chunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.cursor = 0;
-        if (metadata->type != nuccChunkType::Binary) 
+        metadata->data.cursor = 0;
+        if (metadata->type != ChunkType::Binary) 
             throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
     }
 };
@@ -271,26 +276,26 @@ struct Texture {
     std::vector<char> data;
 };
 
-struct NUT {
+struct NUTexture {
     const std::string magic = "NTP3";
     std::uint16_t version;
     std::uint16_t count;
     std::vector<Texture> textures;
 };
 
-struct nuccChunkTexture {
-    nuccChunk* metadata;
+struct ChunkTexture {
+    Chunk* metadata;
 
     std::uint16_t unk0;
     std::uint16_t width, height;
     std::uint16_t unk6;
     std::uint32_t size;
-    NUT nut;
+    NUTexture nut;
 
-    nuccChunkTexture(nuccChunk* chunk) {
+    ChunkTexture(Chunk* chunk) {
         metadata = chunk;
-        metadata->binary_data.cursor = 0;
-        if (metadata->type != nuccChunkType::Texture) 
+        metadata->data.cursor = 0;
+        if (metadata->type != ChunkType::Texture) 
             throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
     }
 };
@@ -318,42 +323,42 @@ void XFBIN::read() {
         chunks[i].map_index = file.read<std::uint32_t>(std::endian::big);
         chunks[i].version = file.read<std::uint16_t>(std::endian::big);
         chunks[i].unk = file.read<std::uint16_t>(std::endian::big);
-        chunks[i].binary_data.load(file.data, file.cursor, file.cursor + chunks[i].size);
+        chunks[i].data.load(file.data, file.cursor, file.cursor + chunks[i].size);
         file.move(chunks[i].size);
     }
 
     // Read nuccChunkIndex.
     if (&chunks[0]) {
-        chunks[0].type = nuccChunkType::Index;
-        index = new nuccChunkIndex(&chunks[0]);
+        chunks[0].type = ChunkType::Index;
+        index = new ChunkIndex(&chunks[0]);
     }
 
     // Fill out metadata of other chunks.
-    std::unordered_map<std::string, nuccChunkType> str_to_nuccChunkType;
-    str_to_nuccChunkType["nuccChunkNull"]       = nuccChunkType::Null;
-    str_to_nuccChunkType["nuccChunkIndex"]      = nuccChunkType::Index;
-    str_to_nuccChunkType["nuccChunkPage"]       = nuccChunkType::Page;
-    str_to_nuccChunkType["nuccChunkAnm"]        = nuccChunkType::Anm;
-    str_to_nuccChunkType["nuccChunkBillboard"]  = nuccChunkType::Billboard;
-    str_to_nuccChunkType["nuccChunkBinary"]     = nuccChunkType::Binary;
-    str_to_nuccChunkType["nuccChunkCamera"]     = nuccChunkType::Camera;
-    str_to_nuccChunkType["nuccChunkClump"]      = nuccChunkType::Clump;
-    str_to_nuccChunkType["nuccChunkCoord"]      = nuccChunkType::Coord;
-    str_to_nuccChunkType["nuccChunkDynamic"]    = nuccChunkType::Dynamic;
-    str_to_nuccChunkType["nuccChunkLightDirc"]  = nuccChunkType::LightDirc;
-    str_to_nuccChunkType["nuccChunkMaterial"]   = nuccChunkType::Material;
-    str_to_nuccChunkType["nuccChunkModel"]      = nuccChunkType::Model;
-    str_to_nuccChunkType["nuccChunkNub"]        = nuccChunkType::Nub;
-    str_to_nuccChunkType["nuccChunkParticle"]   = nuccChunkType::Particle;
-    str_to_nuccChunkType["nuccChunkSprite"]     = nuccChunkType::Sprite;
-    str_to_nuccChunkType["nuccChunkTexture"]    = nuccChunkType::Texture;
-    str_to_nuccChunkType["nuccChunkTrail"]      = nuccChunkType::Trail;
+    std::unordered_map<std::string, ChunkType> str_to_ChunkType;
+    str_to_ChunkType["nuccChunkNull"]       = ChunkType::Null;
+    str_to_ChunkType["nuccChunkIndex"]      = ChunkType::Index;
+    str_to_ChunkType["nuccChunkPage"]       = ChunkType::Page;
+    str_to_ChunkType["nuccChunkAnm"]        = ChunkType::Anm;
+    str_to_ChunkType["nuccChunkBillboard"]  = ChunkType::Billboard;
+    str_to_ChunkType["nuccChunkBinary"]     = ChunkType::Binary;
+    str_to_ChunkType["nuccChunkCamera"]     = ChunkType::Camera;
+    str_to_ChunkType["nuccChunkClump"]      = ChunkType::Clump;
+    str_to_ChunkType["nuccChunkCoord"]      = ChunkType::Coord;
+    str_to_ChunkType["nuccChunkDynamic"]    = ChunkType::Dynamic;
+    str_to_ChunkType["nuccChunkLightDirc"]  = ChunkType::LightDirc;
+    str_to_ChunkType["nuccChunkMaterial"]   = ChunkType::Material;
+    str_to_ChunkType["nuccChunkModel"]      = ChunkType::Model;
+    str_to_ChunkType["nuccChunkNub"]        = ChunkType::Nub;
+    str_to_ChunkType["nuccChunkParticle"]   = ChunkType::Particle;
+    str_to_ChunkType["nuccChunkSprite"]     = ChunkType::Sprite;
+    str_to_ChunkType["nuccChunkTexture"]    = ChunkType::Texture;
+    str_to_ChunkType["nuccChunkTrail"]      = ChunkType::Trail;
     for (auto& chunk : chunks) {
-        chunk.type = str_to_nuccChunkType[index->get_type(chunk.map_index)];
+        chunk.type = str_to_ChunkType[index->get_type(chunk.map_index)];
         chunk.path = index->get_path(chunk.map_index);
         chunk.name = index->get_name(chunk.map_index);
-        if (chunk.type == nuccChunkType::Page) {
-            nuccChunkPage page(&chunk);
+        if (chunk.type == ChunkType::Page) {
+            ChunkPage page(chunk);
             running_map_offset += page.map_offset;
             running_extra_offset += page.extra_offset;
         }
@@ -364,7 +369,7 @@ XFBIN::~XFBIN() {
     if (index != nullptr) delete[] index;
 }
 
-}
-}
+} // namespace nucc
+} // namespace kojo
 
 #endif // KOJO_NUCC_PLUS_PLUS
