@@ -2,8 +2,6 @@
 #define KOJO_NUCC_PLUS_PLUS
 
 #include "../binary/binary/binary.h"
-#include <iostream>
-#include <nlohmann/json.hpp>
 #include <unordered_map>
 
 /**
@@ -13,7 +11,7 @@
 */
 
 namespace kojo {
-namespace nucc {
+    namespace nucc {
 
 /**
  * List of CyberConnect2 games that use XFBIN files.
@@ -257,8 +255,8 @@ struct ChunkBinary {
 
     /* Only one is of these two is to be used. */
     std::uint32_t size;
+
     std::vector<char> binary_data;
-    nlohmann::ordered_json json_data;
 
     ChunkBinary(Chunk* chunk) {
         metadata = chunk;
@@ -372,7 +370,7 @@ XFBIN::~XFBIN() {
     if (index != nullptr) delete[] index;
 }
 
-} // namespace nucc
+    } // namespace nucc
 } // namespace kojo
 
 #endif // KOJO_NUCC_PLUS_PLUS
