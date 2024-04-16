@@ -114,6 +114,10 @@ public:
         }
     }
 
+    Chunk* get_chunk(size_t index) {
+        return &chunks[index];
+    }
+
     void load(std::filesystem::path input_path) {
         file.load(input_path);
         read();
@@ -123,15 +127,14 @@ public:
         read();
     }
 
-    Chunk* get_chunk(size_t index) {
-        return &chunks[index];
-    }
-
-    // CONSTRUCTORS ↓↓↓
+    // CON/DESTRUCTORS ↓↓↓
 
     XFBIN() {};
-    XFBIN(const char* input_name) {
-        name = (std::string)input_name;
+    XFBIN(std::filesystem::path input_path) {
+        load(input_path);
+    }
+    XFBIN(std::vector<char>& vector_data, size_t start = 0, size_t end = -1) {
+        load(vector_data, start, end);
     }
     ~XFBIN();
 
