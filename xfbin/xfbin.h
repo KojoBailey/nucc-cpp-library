@@ -125,6 +125,8 @@ public:
         read();
     }
 
+    void create(std::filesystem::path output_path);
+
     // CON/DESTRUCTORS ↓↓↓
 
     XFBIN() {};
@@ -134,7 +136,6 @@ public:
     XFBIN(std::vector<char>& vector_data, size_t start = 0, size_t end = -1) {
         load(vector_data, start, end);
     }
-    ~XFBIN();
 
 private:
     binary file;
@@ -309,7 +310,7 @@ void XFBIN::read() {
     version = file.read<std::uint32_t>(std::endian::big);
     compare_error(version != 121, Error::UNSUPPORTED);
 
-    file.read<std::uint64_t>(std::endian::big); // Unknown purpose.
+    file.read<std::uint64_t>(std::endian::big); /** Flags. @note Parse these at some point. */
 
     // Read chunks.
     for (int i = 0; file.cursor < file.size(); i++) {
@@ -366,8 +367,14 @@ void XFBIN::read() {
     }
 }
 
-XFBIN::~XFBIN() {
-    if (index != nullptr) delete[] index;
+void XFBIN::create(std::filesystem::path output_path) {
+    binary output;
+
+    output.write<std::string>("NUCC", 4);
+    output.write<std::uint32_t>(version, std::endian::big);
+    output.write<std::uint64_t>(0, std::endian::big);
+
+    output.vector_to_file(output_path);
 }
 
     } // namespace nucc
