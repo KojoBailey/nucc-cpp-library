@@ -54,7 +54,7 @@ enum class ChunkType {
 
 // Forward declaration.
 class XFBIN;
-struct ChunkIndex;
+struct Index;
 
 /**
  * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
@@ -62,7 +62,7 @@ struct ChunkIndex;
 */
 struct Chunk {
     XFBIN* xfbin;               /** @note May be unnecessary and therefore removed. */
-    ChunkType type;         /** @warning Must match the struct used (e.g. `Binary` for `nuccChunkBinary`). */
+    ChunkType type;         /** @warning Must match the struct used (e.g. `Binary` for nuccChunkBinary). */
     std::string path;           /** Internal chunk file path. @note Can usually be used to uniquely ID chunks. */
     std::string name;           /** Chunk name. @warning Typically the same across game versions, so not reliable for IDs. */
 
@@ -86,8 +86,8 @@ public:
 
     const std::string magic = "NUCC";           /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version;                      /** e.g. `121` = 1.2.1 */
-    std::vector<Chunk> chunks;              /** @note First chunk is always `nuccChunkIndex`. */
-    ChunkIndex* index;
+    std::vector<Chunk> chunks;              /** @note First chunk is always nuccChunkIndex. */
+    Index* index;
 
     std::uint32_t running_map_offset = 0;       /** Running total for page chunk map offsets. */
     std::uint32_t running_extra_offset = 0;     /** Running total for page extra map offsets. */
@@ -120,7 +120,7 @@ public:
         file.load(input_path);
         read();
     }
-    void load(std::vector<char>& vector_data, size_t start = 0, size_t end = -1) {
+    void load(std::vector<unsigned char>& vector_data, size_t start = 0, size_t end = -1) {
         file.load(vector_data, start, end);
         read();
     }
@@ -133,7 +133,7 @@ public:
     XFBIN(std::filesystem::path input_path) {
         load(input_path);
     }
-    XFBIN(std::vector<char>& vector_data, size_t start = 0, size_t end = -1) {
+    XFBIN(std::vector<unsigned char>& vector_data, size_t start = 0, size_t end = -1) {
         load(vector_data, start, end);
     }
 
@@ -150,7 +150,7 @@ private:
 /**
  * Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to.
 */
-struct ChunkIndex {
+struct Index {
     Chunk* metadata;
 
     std::uint32_t type_count;
@@ -164,7 +164,7 @@ struct ChunkIndex {
     std::uint32_t map_indices_count;
     std::uint32_t extra_indices_count;
     
-    std::vector<std::string> types; // nuccChunk[Type], e.g. `nuccChunkIndex`.
+    std::vector<std::string> types; // nuccChunk[Type], e.g. "nuccChunkIndex".
     std::vector<std::string> paths; // Likely the data source paths used to compile the XFBIN.
     std::vector<std::string> names;
 
@@ -191,11 +191,11 @@ struct ChunkIndex {
         return names[maps[map_indices[map_index + metadata->xfbin->running_map_offset]].name_index];
     }
 
-    ChunkIndex(Chunk* chunk) {
+    Index(Chunk* chunk) {
         metadata = chunk;
         metadata->data.cursor = 0;
         if (metadata->type != ChunkType::Index) 
-            throw std::runtime_error("Cannot initialise nuccChunkIndex with non-nuccChunkIndex data.");
+            throw std::runtime_error("Cannot initialise nuccIndex with non-nuccIndex data.");
 
         // Quick way of filling out all consecutive uint32 variables.
         std::uint32_t* buffer = &type_count;
@@ -231,17 +231,17 @@ struct ChunkIndex {
  * Separates chunks into distinct groups.
  * @note Might be because of clumps.
 */
-struct ChunkPage {
+struct Page {
     Chunk* metadata;
 
     std::uint32_t map_offset;
     std::uint32_t extra_offset;
 
-    ChunkPage(Chunk& chunk) {
+    Page(Chunk& chunk) {
         metadata = &chunk;
         metadata->data.cursor = 0;
         if (metadata->type != ChunkType::Page) 
-            throw std::runtime_error("Cannot initialise nuccChunkPage with non-nuccChunkPage data.");
+            throw std::runtime_error("Cannot initialise nuccPage with non-nuccPage data.");
 
         map_offset = metadata->data.read<std::uint32_t>(std::endian::big);
         extra_offset = metadata->data.read<std::uint32_t>(std::endian::big);
@@ -251,7 +251,7 @@ struct ChunkPage {
 /**
  * Contains miscellaneous binary data, including formats not explicitly supported like XML.
 */
-struct ChunkBinary {
+struct Binary {
     Chunk* metadata;
 
     /* Only one is of these two is to be used. */
@@ -259,15 +259,15 @@ struct ChunkBinary {
 
     std::vector<char> binary_data;
 
-    ChunkBinary(Chunk* chunk) {
+    Binary(Chunk* chunk) {
         metadata = chunk;
         metadata->data.cursor = 0;
         if (metadata->type != ChunkType::Binary) 
-            throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
+            throw std::runtime_error("Cannot initialise nuccBinary with non-nuccBinary data.");
     }
 };
 
-struct Texture {
+struct NUT_Texture {
     std::uint32_t total_size, data_size;
     std::uint16_t header_size;
     std::uint8_t minimap_count;
@@ -278,27 +278,27 @@ struct Texture {
     std::vector<char> data;
 };
 
-struct NUTexture {
+struct NUT {
     const std::string magic = "NTP3";
     std::uint16_t version;
     std::uint16_t count;
-    std::vector<Texture> textures;
+    std::vector<NUT_Texture> textures;
 };
 
-struct ChunkTexture {
+struct Texture {
     Chunk* metadata;
 
     std::uint16_t unk0;
     std::uint16_t width, height;
     std::uint16_t unk6;
     std::uint32_t size;
-    NUTexture nut;
+    NUT nut;
 
-    ChunkTexture(Chunk* chunk) {
+    Texture(Chunk* chunk) {
         metadata = chunk;
         metadata->data.cursor = 0;
         if (metadata->type != ChunkType::Texture) 
-            throw std::runtime_error("Cannot initialise nuccChunkBinary with non-nuccChunkBinary data.");
+            throw std::runtime_error("Cannot initialise nuccTexture with non-nuccTexture data.");
     }
 };
 
@@ -317,7 +317,7 @@ void XFBIN::read() {
         chunks.push_back({});
         chunks[i].xfbin = this;
         chunks[i].size = file.read<std::uint32_t>(std::endian::big);
-        if (i == 0) { // If nuccChunkIndex, chunk header size won't suffice (honestly, a design flaw).
+        if (i == 0) { // If nuccIndex, chunk header size won't suffice (honestly, a design flaw).
             file.move(44);
             chunks[i].size += file.read<std::uint32_t>(std::endian::big) * 8;
             file.move(-48);
@@ -329,10 +329,10 @@ void XFBIN::read() {
         file.move(chunks[i].size);
     }
 
-    // Read nuccChunkIndex.
+    // Read nuccIndex.
     if (&chunks[0]) {
         chunks[0].type = ChunkType::Index;
-        index = new ChunkIndex(&chunks[0]);
+        index = new Index(&chunks[0]);
     }
 
     // Fill out metadata of other chunks.
@@ -360,7 +360,7 @@ void XFBIN::read() {
         chunk.path = index->get_path(chunk.map_index);
         chunk.name = index->get_name(chunk.map_index);
         if (chunk.type == ChunkType::Page) {
-            ChunkPage page(chunk);
+            Page page(chunk);
             running_map_offset += page.map_offset;
             running_extra_offset += page.extra_offset;
         }
@@ -373,6 +373,15 @@ void XFBIN::create(std::filesystem::path output_path) {
     output.write<std::string>("NUCC", 4);
     output.write<std::uint32_t>(version, std::endian::big);
     output.write<std::uint64_t>(0, std::endian::big);
+
+    /* nuccChunk */
+    for (auto& chunk : chunks) {
+        output.write<std::uint32_t>(chunk.size, std::endian::big); // Size
+        output.write<std::uint32_t>(chunk.map_index, std::endian::big); // Map Index
+        output.write<std::uint16_t>(chunk.version, std::endian::big); // Version
+        output.write<std::uint16_t>(chunk.unk, std::endian::big); // unk
+        output.write<std::vector<unsigned char>>(chunk.data.data); // Data
+    }
 
     output.vector_to_file(output_path);
 }
