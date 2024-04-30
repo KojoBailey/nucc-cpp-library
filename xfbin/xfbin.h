@@ -3,12 +3,7 @@
 
 #include "../binary/binary/binary.h"
 #include <unordered_map>
-
-/**
- * TO DO
- * - Writing
- * - More chunk support
-*/
+#include <unordered_set>
 
 namespace kojo {
     namespace nucc {
@@ -52,6 +47,12 @@ enum class ChunkType {
     Trail
 };
 
+enum Optimise {
+    MATCH = 0,  // Matches whatever chunks the XFBIN already has.
+    TRUE,       // Removes unnecessary chunks and their metadata.
+    FALSE       // Adds the unnecessary chunks where they're "supposed to be".
+};
+
 // Forward declaration.
 class XFBIN;
 struct Index;
@@ -62,16 +63,45 @@ struct Index;
 */
 struct Chunk {
     XFBIN* xfbin;               /** @note May be unnecessary and therefore removed. */
-    ChunkType type;         /** @warning Must match the struct used (e.g. `Binary` for nuccChunkBinary). */
+    ChunkType type;             /** @warning Must match the struct used (e.g. `Binary` for nuccChunkBinary). */
     std::string path;           /** Internal chunk file path. @note Can usually be used to uniquely ID chunks. */
     std::string name;           /** Chunk name. @warning Typically the same across game versions, so not reliable for IDs. */
 
-    std::uint32_t size;         /** Size of entire chunk in bytes. */
+    std::uint32_t size{0};      /** Size of entire chunk in bytes. */
     std::uint32_t map_index;
-    std::uint16_t version;      /** May differ from XFBIN version. */
+    std::uint16_t version{121}; /** May differ from XFBIN version. */
     std::uint16_t unk;          /** @note Unknown, but may be animation-related. */
     
     binary data;
+
+    std::string type_string() {
+        switch(type) {
+            case ChunkType::Null        : return "nuccChunkNull";
+            case ChunkType::Index       : return "nuccChunkIndex";
+            case ChunkType::Page        : return "nuccChunkPage";
+            case ChunkType::Anm         : return "nuccChunkAnm";
+            case ChunkType::Billboard   : return "nuccChunkBillboard";
+            case ChunkType::Binary      : return "nuccChunkBinary";
+            case ChunkType::Camera      : return "nuccChunkCamera";
+            case ChunkType::Clump       : return "nuccChunkClump";
+            case ChunkType::Coord       : return "nuccChunkCoord";
+            case ChunkType::Dynamic     : return "nuccChunkDynamic";
+            case ChunkType::LightDirc   : return "nuccChunkLightDirc";
+            case ChunkType::Material    : return "nuccChunkMaterial";
+            case ChunkType::Model       : return "nuccChunkModel";
+            case ChunkType::Nub         : return "nuccChunkNub";
+            case ChunkType::Particle    : return "nuccChunkParticle";
+            case ChunkType::Sprite      : return "nuccChunkSprite";
+            case ChunkType::Texture     : return "nuccChunkTexture";
+            case ChunkType::Trail       : return "nuccChunkTrail";
+            default                     : return "nuccChunkUnknown";
+        }
+    }
+
+    void update_data(std::vector<unsigned char> new_data) {
+        data.load(new_data);
+        size = data.size();
+    }
 };
 
 /**
@@ -82,11 +112,11 @@ public:
     // VARIABLES ↓↓↓
 
     std::string name;                           /** External filename, not included within the XFBIN file itself. */
-    Game game;                              /** Game that the XFBIN is from. */
+    Game game;                                  /** Game that the XFBIN is from. */
 
     const std::string magic = "NUCC";           /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version;                      /** e.g. `121` = 1.2.1 */
-    std::vector<Chunk> chunks;              /** @note First chunk is always nuccChunkIndex. */
+    std::vector<Chunk> chunks;                  /** @note First chunk is always nuccChunkIndex. */
     Index* index;
 
     std::uint32_t running_map_offset = 0;       /** Running total for page chunk map offsets. */
@@ -115,6 +145,25 @@ public:
     Chunk* get_chunk(size_t index) {
         return &chunks[index];
     }
+    Chunk* get_chunk(ChunkType type_input) {
+        for (auto& chunk : chunks) {
+            if (chunk.type == type_input)
+                return &chunk;
+        }
+        return nullptr;
+    }
+    
+    size_t add_chunk(ChunkType type_input = ChunkType::Binary, std::string path_input = "", std::string name_input = "") {
+        chunks.push_back({});
+        size_t new_chunk_index = chunks.size() - 1;
+        chunks[new_chunk_index].xfbin = this;
+        
+        chunks[new_chunk_index].type = type_input;
+        chunks[new_chunk_index].path = path_input;
+        chunks[new_chunk_index].name = name_input;
+
+        return new_chunk_index;
+    }
 
     void load(std::filesystem::path input_path) {
         file.load(input_path);
@@ -125,7 +174,7 @@ public:
         read();
     }
 
-    void create(std::filesystem::path output_path);
+    void write(std::filesystem::path output_path, Optimise optimise = Optimise::MATCH);
 
     // CON/DESTRUCTORS ↓↓↓
 
@@ -145,6 +194,34 @@ private:
     }
 
     void read();
+};
+
+/**
+ * Separates chunks into distinct groups.
+ * @note Might be because of clumps.
+*/
+struct Page {
+    Chunk* metadata;
+
+    std::uint32_t map_offset;
+    std::uint32_t extra_offset;
+
+    Page(Chunk& chunk) {
+        metadata = &chunk;
+        metadata->data.cursor = 0;
+        if (metadata->type != ChunkType::Page) 
+            throw std::runtime_error("Cannot initialise nuccPage with non-nuccPage data.");
+
+        map_offset = metadata->data.read<std::uint32_t>(std::endian::big);
+        extra_offset = metadata->data.read<std::uint32_t>(std::endian::big);
+    }
+
+    void write_to_data(binary& data) {
+        data.clear();
+
+        data.write<std::uint32_t>(map_offset, std::endian::big);
+        data.write<std::uint32_t>(extra_offset, std::endian::big);
+    }
 };
 
 /**
@@ -191,6 +268,7 @@ struct Index {
         return names[maps[map_indices[map_index + metadata->xfbin->running_map_offset]].name_index];
     }
 
+    Index() {};
     Index(Chunk* chunk) {
         metadata = chunk;
         metadata->data.cursor = 0;
@@ -225,26 +303,98 @@ struct Index {
         for (int i = 0; i < map_indices_count; i++)
             map_indices.push_back(metadata->data.read<std::uint32_t>(std::endian::big));
     }
-};
 
-/**
- * Separates chunks into distinct groups.
- * @note Might be because of clumps.
-*/
-struct Page {
-    Chunk* metadata;
+    void calculate(std::vector<Chunk>& chunks, Optimise optimise) {
+        std::unordered_map<std::string, std::uint32_t> type_tracker;
+        std::unordered_map<std::string, std::uint32_t> path_tracker;
+        std::unordered_map<std::string, std::uint32_t> name_tracker;
+        std::unordered_map<std::string, std::uint32_t> map_tracker;
+        types.clear();
+        paths.clear();
+        names.clear();
+        maps.clear();
+        type_size = 0;
+        path_size = 0;
+        name_size = 0;
+        map_size = 0;
 
-    std::uint32_t map_offset;
-    std::uint32_t extra_offset;
+        for (auto& chunk : chunks) {
+            if (!(optimise == Optimise::TRUE && chunk.type == ChunkType::Null)) {
+                std::string type = chunk.type_string();
+                if ( type_tracker.count(type) == 0 ) {
+                    type_tracker[type] = type_tracker.size();
+                    types.push_back(type);
+                    type_size += type.size() + 1;
+                }
+                if ( path_tracker.count(chunk.path) == 0 ) {
+                    path_tracker[chunk.path] = path_tracker.size();
+                    paths.push_back(chunk.path);
+                    path_size += chunk.path.size() + 1;
+                }
+                if ( name_tracker.count(chunk.name) == 0 ) {
+                    name_tracker[chunk.name] = name_tracker.size();
+                    names.push_back(chunk.name);
+                    name_size += chunk.name.size() + 1;
+                }
 
-    Page(Chunk& chunk) {
-        metadata = &chunk;
-        metadata->data.cursor = 0;
-        if (metadata->type != ChunkType::Page) 
-            throw std::runtime_error("Cannot initialise nuccPage with non-nuccPage data.");
+                Chunk_Map temp_map = {type_tracker[type], path_tracker[chunk.path], name_tracker[chunk.name]};
+                std::string map_string = std::to_string(temp_map.type_index)
+                    + "-" + std::to_string(temp_map.path_index)
+                    + "-" + std::to_string(temp_map.name_index);
+                if ( map_tracker.count(map_string) == 0 ) {
+                    map_tracker[map_string] = map_tracker.size();
+                    maps.push_back(temp_map);
+                    map_size += sizeof(Chunk_Map);
+                    map_indices.push_back(map_tracker[map_string]);
+                }
+                chunk.map_index = map_indices[map_tracker[map_string]];
 
-        map_offset = metadata->data.read<std::uint32_t>(std::endian::big);
-        extra_offset = metadata->data.read<std::uint32_t>(std::endian::big);
+                if (chunk.type == ChunkType::Page) {
+                    Page page(chunk);
+                    page.map_offset = 0;
+                    page.write_to_data(chunk.data);
+                }
+            }
+        }
+
+        type_count = types.size();
+        path_count = paths.size();
+        name_count = names.size();
+        map_count = maps.size();
+        map_indices_count = map_indices.size();
+    }
+
+    void write_to_data(binary& data) {
+        data.clear();
+
+        data.write<std::uint32_t>(type_count, std::endian::big);
+        data.write<std::uint32_t>(type_size, std::endian::big);
+        data.write<std::uint32_t>(path_count, std::endian::big);
+        data.write<std::uint32_t>(path_size, std::endian::big);
+        data.write<std::uint32_t>(name_count, std::endian::big);
+        data.write<std::uint32_t>(name_size, std::endian::big);
+        data.write<std::uint32_t>(map_count, std::endian::big);
+        data.write<std::uint32_t>(map_size, std::endian::big);
+        data.write<std::uint32_t>(map_indices_count, std::endian::big);
+        data.write<std::uint32_t>(extra_indices_count, std::endian::big);
+
+        for (auto& type : types) data.write<std::string>(type);
+        for (auto& path : paths) data.write<std::string>(path);
+        for (auto& name : names) data.write<std::string>(name);
+
+        data.align_by(4);
+
+        for (auto& map : maps) {
+            data.write<std::uint32_t>(map.type_index, std::endian::big);
+            data.write<std::uint32_t>(map.path_index, std::endian::big);
+            data.write<std::uint32_t>(map.name_index, std::endian::big);
+        }
+        for (auto& extra_indices_group : extra_indices) {
+            data.write<std::uint32_t>(extra_indices_group.name_index, std::endian::big);
+            data.write<std::uint32_t>(extra_indices_group.map_index, std::endian::big);
+        }
+        for (auto& map_index : map_indices)
+            data.write<std::uint32_t>(map_index, std::endian::big);
     }
 };
 
@@ -367,20 +517,40 @@ void XFBIN::read() {
     }
 }
 
-void XFBIN::create(std::filesystem::path output_path) {
+void XFBIN::write(std::filesystem::path output_path, Optimise optimise) {
+    for (int i = 0; i < chunks.size(); i++) {
+        index->maps.push_back({});
+        index->map_indices.push_back(0);
+
+        for (std::uint32_t& j = index->maps[i].name_index; j < index->names.size(); j++) {
+            if (index->names[j] == chunks[i].name) {
+                break;
+            } else if (j + 1 == index->names.size()) {
+                index->names.push_back(chunks[i].name);
+                j++;
+            }
+        }
+    }
+
     binary output;
 
     output.write<std::string>("NUCC", 4);
     output.write<std::uint32_t>(version, std::endian::big);
     output.write<std::uint64_t>(0, std::endian::big);
 
+    Index index;
+    index.calculate(chunks, optimise);
+    index.write_to_data(chunks[0].data);
+
     /* nuccChunk */
     for (auto& chunk : chunks) {
-        output.write<std::uint32_t>(chunk.size, std::endian::big); // Size
-        output.write<std::uint32_t>(chunk.map_index, std::endian::big); // Map Index
-        output.write<std::uint16_t>(chunk.version, std::endian::big); // Version
-        output.write<std::uint16_t>(chunk.unk, std::endian::big); // unk
-        output.write<std::vector<unsigned char>>(chunk.data.data); // Data
+        if (!(optimise == Optimise::TRUE && chunk.type == ChunkType::Null)) {
+            output.write<std::uint32_t>(chunk.size, std::endian::big); // Size
+            output.write<std::uint32_t>(chunk.map_index, std::endian::big); // Map Index
+            output.write<std::uint16_t>(chunk.version, std::endian::big); // Version
+            output.write<std::uint16_t>(chunk.unk, std::endian::big); // unk
+            output.write<std::vector<unsigned char>>(chunk.data.data); // Data
+        }
     }
 
     output.vector_to_file(output_path);
