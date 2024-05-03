@@ -102,6 +102,10 @@ struct Chunk {
         data.load(new_data);
         size = data.size();
     }
+
+    std::vector<unsigned char>* get_data() {
+        return &data.data;
+    }
 };
 
 /**
@@ -164,6 +168,8 @@ public:
 
         return new_chunk_index;
     }
+
+    
 
     void load(std::filesystem::path input_path) {
         file.load(input_path);
