@@ -62,6 +62,7 @@ struct Index;
  * @post Must be defined before the XFBIN class. Forward declaration doesn't solve this.
 */
 struct Chunk {
+public:
     XFBIN* xfbin;               /** @note May be unnecessary and therefore removed. */
     ChunkType type;             /** @warning Must match the struct used (e.g. `Binary` for nuccChunkBinary). */
     std::string path;           /** Internal chunk file path. @note Can usually be used to uniquely ID chunks. */
@@ -413,13 +414,16 @@ struct Binary {
     /* Only one is of these two is to be used. */
     std::uint32_t size;
 
-    std::vector<char> binary_data;
+    binary* binary_data;
 
     Binary(Chunk* chunk) {
         metadata = chunk;
         metadata->data.cursor = 0;
         if (metadata->type != ChunkType::Binary) 
             throw std::runtime_error("Cannot initialise nuccBinary with non-nuccBinary data.");
+
+        size = chunk->data.read<std::uint32_t>(std::endian::big);
+        binary_data = &chunk->data;
     }
 };
 
