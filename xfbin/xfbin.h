@@ -75,6 +75,13 @@ public:
     
     binary data;
 
+    Chunk() {};
+    Chunk(ChunkType type_input, std::string path_input, std::string name_input) {
+        type = type_input;
+        path = path_input;
+        name = name_input;
+    }
+
     std::string type_string() {
         switch(type) {
             case ChunkType::Null        : return "nuccChunkNull";
@@ -159,6 +166,12 @@ public:
     }
     
     size_t add_chunk(ChunkType type_input = ChunkType::Binary, std::string path_input = "", std::string name_input = "") {
+        // First make Index exist.
+        if (chunks.size() == 0) {
+            chunks.push_back({});
+            chunks[0].type = nucc::ChunkType::Index;
+        }
+
         chunks.push_back({});
         size_t new_chunk_index = chunks.size() - 1;
         chunks[new_chunk_index].xfbin = this;
@@ -526,21 +539,20 @@ void XFBIN::read() {
         }
     }
 }
-
 void XFBIN::write(std::filesystem::path output_path, Optimise optimise) {
-    for (int i = 0; i < chunks.size(); i++) {
-        index->maps.push_back({});
-        index->map_indices.push_back(0);
+    // for (int i = 0; i < chunks.size(); i++) {
+    //     index->maps.push_back({});
+    //     index->map_indices.push_back(0);
 
-        for (std::uint32_t& j = index->maps[i].name_index; j < index->names.size(); j++) {
-            if (index->names[j] == chunks[i].name) {
-                break;
-            } else if (j + 1 == index->names.size()) {
-                index->names.push_back(chunks[i].name);
-                j++;
-            }
-        }
-    }
+    //     for (std::uint32_t& j = index->maps[i].name_index; j < index->names.size(); j++) {
+    //         if (index->names[j] == chunks[i].name) {
+    //             break;
+    //         } else if (j + 1 == index->names.size()) {
+    //             index->names.push_back(chunks[i].name);
+    //             j++;
+    //         }
+    //     }
+    // }
 
     binary output;
 
@@ -563,7 +575,7 @@ void XFBIN::write(std::filesystem::path output_path, Optimise optimise) {
         }
     }
 
-    output.vector_to_file(output_path);
+    output.dump_file(output_path);
 }
 
     } // namespace nucc
