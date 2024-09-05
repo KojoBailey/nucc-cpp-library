@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include <binary.hpp>
+#include "../external/binary/binary/binary.hpp"
 #include <unordered_map>
 #include <unordered_set>
 
@@ -235,7 +235,7 @@ struct Page {
 
     Page(Chunk& chunk) {
         metadata = &chunk;
-        metadata->data.cursor = 0;
+        metadata->data.set_pos(0);
         if (metadata->type != ChunkType::Page) 
             throw std::runtime_error("Cannot initialise nuccPage with non-nuccPage data.");
 
