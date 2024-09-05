@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include "../binary/binary/binary.hpp"
+#include <binary.hpp>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -107,7 +107,7 @@ public:
     }
 
     void update_data(std::vector<unsigned char> new_data) {
-        data.load(new_data);
+        data.load(new_data.data(), 0, new_data.size());
         size = data.size();
     }
     void update_data(unsigned char* new_data) {
@@ -115,7 +115,7 @@ public:
     }
 
     unsigned char* get_data() {
-        return data.data;
+        return data.data();
     }
 };
 
@@ -188,7 +188,7 @@ public:
 
     
 
-    void load(std::filesystem::path input_path) {
+    void load(std::string input_path) {
         file.load(input_path);
         read();
     }
