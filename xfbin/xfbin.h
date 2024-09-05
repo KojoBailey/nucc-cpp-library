@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include "../binary/binary/binary.h"
+#include "../binary/binary/binary.hpp"
 #include <unordered_map>
 #include <unordered_set>
 
@@ -110,9 +110,12 @@ public:
         data.load(new_data);
         size = data.size();
     }
+    void update_data(unsigned char* new_data) {
+        data.load(new_data);
+    }
 
-    std::vector<unsigned char>* get_data() {
-        return &data.data;
+    unsigned char* get_data() {
+        return data.data;
     }
 };
 
@@ -126,7 +129,7 @@ public:
     std::string name;                           /** External filename, not included within the XFBIN file itself. */
     Game game;                                  /** Game that the XFBIN is from. */
 
-    const std::string magic = "NUCC";           /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
+    const char* magic = "NUCC";                 /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version;                      /** e.g. `121` = 1.2.1 */
     std::vector<Chunk> chunks;                  /** @note First chunk is always nuccChunkIndex. */
     Index* index;
@@ -191,6 +194,10 @@ public:
     }
     void load(std::vector<unsigned char>& vector_data, size_t start = 0, size_t end = -1) {
         file.load(vector_data, start, end);
+        read();
+    }
+    void load(void* pointer_data) {
+        file.load(pointer_data);
         read();
     }
 
