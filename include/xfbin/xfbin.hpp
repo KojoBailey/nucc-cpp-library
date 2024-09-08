@@ -1,12 +1,13 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include "../external/binary/binary/binary.hpp"
+#include "external/binary-lib/binary/binary.hpp"
 #include <unordered_map>
 #include <unordered_set>
 
-namespace kojo {
-    namespace nucc {
+#include "chunks/chunks.hpp"
+
+namespace nucc {
 
 /**
  * List of CyberConnect2 games that use XFBIN files.
@@ -23,30 +24,6 @@ enum class Game {
     NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
 };
 
-/**
- * List of NUCC chunk types used in XFBINs.
-*/
-enum class ChunkType {
-    Null = 0,   // Unnecessary to support
-    Index,      // Supported
-    Page,       // Supported
-    Anm,
-    Billboard,
-    Binary,     // WIP
-    Camera,
-    Clump,
-    Coord,
-    Dynamic,
-    LightDirc,
-    Material,
-    Model,
-    Nub,
-    Particle,
-    Sprite,
-    Texture,    // WIP
-    Trail
-};
-
 enum Optimise {
     MATCH = 0,  // Matches whatever chunks the XFBIN already has.
     TRUE,       // Removes unnecessary chunks and their metadata.
@@ -61,7 +38,7 @@ struct Index;
  * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
  * @post Must be defined before the XFBIN class. Forward declaration doesn't solve this.
 */
-struct Chunk {
+struct OLD_Chunk {
 public:
     XFBIN* xfbin;               /** @note May be unnecessary and therefore removed. */
     ChunkType type;             /** @warning Must match the struct used (e.g. `Binary` for nuccChunkBinary). */
@@ -428,7 +405,7 @@ struct Index {
 /**
  * Contains miscellaneous binary data, including formats not explicitly supported like XML.
 */
-struct Binary {
+struct OLD_Binary {
     Chunk* metadata;
 
     /* Only one is of these two is to be used. */
@@ -585,7 +562,6 @@ void XFBIN::write(std::filesystem::path output_path, Optimise optimise) {
     output.dump_file(output_path);
 }
 
-    } // namespace nucc
-} // namespace kojo
+} // namespace nucc
 
 #endif // KOJO_NUCC_PLUS_PLUS
