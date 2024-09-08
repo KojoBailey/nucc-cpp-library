@@ -1,1 +1,4 @@
 
+[submodule "include/xfbin/external/binary-lib"]
+	path = include/xfbin/external/binary-lib
+	url = https://github.com/KojoBailey/binary-cpp-library/
