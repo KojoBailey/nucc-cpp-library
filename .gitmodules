@@ -1,6 +1,3 @@
 [submodule "xfbin/external/binary-lib"]
 	path = xfbin/external/binary-lib
 	url = https://github.com/KojoBailey/binary-cpp-library
-[submodule "include/xfbin/external/binary-lib"]
-	path = include/xfbin/external/binary-lib
-	url = https://github.com/KojoBailey/nucc-cpp-library
