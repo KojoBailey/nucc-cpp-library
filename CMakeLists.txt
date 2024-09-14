@@ -6,7 +6,7 @@ project(nucc-cpp-library VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
 file(GLOB SOURCES include/nucc/*.cpp)
 
 # Create shared library
-add_library(nucc-cpp-library SHARED ${SOURCES})
+add_library(nucc-cpp-library STATIC ${SOURCES})
 
 # Include header files
 target_include_directories(nucc-cpp-library PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
