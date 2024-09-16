@@ -232,7 +232,7 @@ void XFBIN::calculate(Optimize optimize) {
 
     for (auto& page : pages) {
         for (auto& chunk : page.chunks) {
-            if (!(optimize == Optimize::TRUE && chunk.type == Chunk_Type::Null)) {
+            if (!(optimize == Optimize::YES && chunk.type == Chunk_Type::Null)) {
                 std::string type = chunk.type_as_string();
                 if ( type_tracker.count(type) == 0 ) {
                     type_tracker[type] = type_tracker.size();
@@ -318,7 +318,7 @@ void XFBIN::write(std::string output_path, Optimize optimize) {
     /* nuccChunk */
     for (auto& page : pages) {
         for (auto& chunk : page.chunks) {
-            if (!(optimize == Optimize::TRUE && chunk.type == Chunk_Type::Null)) {
+            if (!(optimize == Optimize::YES && chunk.type == Chunk_Type::Null)) {
                 output.write<std::uint32_t>(chunk.size, kojo::endian::big);
                 output.write<std::uint32_t>(chunk.map_index, kojo::endian::big);
                 output.write<std::uint16_t>(chunk.version, kojo::endian::big);

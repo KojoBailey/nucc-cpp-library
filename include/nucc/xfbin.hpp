@@ -28,10 +28,10 @@ enum class Game {
     NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
 };
 
-enum Optimize {
+enum class Optimize {
     MATCH = 0,  // Matches whatever chunks the XFBIN already has.
-    TRUE,       // Removes unnecessary chunks and their metadata.
-    FALSE       // Adds the unnecessary chunks where they're "supposed to be".
+    YES,       // Removes unnecessary chunks and their metadata.
+    NO       // Adds the unnecessary chunks where they're "supposed to be".
 };
 
 /**
