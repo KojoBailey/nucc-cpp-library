@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.bt": "c",
+        "*.tcc": "cpp"
+    }
+}

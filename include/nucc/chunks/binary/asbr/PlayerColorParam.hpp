@@ -26,22 +26,22 @@ public:
     }
 
     void load(void* input, size_t size_input = -1) {
-        kojo::binary buffer{input, 0, size_input};
+        storage.load(input, 0, size_input);
 
-        version = buffer.read<std::uint32_t>(kojo::endian::little);
-        entry_count = buffer.read<std::uint32_t>(kojo::endian::little);
-        first_pointer = buffer.read<std::uint64_t>(kojo::endian::little);
-        buffer.change_pos(first_pointer - 8);
+        version = storage.read<std::uint32_t>(kojo::endian::little);
+        entry_count = storage.read<std::uint32_t>(kojo::endian::little);
+        first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
+        storage.change_pos(first_pointer - 8);
         for (int i = 0; i < entry_count; i++) {
             entries.push_back({});
             auto& entry = entries[i];
 
-            entry.character_id_ptr  = buffer.read<std::uint64_t>(kojo::endian::little);
-            entry.character_id      = buffer.read<std::string>(0, entry.character_id_ptr - 8);
-            entry.costume_index     = buffer.read<std::uint32_t>(kojo::endian::little);
-            entry.red               = buffer.read<std::uint32_t>(kojo::endian::little);
-            entry.green             = buffer.read<std::uint32_t>(kojo::endian::little);
-            entry.blue              = buffer.read<std::uint32_t>(kojo::endian::little);
+            entry.character_id_ptr  = storage.read<std::uint64_t>(kojo::endian::little);
+            entry.character_id      = storage.read<std::string>(0, entry.character_id_ptr - 8);
+            entry.costume_index     = storage.read<std::uint32_t>(kojo::endian::little);
+            entry.red               = storage.read<std::uint32_t>(kojo::endian::little);
+            entry.green             = storage.read<std::uint32_t>(kojo::endian::little);
+            entry.blue              = storage.read<std::uint32_t>(kojo::endian::little);
 
             entry.tint_index = tint_tracker[std::format("{}-{}", entry.character_id, entry.costume_index)]++;
         }
@@ -61,28 +61,27 @@ public:
         tint_tracker.clear();
     }
 
-    kojo::binary write_to_bin() {
-        kojo::binary buffer;
+    kojo::binary& write_to_bin() {
         version = 1000;
         entry_count = entries.size();
-        buffer.write<std::uint32_t>(version, kojo::endian::little);
-        buffer.write<std::uint32_t>(entry_count, kojo::endian::little);
-        buffer.write<std::uint64_t>(first_pointer, kojo::endian::little);
+        storage.write<std::uint32_t>(version, kojo::endian::little);
+        storage.write<std::uint32_t>(entry_count, kojo::endian::little);
+        storage.write<std::uint64_t>(first_pointer, kojo::endian::little);
 
         size_t i{0};
         for (auto& entry : entries) {
             entry.character_id_ptr = (24 * entry_count) + (i * 7) - (i++ * 2);
-            buffer.write<std::uint64_t>(entry.character_id_ptr, kojo::endian::little);
-            buffer.write<std::uint32_t>(entry.costume_index, kojo::endian::little);
-            buffer.write<std::uint32_t>(entry.red, kojo::endian::little);
-            buffer.write<std::uint32_t>(entry.green, kojo::endian::little);
-            buffer.write<std::uint32_t>(entry.blue, kojo::endian::little);
+            storage.write<std::uint64_t>(entry.character_id_ptr, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.costume_index, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.red, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.green, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.blue, kojo::endian::little);
         }
         for (auto& entry : entries) {
-            buffer.write<std::string>(entry.character_id);
+            storage.write<std::string>(entry.character_id);
         }
 
-        return buffer;
+        return storage;
     }
     std::string write_to_json() {
         nlohmann::ordered_json json;

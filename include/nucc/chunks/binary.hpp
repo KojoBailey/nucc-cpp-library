@@ -27,7 +27,7 @@ public:
 
     void load_data(Binary_Data& input) {
         content.size = input.size();
-        content.binary_data.load(input.write());
+        content.binary_data.load(input.write_to_bin());
         update();
     }
 

@@ -21,8 +21,11 @@ public:
     virtual void clear() {}
 
     // Write to binary or JSON output.
-    virtual kojo::binary write_to_bin() { return 0; }
-    virtual nlohmann::ordered_json write_to_json() { return 0; }
+    virtual kojo::binary& write_to_bin() { return storage; }
+    virtual std::string write_to_json() { return 0; }
+
+protected:
+    kojo::binary storage;
 };
 
 } // namespace nucc
