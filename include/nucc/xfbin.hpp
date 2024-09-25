@@ -3,6 +3,7 @@
 
 #include "external/binary-lib/binary/binary.hpp"
 
+#include "error_handling.hpp"
 #include "page.hpp"
 #include "chunks/binary.hpp"
 
@@ -53,9 +54,7 @@ public:
     XFBIN(void* pointer_data, size_t start = 0, size_t end = -1);
     ~XFBIN() = default;
     
-    /**
-     * For API communication with programmers.
-    */
+    /** For API communication with programmers. */
     enum class Error_Code {
         OK = 0,         /** No issues detected. */
         INVALID_FILE,   /** File could not be loaded. */
@@ -85,9 +84,7 @@ private:
     kojo::binary input;
     kojo::binary output;
 
-    /**
-     * Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to.
-    */
+    /** Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to. */
     struct Index {
         std::uint32_t type_count;
         std::uint32_t type_size;
