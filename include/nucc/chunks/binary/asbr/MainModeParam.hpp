@@ -620,18 +620,13 @@ public:
                 for (int i = 1; i <= 4; i++) {
                     if (value["Special Rules"].contains(std::format("Rule {}", i)))
                         entry_buffer.special_rule[i] = get_special_rule_ref(value["Special Rules"][std::format("Rule {}", i)]);
-                        else return error_handler({
-                            nucc::Status_Code::JSON_MISSING_FIELD,
-                            std::format("JSON data for entry \"{}\" does not contain necessary field \"Rule {}\" within object \"Special Rules\".", key, i),
-                            std::format("Add the \"Rule {}\" field.", i)
-                        });
+                        else entry_buffer.special_rule[i] = Entry::Special_Rule::BLANK;
                 }
             } else {
-                return error_handler({
-                    nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Special Rules\".", key),
-                    "Add the \"Special Rules\" object with its contents included as well."
-                });
+                entry_buffer.special_rule[0] = Entry::Special_Rule::NONE;
+                entry_buffer.special_rule[1] = Entry::Special_Rule::NONE;
+                entry_buffer.special_rule[2] = Entry::Special_Rule::BLANK;
+                entry_buffer.special_rule[3] = Entry::Special_Rule::BLANK;
             }
 
             // Secret Missions
@@ -649,11 +644,6 @@ public:
                             });
                         if (mission.contains("Reward"))
                             entry_buffer.secret_mission[i - 1].reward_id = mission["Reward"];
-                            else return error_handler({
-                                nucc::Status_Code::JSON_MISSING_FIELD,
-                                std::format("JSON data for entry \"{}\" does not contain necessary field \"Reward\" within object \"{}\".", key, mission_title),
-                                "Add the \"Reward\" field."
-                            });
                         if (mission.contains("Gold Reward"))
                             entry_buffer.secret_mission[i - 1].gold_reward = mission["Gold Reward"];
                             else return error_handler({
