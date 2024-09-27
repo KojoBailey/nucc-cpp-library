@@ -196,5 +196,12 @@ std::string get_character_id_ref(std::string ref) {
     return character_id_reflist[ref];
 }
 
+std::string lowercase_str(std::string input) {
+    std::transform(input.begin(), input.end(), input.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+    return input;
+}
+
     } // ASBR
 } // nucc

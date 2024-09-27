@@ -468,9 +468,9 @@ public:
     int load(nlohmann::ordered_json input) {
         if (input.is_null()) return 0;
 
-        str_to_Panel_Type["NORMAL"]  = Entry::Panel_Type::NORMAL;
-        str_to_Panel_Type["EXTRA"]   = Entry::Panel_Type::EXTRA;
-        str_to_Panel_Type["BOSS"]    = Entry::Panel_Type::BOSS;
+        str_to_Panel_Type["normal"]  = Entry::Panel_Type::NORMAL;
+        str_to_Panel_Type["extra"]   = Entry::Panel_Type::EXTRA;
+        str_to_Panel_Type["boss"]    = Entry::Panel_Type::BOSS;
         load_stage_reflist();
         load_special_rules_reflist();
         load_mission_conditions_reflist();
@@ -512,8 +512,13 @@ public:
             }
 
             if (value.contains("Type")) {
-                if (str_to_Panel_Type.contains(value["Type"]))
-                    entry_buffer.type = str_to_Panel_Type[value["Type"]];
+                if (str_to_Panel_Type.contains(lowercase_str(value["Type"])))
+                    entry_buffer.type = str_to_Panel_Type[lowercase_str(value["Type"])];
+                    else return error_handler({
+                        nucc::Status_Code::JSON_VALUE,
+                        std::format("JSON data for entry \"{}\" contains an invalid value.", key),
+                        "Value should be \"Normal\", \"Extra\", or \"Boss\"."
+                    });
             }
             if (value.contains("Stars")) entry_buffer.display_difficulty = value["Stars"];
                 else return error_handler({
@@ -843,11 +848,8 @@ private:
         stage_reflist["wall eyes"]                      = "STAGE_8_KBM";
     }
     std::string get_stage_ref(std::string ref) {
-        std::string copy{ref};
-        for (auto& ch : copy)
-            ch = std::tolower(ch);
-        if (!stage_reflist.contains(copy)) return ref;
-        return stage_reflist[copy];
+        if (!stage_reflist.contains(lowercase_str(ref))) return ref;
+        return stage_reflist[lowercase_str(ref)];
     }
 
     void load_special_rules_reflist() {
