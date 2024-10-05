@@ -1,5 +1,0 @@
-C:/Users/kojom/Documents/Programming/nucc-cpp-library/build/CMakeFiles/nucc-cpp-library.dir
-C:/Users/kojom/Documents/Programming/nucc-cpp-library/build/CMakeFiles/edit_cache.dir
-C:/Users/kojom/Documents/Programming/nucc-cpp-library/build/CMakeFiles/rebuild_cache.dir
-C:/Users/kojom/Documents/Programming/nucc-cpp-library/build/include/nucc/external/json/CMakeFiles/edit_cache.dir
-C:/Users/kojom/Documents/Programming/nucc-cpp-library/build/include/nucc/external/json/CMakeFiles/rebuild_cache.dir

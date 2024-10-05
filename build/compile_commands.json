@@ -1,8 +1,0 @@
-[
-{
-  "directory": "C:/Users/kojom/Documents/Programming/nucc-cpp-library/build",
-  "command": "C:\\mingw64\\bin\\c++.exe -IC:/Users/kojom/Documents/Programming/nucc-cpp-library/include -IC:/Users/kojom/Documents/Programming/nucc-cpp-library/include/nucc/external/json/include -g -std=gnu++17 -o CMakeFiles\\nucc-cpp-library.dir\\include\\nucc\\xfbin.cpp.obj -c C:\\Users\\kojom\\Documents\\Programming\\nucc-cpp-library\\include\\nucc\\xfbin.cpp",
-  "file": "C:\\Users\\kojom\\Documents\\Programming\\nucc-cpp-library\\include\\nucc\\xfbin.cpp",
-  "output": "CMakeFiles\\nucc-cpp-library.dir\\include\\nucc\\xfbin.cpp.obj"
-}
-]
