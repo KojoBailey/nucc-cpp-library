@@ -1,5 +1,5 @@
-compile.bat
-main.cpp
-PlayerColorParam.bin.xfbin
-xfbin_cpp.exe
-NEW_FILE.xfbin
+build
+build/
+build.ninja
+cmake_install.cmake_install
+CMakeCache.txt
