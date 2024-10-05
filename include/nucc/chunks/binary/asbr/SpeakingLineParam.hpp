@@ -203,8 +203,8 @@ public:
     std::string write_to_json() {
         nlohmann::ordered_json json;
 
+        json["Version"] = 241001;
         json["Filetype"] = "SpeakingLineParam";
-        json["Version"] = 1000;
         
         for (auto& [key, value] : entries) {
             std::string type_str;

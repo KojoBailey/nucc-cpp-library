@@ -482,7 +482,7 @@ public:
             if (value.contains("Part")) entry_buffer.part = value["Part"];
                 else return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Part\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Part\".", key),
                     "Add the \"Part\" field depending on which Part the panel belongs to."
                 });
             if (value.contains("Boss Panel")) entry_buffer.boss_panel = value["Boss Panel"];
@@ -506,7 +506,7 @@ public:
             } else {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Adjacent Panels\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Adjacent Panels\".", key),
                     "Add the \"Adjacent Panels\" JSON object, even if its contents are empty."
                 });
             }
@@ -523,7 +523,7 @@ public:
             if (value.contains("Stars")) entry_buffer.display_difficulty = value["Stars"];
                 else return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Stars\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Stars\".", key),
                     "Add the \"Stars\" field with a value from 1-5."
                 });
             if (value.contains("CPU Level")) entry_buffer.cpu_level = value["CPU Level"];
@@ -531,13 +531,13 @@ public:
             if (value.contains("Gold Reward")) entry_buffer.gold_reward = value["Gold Reward"];
                 else return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Gold Reward\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Gold Reward\".", key),
                     "Add the \"Gold Reward\" field."
                 });
             if (value.contains("Stage")) entry_buffer.stage_id = get_stage_ref(value["Stage"]);
                 else return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Stage\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Stage\".", key),
                     "Add the \"Stage\" field."
                 });
 
@@ -548,7 +548,7 @@ public:
                     entry_buffer.player.id = character_id_reflist[player_information["Character"]];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Character\" within object \"Player Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Character\" within object \"Player Information\".", key),
                         "Add the \"Character\" field with the name or ID of a playable character."
                     });
                 if (player_information.contains("Assist"))
@@ -557,20 +557,20 @@ public:
                     entry_buffer.player.btlst_id = player_information["Start Dialogue"];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Start Dialogue\" within object \"Player Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Start Dialogue\" within object \"Player Information\".", key),
                         "Add the \"Start Dialogue\" field."
                     });
                 if (player_information.contains("Win Dialogue"))
                     entry_buffer.player.btlwin_id = player_information["Win Dialogue"];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Win Dialogue\" within object \"Player Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Win Dialogue\" within object \"Player Information\".", key),
                         "Add the \"Win Dialogue\" field."
                     });
             } else {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Player Information\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Player Information\".", key),
                     "Add the \"Player Information\" object with its contents included as well."
                 });
             }
@@ -582,7 +582,7 @@ public:
                     entry_buffer.enemy.id = character_id_reflist[enemy_information["Character"]];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Character\" within object \"Enemy Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Character\" within object \"Enemy Information\".", key),
                         "Add the \"Character\" field with the name or ID of a playable character."
                     });
                 if (enemy_information.contains("Assist"))
@@ -591,20 +591,20 @@ public:
                     entry_buffer.enemy.btlst_id = enemy_information["Start Dialogue"];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Start Dialogue\" within object \"Enemy Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Start Dialogue\" within object \"Enemy Information\".", key),
                         "Add the \"Start Dialogue\" field."
                     });
                 if (enemy_information.contains("Win Dialogue"))
                     entry_buffer.enemy.btlwin_id = enemy_information["Win Dialogue"];
                     else return error_handler({
                         nucc::Status_Code::JSON_MISSING_FIELD,
-                        std::format("JSON data for entry \"{}\" does not contain necessary field \"Win Dialogue\" within object \"Enemy Information\".", key),
+                        std::format("JSON data for entry \"{}\" does not contain required field \"Win Dialogue\" within object \"Enemy Information\".", key),
                         "Add the \"Win Dialogue\" field."
                     });
             } else {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Enemy Information\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Enemy Information\".", key),
                     "Add the \"Enemy Information\" object with its contents included as well."
                 });
             }
@@ -615,7 +615,7 @@ public:
             } else {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"First To Speak\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"First To Speak\".", key),
                     "Add the \"First To Speak\" field."
                 });
             }
@@ -644,7 +644,7 @@ public:
                             entry_buffer.secret_mission[i - 1].condition = get_mission_condition_ref(mission["Condition"]);
                             else return error_handler({
                                 nucc::Status_Code::JSON_MISSING_FIELD,
-                                std::format("JSON data for entry \"{}\" does not contain necessary field \"Condition\" within object \"{}\".", key, mission_title),
+                                std::format("JSON data for entry \"{}\" does not contain required field \"Condition\" within object \"{}\".", key, mission_title),
                                 "Add the \"Condition\" field."
                             });
                         if (mission.contains("Reward"))
@@ -653,7 +653,7 @@ public:
                             entry_buffer.secret_mission[i - 1].gold_reward = mission["Gold Reward"];
                             else return error_handler({
                                 nucc::Status_Code::JSON_MISSING_FIELD,
-                                std::format("JSON data for entry \"{}\" does not contain necessary field \"Gold Reward\" within object \"{}\".", key, mission_title),
+                                std::format("JSON data for entry \"{}\" does not contain required field \"Gold Reward\" within object \"{}\".", key, mission_title),
                                 "Add the \"Gold Reward\" field."
                             });
                     }
@@ -661,7 +661,7 @@ public:
             } else {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Secret Missions\".", key),
+                    std::format("JSON data for entry \"{}\" does not contain required field \"Secret Missions\".", key),
                     "Add the \"Secret Missions\" object with its contents included as well."
                 });
             }
@@ -778,8 +778,8 @@ public:
     }
     std::string write_to_json() {
         nlohmann::ordered_json json;
-        json["Type"] = "MainModeParam";
-        json["Version"] = 1000;
+        json["Version"] = 241001;
+        json["Filetype"] = "MainModeParam";
         
         for (auto& [key, value] : entries) {
             auto& entry = json[value.panel_id];

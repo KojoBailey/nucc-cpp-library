@@ -110,6 +110,9 @@ public:
     }
     std::string write_to_json() {
         nlohmann::ordered_json json;
+
+        json["Version"] = 241001;
+        json["Filetype"] = "PlayerColorParam";
         
         for (auto& [key, entry] : entries) {
             json[key] = entry.color.rgb_to_hex();
