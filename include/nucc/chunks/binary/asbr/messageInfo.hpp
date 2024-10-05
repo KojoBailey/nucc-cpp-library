@@ -40,6 +40,12 @@ public:
         storage.load(input, 0, size_input);
 
         version = storage.read<std::uint32_t>(kojo::endian::little);
+        if (version != 1001)
+            return error_handler({
+                nucc::Status_Code::VERSION,
+                std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
+                std::format("Ensure the data is of version `{}`.", 1001)
+            });
         entry_count = storage.read<std::uint32_t>(kojo::endian::little);
         first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
         storage.change_pos(first_pointer - 8);
@@ -51,9 +57,9 @@ public:
             ptr_buffer64                = storage.read<std::uint64_t>(kojo::endian::little);
             entry_buffer.message        = storage.read<std::string>(0, ptr_buffer64 - 8);
             entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(kojo::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::big);
-            entry_buffer.char_index     = storage.read<std::int16_t>(kojo::endian::big);
-            entry_buffer.cue_id         = storage.read<std::int16_t>(kojo::endian::big);
+            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::little);
+            entry_buffer.char_index     = storage.read<std::int16_t>(kojo::endian::little);
+            entry_buffer.cue_id         = storage.read<std::int16_t>(kojo::endian::little);
             storage.change_pos(6); // Skip unknown constants.
 
             entries[entry_buffer.key()] = entry_buffer;
