@@ -1,5 +1,6 @@
 build
 build/
 build.ninja
-cmake_install.cmake_install
 CMakeCache.txt
+cmake_install.cmake
+CMakeFiles
