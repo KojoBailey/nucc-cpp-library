@@ -68,7 +68,7 @@ Chunk_Type XFBIN::Index::get_type(std::uint32_t map_index) {
     str_to_ChunkType["nuccChunkCamera"]     = Chunk_Type::Camera;
     str_to_ChunkType["nuccChunkClump"]      = Chunk_Type::Clump;
     str_to_ChunkType["nuccChunkCoord"]      = Chunk_Type::Coord;
-    str_to_ChunkType["nuccChunkDynamic"]    = Chunk_Type::Dynamic;
+    str_to_ChunkType["nuccChunkDynamics"]   = Chunk_Type::Dynamics;
     str_to_ChunkType["nuccChunkLightDirc"]  = Chunk_Type::LightDirc;
     str_to_ChunkType["nuccChunkMaterial"]   = Chunk_Type::Material;
     str_to_ChunkType["nuccChunkModel"]      = Chunk_Type::Model;
