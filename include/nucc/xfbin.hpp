@@ -42,44 +42,12 @@ class XFBIN {
 public:
     std::string name;                           /** External filename, not included within the XFBIN file itself. */
     Game game{Game::UNKNOWN};                   /** Game that the XFBIN is from. */
+    std::string game_as_string();
 
     std::string magic{"NUCC"};                  /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version{121};                 /** e.g. `121` = 1.2.1 */
     
     std::vector<Page> pages;
-
-    XFBIN();
-    XFBIN(std::filesystem::path input_path);
-    XFBIN(kojo::binary& input_data, size_t start = 0, size_t end = -1);
-    XFBIN(void* pointer_data, size_t start = 0, size_t end = -1);
-    ~XFBIN() = default;
-
-    int load(std::filesystem::path input_path);
-    int load(kojo::binary& input_data, size_t start = 0, size_t end = -1);
-    int load(void* pointer_data, size_t start = 0, size_t end = -1);
-    
-    Chunk* fetch(Chunk_Type chunk_type, size_t index = 0);
-    template<typename T = Chunk> T* fetch(std::string chunk_name, size_t index = 0) {
-        size_t i = 0;
-        for (auto& page : pages) {
-            for (auto& chunk : page.chunks) {
-                if (chunk.name == chunk_name || chunk.path == chunk_name) {
-                    if (i == index) {
-                        return (T*)&chunk;
-                    } else {
-                        i++;
-                    }
-                }
-            }
-        }
-        return nullptr;
-    }
-
-    void write(std::string output_path, Optimize optimize = Optimize::MATCH);
-
-private:
-    kojo::binary input;
-    kojo::binary output;
 
     /** Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to. */
     struct Index {
@@ -118,6 +86,39 @@ private:
         std::string get_path(std::uint32_t map_index);
         std::string get_name(std::uint32_t map_index);
     } index;
+
+    XFBIN();
+    XFBIN(std::filesystem::path input_path);
+    XFBIN(kojo::binary& input_data, size_t start = 0, size_t end = -1);
+    XFBIN(void* pointer_data, size_t start = 0, size_t end = -1);
+    ~XFBIN() = default;
+
+    int load(std::filesystem::path input_path);
+    int load(kojo::binary& input_data, size_t start = 0, size_t end = -1);
+    int load(void* pointer_data, size_t start = 0, size_t end = -1);
+    
+    Chunk* fetch(Chunk_Type chunk_type, size_t index = 0);
+    template<typename T = Chunk> T* fetch(std::string chunk_name, size_t index = 0) {
+        size_t i = 0;
+        for (auto& page : pages) {
+            for (auto& chunk : page.chunks) {
+                if (chunk.name == chunk_name || chunk.path == chunk_name) {
+                    if (i == index) {
+                        return (T*)&chunk;
+                    } else {
+                        i++;
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    void write(std::string output_path, Optimize optimize = Optimize::MATCH);
+
+private:
+    kojo::binary input;
+    kojo::binary output;
 
     int read();
 

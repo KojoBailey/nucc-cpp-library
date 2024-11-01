@@ -57,6 +57,19 @@ int XFBIN::load(void* pointer_data, size_t start, size_t end) {
 
 /** Other Functions */
 
+std::string XFBIN::game_as_string() {
+    switch (game) {
+        case Game::NSUNS3   : return "Naruto Shippuden: Ultimate Ninja Storm 3";
+        case Game::ASB      : return "JoJo's Bizarre Adventure: All-Star Battle";
+        case Game::NSUNSR   : return "Naruto Shippuden: Ultimate Ninja Storm Revolution";
+        case Game::EOH      : return "JoJo's Bizarre Adventure: Eyes of Heaven";
+        case Game::NSUNS4   : return "Naruto Shippuden: Ultimate Ninja Storm 4";
+        case Game::ASBR     : return "JoJo's Bizarre Adventure: All-Star Battle R";
+        case Game::NXBUNSC  : return "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS";
+    }
+    return "Unknown";
+}
+
 Chunk_Type XFBIN::Index::get_type(std::uint32_t map_index) {
     std::unordered_map<std::string, Chunk_Type> str_to_ChunkType;
     str_to_ChunkType["nuccChunkNull"]       = Chunk_Type::Null;
