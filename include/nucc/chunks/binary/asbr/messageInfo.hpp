@@ -26,6 +26,7 @@ public:
     };
 
     std::uint32_t version{241003};
+    std::string language{"Unknown"};
     std::uint32_t entry_count;
     std::uint64_t first_pointer;
     std::map<std::uint32_t, Entry> entries;
@@ -74,6 +75,8 @@ public:
     }
     int load(nlohmann::ordered_json input) {
         if (input.is_null()) return 0;
+
+        language = input["Language"];
 
         for (const auto& [key, value] : input.items()) {
             Entry entry_buffer;
@@ -162,6 +165,7 @@ public:
 
         json["Version"] = 241003;
         json["Filetype"] = "messageInfo";
+        json["Language"] = language;
         
         for (auto& [key, value] : entry_order) {
             auto& entry = entries[value];
