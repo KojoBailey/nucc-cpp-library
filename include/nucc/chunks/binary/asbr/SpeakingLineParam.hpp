@@ -200,7 +200,7 @@ public:
 
         return (std::uint64_t*)storage.data();
     }
-    std::string write_to_json() {
+    nlohmann::ordered_json write_to_json() {
         nlohmann::ordered_json json;
 
         json["Version"] = 241001;
@@ -225,7 +225,7 @@ public:
             entry["Character 2"]["Dialogue"] = value.character_2.dialogue;
         }
 
-        return json.dump(2);
+        return json;
     }
 };
 

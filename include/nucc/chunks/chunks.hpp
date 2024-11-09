@@ -9,34 +9,40 @@ namespace nucc {
  * List of NUCC chunk types used in XFBINs.
 */
 enum class Chunk_Type {
-    Null = 0,   // Unnecessary to support
-    Index,      // Supported
+    Index = 0,  // Supported
+    Null,       // Supported
+    Unknown,
     Page,       // Supported
+    Texture,    // WIP
+    Model,
+    ModelHit,
+    Material,
+    Camera,
     Anm,
     Billboard,
-    Binary,     // WIP
-    Camera,
-    Clump,
     Coord,
-    Dynamic,
-    LightDirc,
-    Material,
-    Model,
-    Nub,
-    Particle,
     Sprite,
-    Texture,    // WIP
-    Trail
+    Particle,
+    Dynamics,
+    Binary,     // WIP
+    LightDirc,
+    LightPoint,
+    Ambient,
+    SpriteAnm,
+    Font,
+    Trail,
+    PrimitiveVertex,
+    ModelPrimitiveBranch,
+    MorphPrimitive,
+    LayerSet,
+    ModelVertex,
+    MorphModel,
+    Clump,
+    LightSet,
+    Sprite2,
+    Sprite2Anm,
+    Nub,
 };
-
-// #include "chunks/anm.hpp"
-// #include "binary.hpp"
-// #include "chunks/clump.hpp"
-// #include "chunks/index.hpp"
-// #include "chunks/model.hpp"
-// #include "chunks/nub.hpp"
-// #include "chunks/page.hpp"
-// #include "chunks/texture.hpp"
 
 /**
  * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
@@ -62,25 +68,39 @@ public:
 
     std::string type_as_string() {
         switch (type) {
-            case Chunk_Type::Null        : return "nuccChunkNull";
-            case Chunk_Type::Index       : return "nuccChunkIndex";
-            case Chunk_Type::Page        : return "nuccChunkPage";
-            case Chunk_Type::Anm         : return "nuccChunkAnm";
-            case Chunk_Type::Billboard   : return "nuccChunkBillboard";
-            case Chunk_Type::Binary      : return "nuccChunkBinary";
-            case Chunk_Type::Camera      : return "nuccChunkCamera";
-            case Chunk_Type::Clump       : return "nuccChunkClump";
-            case Chunk_Type::Coord       : return "nuccChunkCoord";
-            case Chunk_Type::Dynamic     : return "nuccChunkDynamic";
-            case Chunk_Type::LightDirc   : return "nuccChunkLightDirc";
-            case Chunk_Type::Material    : return "nuccChunkMaterial";
-            case Chunk_Type::Model       : return "nuccChunkModel";
-            case Chunk_Type::Nub         : return "nuccChunkNub";
-            case Chunk_Type::Particle    : return "nuccChunkParticle";
-            case Chunk_Type::Sprite      : return "nuccChunkSprite";
-            case Chunk_Type::Texture     : return "nuccChunkTexture";
-            case Chunk_Type::Trail       : return "nuccChunkTrail";
-            default                     : return "nuccChunkUnknown";
+            case Chunk_Type::Index                  : return "nuccChunkIndex";
+            case Chunk_Type::Null                   : return "nuccChunkNull";
+            case Chunk_Type::Page                   : return "nuccChunkPage";
+            case Chunk_Type::Texture                : return "nuccChunkTexture";
+            case Chunk_Type::Model                  : return "nuccChunkModel";
+            case Chunk_Type::ModelHit               : return "nuccChunkModelHit";
+            case Chunk_Type::Material               : return "nuccChunkMaterial";
+            case Chunk_Type::Camera                 : return "nuccChunkCamera";
+            case Chunk_Type::Anm                    : return "nuccChunkAnm";
+            case Chunk_Type::Billboard              : return "nuccChunkBillboard";
+            case Chunk_Type::Coord                  : return "nuccChunkCoord";
+            case Chunk_Type::Sprite                 : return "nuccChunkSprite";
+            case Chunk_Type::Particle               : return "nuccChunkParticle";
+            case Chunk_Type::Dynamics               : return "nuccChunkDynamics";
+            case Chunk_Type::Binary                 : return "nuccChunkBinary";
+            case Chunk_Type::LightDirc              : return "nuccChunkLightDirc";
+            case Chunk_Type::LightPoint             : return "nuccChunkLightPoint";
+            case Chunk_Type::Ambient                : return "nuccChunkAmbient";
+            case Chunk_Type::SpriteAnm              : return "nuccChunkSpriteAnm";
+            case Chunk_Type::Font                   : return "nuccChunkFont";
+            case Chunk_Type::Trail                  : return "nuccChunkTrail";
+            case Chunk_Type::PrimitiveVertex        : return "nuccChunkPrimitiveVertex";
+            case Chunk_Type::ModelPrimitiveBranch   : return "nuccChunkModelPrimitiveBranch";
+            case Chunk_Type::MorphPrimitive         : return "nuccChunkMorphPrimitive";
+            case Chunk_Type::LayerSet               : return "nuccChunkLayerSet";
+            case Chunk_Type::ModelVertex            : return "nuccChunkModelVertex";
+            case Chunk_Type::MorphModel             : return "nuccChunkMorphModel";
+            case Chunk_Type::Clump                  : return "nuccChunkClump";
+            case Chunk_Type::LightSet               : return "nuccChunkLightSet";
+            case Chunk_Type::Sprite2                : return "nuccChunkSprite2";
+            case Chunk_Type::Sprite2Anm             : return "nuccChunkSprite2Anm";
+            case Chunk_Type::Nub                    : return "nuccChunkNub";
+            default                                 : return "nuccChunkUnknown";
         }
     }
 

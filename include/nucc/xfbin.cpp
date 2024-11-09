@@ -20,61 +20,55 @@ XFBIN::XFBIN(void* pointer_data, size_t start, size_t end) {
 
 /** Loading */
 
-void XFBIN::load(std::filesystem::path input_path) {
+int XFBIN::load(std::filesystem::path input_path) {
     input.load(input_path.string());
-    if (input.data() == nullptr) {
-        status = Error_Code::INVALID_FILE;
-        error();
-        return;
-    }
+    if (input.data() == nullptr)
+        return error_handler({
+            Status_Code::FILE_NULL,
+            std::format("Could not load file at path `{}` into `nucc::XFBIN` object.", input_path.string()),
+            "Ensure the file specified exists and is a valid XFBIN."
+        });
     name = input_path.stem().string();
     read();
+    return 0;
 }
-void XFBIN::load(kojo::binary& input_data, size_t start, size_t end) {
-    if (input_data.data() == nullptr) {
-        status = Error_Code::NULL_INPUT; 
-        error();
-        return;
-    }
+int XFBIN::load(kojo::binary& input_data, size_t start, size_t end) {
+    if (input_data.data() == nullptr)
+        return error_handler({
+            Status_Code::POINTER_NULL,
+            "Could not load null data from `kojo::binary` object into `nucc::XFBIN` object.",
+            "Ensure the object provided contains accessible data."
+        });
     input.load(input_data, start, end);
     read();
+    return 0;
 }
-void XFBIN::load(void* pointer_data, size_t start, size_t end) {
-    if (pointer_data == nullptr) {
-        status = Error_Code::NULL_INPUT;
-        error();
-        return;
-    }
+int XFBIN::load(void* pointer_data, size_t start, size_t end) {
+    if (pointer_data == nullptr)
+        return error_handler({
+            Status_Code::POINTER_NULL,
+            "Could not load from a null pointer into `nucc::XFBIN` object.",
+            "Ensure the address provided contains appropiate data."
+        });
     input.load(pointer_data, start, end);
     read();
-}
-
-/** Error Handling */
-
-XFBIN::Status XFBIN::get_status() {
-    std::string buffer;
-    switch (status) {
-        case Error_Code::OK             : buffer = "No issues detected."; break;
-        case Error_Code::INVALID_FILE   : buffer = "File could not be loaded."; break;
-        case Error_Code::NULL_INPUT     : buffer = "Input data is null."; break;
-        case Error_Code::MAGIC          : buffer = "File magic does not match `NUCC` or `4E 55 43 43`."; break;
-        case Error_Code::VERSION        : buffer = "XFBIN version not supported. Must be `121`."; break;
-        default                         : buffer = "Invalid error code.";
-    }
-    return {
-        status, (int)status, buffer
-    };
-}
-
-void XFBIN::error() {
-    Status buffer = get_status();
-    std::string number = std::to_string(buffer.number);
-    while (number.length() < 3)
-        number = "0" + number;
-    std::cout << "[NUCC error " << number << "] " << buffer.message << "\n";
+    return 0;
 }
 
 /** Other Functions */
+
+std::string XFBIN::game_as_string() {
+    switch (game) {
+        case Game::NSUNS3   : return "Naruto Shippuden: Ultimate Ninja Storm 3";
+        case Game::ASB      : return "JoJo's Bizarre Adventure: All-Star Battle";
+        case Game::NSUNSR   : return "Naruto Shippuden: Ultimate Ninja Storm Revolution";
+        case Game::EOH      : return "JoJo's Bizarre Adventure: Eyes of Heaven";
+        case Game::NSUNS4   : return "Naruto Shippuden: Ultimate Ninja Storm 4";
+        case Game::ASBR     : return "JoJo's Bizarre Adventure: All-Star Battle R";
+        case Game::NXBUNSC  : return "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS";
+    }
+    return "Unknown";
+}
 
 Chunk_Type XFBIN::Index::get_type(std::uint32_t map_index) {
     std::unordered_map<std::string, Chunk_Type> str_to_ChunkType;
@@ -87,7 +81,7 @@ Chunk_Type XFBIN::Index::get_type(std::uint32_t map_index) {
     str_to_ChunkType["nuccChunkCamera"]     = Chunk_Type::Camera;
     str_to_ChunkType["nuccChunkClump"]      = Chunk_Type::Clump;
     str_to_ChunkType["nuccChunkCoord"]      = Chunk_Type::Coord;
-    str_to_ChunkType["nuccChunkDynamic"]    = Chunk_Type::Dynamic;
+    str_to_ChunkType["nuccChunkDynamics"]   = Chunk_Type::Dynamics;
     str_to_ChunkType["nuccChunkLightDirc"]  = Chunk_Type::LightDirc;
     str_to_ChunkType["nuccChunkMaterial"]   = Chunk_Type::Material;
     str_to_ChunkType["nuccChunkModel"]      = Chunk_Type::Model;
@@ -106,20 +100,23 @@ std::string XFBIN::Index::get_name(std::uint32_t map_index) {
     return names[maps[map_indices[map_index + running_map_offset]].name_index];
 }
 
-void XFBIN::read() {
+int XFBIN::read() {
     // Deserialise header.
-    if (magic != input.read<std::string>(4)) {
-        status = Error_Code::MAGIC;
-        error();
-        return;
-    }
+    std::string magic_input = input.read<std::string>(4);
+    if (magic != magic_input)
+        return error_handler({
+            Status_Code::FILE_MAGIC,
+            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", name, magic, magic_input),
+            std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", magic)
+        });
 
     version = input.read<std::uint32_t>(kojo::endian::big);
-    if (version != 121) {
-        status = Error_Code::VERSION;
-        error();
-        return;
-    }
+    if (version != 121)
+        return error_handler({
+            Status_Code::VERSION,
+            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", name, 121, version),
+            "Ensure the XFBIN's version is `121`."
+        });
 
     input.read<std::uint64_t>(kojo::endian::big); /** Flags. @note Parse these at some point. */
 
@@ -183,23 +180,10 @@ void XFBIN::read() {
             page.chunks.push_back(&chunk);
         }
     }
+    
+    return 0;
 }
 
-Chunk* XFBIN::fetch(std::string chunk_name, size_t index) {
-    size_t i = 0;
-    for (auto& page : pages) {
-        for (auto& chunk : page.chunks) {
-            if (chunk.name == chunk_name || chunk.path == chunk_name) {
-                if (i == index) {
-                    return &chunk;
-                } else {
-                    i++;
-                }
-            }
-        }
-    }
-    return nullptr;
-}
 Chunk* XFBIN::fetch(Chunk_Type chunk_type, size_t index) {
     size_t i = 0;
     for (auto& page : pages) {

@@ -8,6 +8,9 @@ namespace nucc {
 
 enum class Status_Code {
     OK = 0,
+    FILE_NULL,
+    FILE_MAGIC,
+    VERSION,
     POINTER_NULL,
     JSON_NULL,
     JSON_MISSING_FIELD,
@@ -30,6 +33,9 @@ public:
     }
     std::string generic() {
         switch (code_store) {
+            case Status_Code::FILE_NULL             : return "Attempted to load file with null data.";
+            case Status_Code::FILE_MAGIC            : return "File magic / signature does not match expected value.";
+            case Status_Code::VERSION               : return "Detected version does not match what is required.";
             case Status_Code::POINTER_NULL          : return "Received null pointer/address, but expected data.";
             case Status_Code::JSON_NULL             : return "JSON data is null.";
             case Status_Code::JSON_MISSING_FIELD    : return "JSON field not defined.";
@@ -51,7 +57,7 @@ private:
 };
 
 inline std::function<int (Error)> error_handler = [](Error e) {
-    std::cout << std::format("Error Code: {:03} - {}\n{}\nSuggestion: {}\n", e.number(), e.generic(), e.specific(), e.suggestion());
+    std::cout << std::format("NUCC++ Error Code: {:03} - {}\n{}\nSuggestion: {}\n", e.number(), e.generic(), e.specific(), e.suggestion());
     return e.number();
 };
 

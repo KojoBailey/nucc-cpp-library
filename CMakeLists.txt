@@ -11,7 +11,7 @@ add_library(nucc-cpp-library STATIC ${SOURCES})
 # Include header files
 target_include_directories(nucc-cpp-library PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set_target_properties(nucc-cpp-library PROPERTIES CXX_STANDARD 20)
+set_target_properties(nucc-cpp-library PROPERTIES CXX_STANDARD 23)
 
 add_subdirectory(include/nucc/external/json)
 target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json)

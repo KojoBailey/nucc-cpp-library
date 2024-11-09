@@ -42,47 +42,12 @@ class XFBIN {
 public:
     std::string name;                           /** External filename, not included within the XFBIN file itself. */
     Game game{Game::UNKNOWN};                   /** Game that the XFBIN is from. */
+    std::string game_as_string();
 
     std::string magic{"NUCC"};                  /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version{121};                 /** e.g. `121` = 1.2.1 */
     
     std::vector<Page> pages;
-
-    XFBIN();
-    XFBIN(std::filesystem::path input_path);
-    XFBIN(kojo::binary& input_data, size_t start = 0, size_t end = -1);
-    XFBIN(void* pointer_data, size_t start = 0, size_t end = -1);
-    ~XFBIN() = default;
-    
-    /** For API communication with programmers. */
-    enum class Error_Code {
-        OK = 0,         /** No issues detected. */
-        INVALID_FILE,   /** File could not be loaded. */
-        NULL_INPUT,     /** Input data is null. */
-        MAGIC,          /** File magic does not match `NUCC` or `4E 55 43 43`. */
-        VERSION         /** XFBIN version is not supported. @warning Only `121` is currently supported. More will be added as others are checked. */
-    };
-
-    struct Status {
-        Error_Code code;
-        int number;
-        std::string message;
-    };
-
-    Status get_status();
-
-    void load(std::filesystem::path input_path);
-    void load(kojo::binary& input_data, size_t start = 0, size_t end = -1);
-    void load(void* pointer_data, size_t start = 0, size_t end = -1);
-    
-    Chunk* fetch(std::string chunk_name, size_t index = 0);
-    Chunk* fetch(Chunk_Type chunk_type, size_t index = 0);
-
-    void write(std::string output_path, Optimize optimize = Optimize::MATCH);
-
-private:
-    kojo::binary input;
-    kojo::binary output;
 
     /** Contains information about the XFBIN's chunks itself, which chunks (including itself) refer to. */
     struct Index {
@@ -122,13 +87,42 @@ private:
         std::string get_name(std::uint32_t map_index);
     } index;
 
-    Error_Code status;
+    XFBIN();
+    XFBIN(std::filesystem::path input_path);
+    XFBIN(kojo::binary& input_data, size_t start = 0, size_t end = -1);
+    XFBIN(void* pointer_data, size_t start = 0, size_t end = -1);
+    ~XFBIN() = default;
 
-    void read();
+    int load(std::filesystem::path input_path);
+    int load(kojo::binary& input_data, size_t start = 0, size_t end = -1);
+    int load(void* pointer_data, size_t start = 0, size_t end = -1);
+    
+    Chunk* fetch(Chunk_Type chunk_type, size_t index = 0);
+    template<typename T = Chunk> T* fetch(std::string chunk_name, size_t index = 0) {
+        size_t i = 0;
+        for (auto& page : pages) {
+            for (auto& chunk : page.chunks) {
+                if (chunk.name == chunk_name || chunk.path == chunk_name) {
+                    if (i == index) {
+                        return (T*)&chunk;
+                    } else {
+                        i++;
+                    }
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    void write(std::string output_path, Optimize optimize = Optimize::MATCH);
+
+private:
+    kojo::binary input;
+    kojo::binary output;
+
+    int read();
 
     void calculate(Optimize optimize);
-
-    void error();
 };
 
 } // namespace nucc

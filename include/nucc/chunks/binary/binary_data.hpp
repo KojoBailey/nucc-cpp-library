@@ -51,7 +51,7 @@ public:
 
     // Write to binary or JSON output.
     virtual std::uint64_t* write_to_bin() { return (std::uint64_t*)storage.data(); }
-    virtual std::string write_to_json() { return 0; }
+    virtual nlohmann::ordered_json write_to_json() { return nullptr; }
 
 protected:
     kojo::binary storage;

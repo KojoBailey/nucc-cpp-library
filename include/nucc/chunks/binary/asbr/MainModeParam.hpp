@@ -776,7 +776,7 @@ public:
 
         return (std::uint64_t*)storage.data();
     }
-    std::string write_to_json() {
+    nlohmann::ordered_json write_to_json() {
         nlohmann::ordered_json json;
         json["Version"] = 241001;
         json["Filetype"] = "MainModeParam";
@@ -803,7 +803,7 @@ public:
             entry["Stage"] = value.stage_id;
         }
 
-        return json.dump(2);
+        return json;
     }
 
 private:
