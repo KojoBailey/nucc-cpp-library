@@ -77,7 +77,7 @@ public:
 
         return 0;
     }
-    int load(nlohmann::ordered_json input) {
+    int load(nlohmann::ordered_json& input) {
         if (input.is_null()) return 0;
 
         language = input["Language"];
