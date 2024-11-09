@@ -3,6 +3,7 @@
 
 #include "../binary_data.hpp"
 #include "utils.hpp"
+#include "../../../hash.hpp"
 
 namespace nucc {
     namespace ASBR {
@@ -36,6 +37,7 @@ public:
         return R"(WIN64/eng/\d{3}/messageInfo.bin)";
     }
 
+    messageInfo() {};
     messageInfo(void* input, size_t size_input = -1) {
         load(input, size_input);
     }
@@ -83,9 +85,17 @@ public:
         language = input["Language"];
 
         for (const auto& [key, value] : input.items()) {
+            if (key == "Language" || key == "Version" || key == "Filetype") continue;
+
             Entry entry_buffer;
 
-            entry_buffer.crc32_id = std::stoi(key, nullptr, 16);
+            if (std::regex_match(key, std::regex("^([0-9a-fA-F]{8})$"))) {
+                entry_buffer.crc32_id = std::stoi(key, nullptr, 16);
+            } else {
+                entry_buffer.crc32_id = nucc::hash(key);
+                if (kojo::system_endian() != kojo::endian::big)
+                    entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
+            }
 
             if (value.contains("Message")) {
                 entry_buffer.message = value["Message"];
@@ -173,6 +183,8 @@ public:
         
         for (auto& [key, value] : entry_order) {
             auto& entry = entries[value];
+            if (kojo::system_endian() != kojo::endian::big)
+                value = kojo::byteswap(value);
             auto& json_entry = json[std::format("{:08x}", value)];
             json_entry["Message"] = entry.message;
 

@@ -5,6 +5,7 @@
 #include "../../error_handling.hpp"
 #include <nlohmann/json.hpp>
 
+#include <bit>
 #include <format>
 #include <map>
 #include <sstream>
@@ -42,8 +43,6 @@ struct RGB {
 
 class Binary_Data {
 public:
-
-
     // Return size of would-be binary data.
     virtual size_t size() { return -1; }
     // Clear all variables.
