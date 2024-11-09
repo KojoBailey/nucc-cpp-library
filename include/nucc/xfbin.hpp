@@ -28,6 +28,8 @@ enum class Game {
     ASBR,   /** JoJo's Bizarre Adventure: All-Star Battle R */
     NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
 };
+std::string game_to_string(Game game);
+Game string_to_game(std::string str);
 
 enum class Optimize {
     MATCH = 0,  // Matches whatever chunks the XFBIN already has.

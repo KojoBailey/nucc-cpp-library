@@ -32,6 +32,10 @@ public:
     std::map<std::uint32_t, Entry> entries;
     std::map<std::string, std::uint32_t> entry_order;
 
+    static const std::string path() {
+        return R"(WIN64/eng/\d{3}/messageInfo.bin)";
+    }
+
     messageInfo(void* input, size_t size_input = -1) {
         load(input, size_input);
     }

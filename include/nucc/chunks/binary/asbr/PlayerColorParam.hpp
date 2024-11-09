@@ -24,6 +24,10 @@ public:
     std::uint64_t first_pointer;
     std::map<std::string, Entry> entries;
 
+    static const std::string path() {
+        return R"(PlayerColorParam.bin)";
+    }
+
     PlayerColorParam(void* input, size_t size_input = -1) {
         load(input, size_input);
     }
