@@ -15,10 +15,10 @@
 namespace nucc {
 
 struct RGB {
-    std::uint32_t red, green, blue, rgb;
+    std::uint32_t red, green, blue, alpha;
 
-    void consolidate() {
-        rgb = (blue | ((green | (red << 8)) << 8)) << 8;
+    std::uint32_t consolidate() {
+        return alpha | ((blue | ((green | (red << 8)) << 8)) << 8);
     }
 
     RGB hex_to_rgb(std::string hex_str) {
