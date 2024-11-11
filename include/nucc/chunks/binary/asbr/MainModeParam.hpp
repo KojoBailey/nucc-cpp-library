@@ -678,7 +678,7 @@ public:
                         });
                     }
                 }
-            } else if (target) {
+            } else if (!target) {
                 return error_handler({
                     nucc::Status_Code::JSON_MISSING_FIELD,
                     std::format("JSON data for entry \"{}\" does not contain required field \"Secret Missions\".", key),
@@ -686,8 +686,96 @@ public:
                 });
             }
 
-            if (input["Target"] == true) {
-                if (!value.contains("Part")) entry_buffer.part = entries[entry_buffer.key()].part;
+            if (target) {
+                auto& entry = entries[entry_buffer.key()];
+
+                if (!value.contains("Part"))
+                    entry_buffer.part = entry.part;
+                if (!value.contains("Boss Panel"))
+                    entry_buffer.boss_panel = entry.boss_panel;
+                if (!value.contains("Page"))
+                    entry_buffer.page = entry.page;
+                if (!value.contains("Index")) 
+                    entry_buffer.index = entry.index;
+                if (!value.contains("Type")) 
+                    entry_buffer.type = entry.type;
+                if (!value.contains("Stars")) 
+                    entry_buffer.display_difficulty = entry.display_difficulty;
+                if (!value.contains("CPU Level")) 
+                    entry_buffer.cpu_level = entry.cpu_level;
+                if (!value.contains("Gold Reward")) 
+                    entry_buffer.gold_reward = entry.gold_reward;
+                if (!value.contains("Stage")) 
+                    entry_buffer.stage_id = entry.stage_id;
+                if (!value.contains("First To Speak"))
+                    entry_buffer.first_speaker = entry.first_speaker;
+
+                if (value.contains("Adjacent Panels")) {
+                    auto& adjacent_panels = value["Adjacent Panels"];
+                    if (!adjacent_panels.contains("Up"))
+                        entry_buffer.adjacent_panels.up     = entry.adjacent_panels.up;
+                    if (!adjacent_panels.contains("Down"))
+                        entry_buffer.adjacent_panels.down   = entry.adjacent_panels.down;
+                    if (!adjacent_panels.contains("Left"))
+                        entry_buffer.adjacent_panels.left   = entry.adjacent_panels.left;
+                    if (!adjacent_panels.contains("Right"))
+                        entry_buffer.adjacent_panels.right  = entry.adjacent_panels.right;
+                } else {
+                    entry_buffer.adjacent_panels =  entry.adjacent_panels;
+                }
+
+                if (value.contains("Player Information")) {
+                    auto& player_information = value["Player Information"];
+                    if (!player_information.contains("Character"))
+                        entry_buffer.player.id = entry.player.id;
+                    if (!player_information.contains("Assist"))
+                        entry_buffer.player.assist_id = entry.player.assist_id;
+                    if (!player_information.contains("Start Dialogue"))
+                        entry_buffer.player.btlst_id = entry.player.btlst_id;
+                    if (!player_information.contains("Win Dialogue"))
+                        entry_buffer.player.btlwin_id = entry.player.btlwin_id;
+                } else {
+                    entry_buffer.player = entry.player;
+                }
+                if (value.contains("Enemy Information")) {
+                    auto& enemy_information = value["Enemy Information"];
+                    if (!enemy_information.contains("Character"))
+                        entry_buffer.enemy.id = entry.enemy.id;
+                    if (!enemy_information.contains("Assist"))
+                        entry_buffer.enemy.assist_id = entry.enemy.assist_id;
+                    if (!enemy_information.contains("Start Dialogue"))
+                        entry_buffer.enemy.btlst_id = entry.enemy.btlst_id;
+                    if (!enemy_information.contains("Win Dialogue"))
+                        entry_buffer.enemy.btlwin_id = entry.enemy.btlwin_id;
+                } else {
+                    entry_buffer.enemy = entry.enemy;
+                }
+
+                if (value.contains("Special Rules")) {
+                    for (int i = 1; i <= 4; i++) {
+                        if (!value["Special Rules"].contains(std::format("Rule {}", i)))
+                            entry_buffer.special_rule[i] = entry.special_rule[i];
+                    }
+                }
+
+                if (value.contains("Secret Missions")) {
+                    for (int i = 1; i <= 4; i++) {
+                        std::string mission_title = std::format("Mission {}", i);
+                        if (value["Secret Missions"].contains(mission_title)) {
+                            auto& mission = value["Secret Missions"][mission_title];
+                            if (!mission.contains("Condition"))
+                                entry_buffer.secret_mission[i - 1].condition = entry.secret_mission[i - 1].condition;
+                            if (!mission.contains("Reward"))
+                                entry_buffer.secret_mission[i - 1].reward_id = entry.secret_mission[i - 1].reward_id;
+                            if (!mission.contains("Gold Reward"))
+                                entry_buffer.secret_mission[i - 1].gold_reward = entry.secret_mission[i - 1].gold_reward;
+                        } else {
+                            entry_buffer.secret_mission[i - 1] = entry.secret_mission[i - 1];
+                        }
+                    }
+                } else {
+                    *entry_buffer.secret_mission = *entry.secret_mission;
+                }
             }
             entries[entry_buffer.key()] = entry_buffer;
             return 0;
