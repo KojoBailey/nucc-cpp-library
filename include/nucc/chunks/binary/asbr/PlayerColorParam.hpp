@@ -65,7 +65,18 @@ public:
         if (input.is_null()) return 0;
 
         for (const auto& [key, value] : input.items()) {
-            if (!value.is_string()) continue;
+            if (key == "Version" || key == "Filetype") continue;
+
+            if (!value.is_string()) return error_handler({
+                nucc::Status_Code::JSON_VALUE,
+                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+                "Ensure all hex codes are strings with the format \"#RRGGBB\"."
+            });
+            if (value.template get<std::string>().length() != 7) return error_handler({
+                nucc::Status_Code::JSON_VALUE,
+                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+                "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
+            });
 
             Entry entry_buffer;
             entry_buffer.character_id = key.substr(0, 4) + "0" + key.at(5);

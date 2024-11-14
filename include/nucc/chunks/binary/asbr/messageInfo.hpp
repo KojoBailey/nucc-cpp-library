@@ -12,7 +12,7 @@ class messageInfo : public Binary_Data {
 public:
     struct Entry {
         std::uint32_t crc32_id;
-        std::string message;
+        std::string message{"<EMPTY>"};
         std::uint32_t ref_crc32_id{0};
         std::int16_t is_ref{-1};
         std::int64_t file_index{-1};
@@ -97,26 +97,33 @@ public:
                     entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
             }
 
+            if (entries.contains(entry_buffer.key()))
+                entry_buffer = entries[entry_buffer.key()];
+
             if (value.contains("Message")) {
-                entry_buffer.message = value["Message"];
-            } else {
-                return error_handler({
-                    nucc::Status_Code::JSON_MISSING_FIELD,
-                    std::format("JSON data for entry \"{}\" does not contain necessary field \"Message\".", key),
-                    "Add the \"Message\" field."
-                });
-            }
+                if (value["Message"] == "<EMPTY>")
+                    return error_handler({
+                        nucc::Status_Code::JSON_VALUE,
+                        std::format("Field \"Page\" in JSON entry \"{}\" contains value reserved for error detection.", key),
+                        "Change this value to something else."
+                    });
+                else entry_buffer.message = value["Message"];
+            } else if (entry_buffer.message == "<EMPTY>") return error_handler({
+                nucc::Status_Code::JSON_MISSING_FIELD,
+                std::format("JSON data for entry \"{}\" does not contain required field \"Message\".", key),
+                "Add the \"Message\" field."
+            });
             
-            if (value.contains("Reference Hash")) {
+            if (value.contains("Reference_Hash")) {
                 entry_buffer.is_ref = 1;
-                entry_buffer.ref_crc32_id = std::stoi(value["Reference Hash"].template get<std::string>(), nullptr, 16);
+                entry_buffer.ref_crc32_id = std::stoi(value["Reference_Hash"].template get<std::string>(), nullptr, 16);
             }
 
-            if (value.contains("Character"))
-                entry_buffer.file_index = get_character_index_ref(value["Character"]);
+            if (value.contains("ADX2_File"))
+                entry_buffer.file_index = get_adx2_index_ref(value["Character"]);
 
-            if (value.contains("ADX2 Cue Index"))
-                entry_buffer.cue_index = value["ADX2 Cue Index"];
+            if (value.contains("ADX2_Cue_Index"))
+                entry_buffer.cue_index = value["ADX2_Cue_Index"];
 
             entries[entry_buffer.key()] = entry_buffer;
         }

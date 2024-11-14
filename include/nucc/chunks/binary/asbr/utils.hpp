@@ -14,7 +14,7 @@ extern std::unordered_map<std::string, int> character_index_reflist;
 
 std::string get_character_id_ref(std::string ref);
 
-int get_character_index_ref(std::string ref);
+int get_adx2_index_ref(std::string ref);
 std::string convert_character_index(int index);
 
 std::string lowercase_str(std::string input);

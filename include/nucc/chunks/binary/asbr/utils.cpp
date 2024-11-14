@@ -457,7 +457,7 @@ std::string get_character_id_ref(std::string ref) {
     return character_id_reflist[ref];
 }
 
-int get_character_index_ref(std::string ref) {
+int get_adx2_index_ref(std::string ref) {
     if (!character_index_reflist.contains(ref)) return -1;
     return character_index_reflist[ref];
 }
