@@ -169,6 +169,8 @@ public:
     int load(nlohmann::ordered_json& input, bool merging = false) {
         if (input.is_null()) return 0;
 
+        load_stage_reflist();
+
         for (const auto& [key, value] : input.items()) {
             if (key == "Version" || key == "Filetype") continue;
             
@@ -415,7 +417,7 @@ public:
 
             if (value.contains("Secret_Missions")) {
                 for (int i = 1; i <= 4; i++) {
-                    std::string mission_title = std::format("Mission {}", i);
+                    std::string mission_title = std::format("Mission_{}", i);
                     if (value["Secret_Missions"].contains(mission_title)) {
                         auto& mission = value["Secret_Missions"][mission_title];
                         if (mission.contains("Condition"))

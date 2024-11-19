@@ -83,6 +83,7 @@ public:
         if (input.is_null()) return 0;
 
         language = input["Language"];
+        load_adx2_file_list();
 
         for (const auto& [key, value] : input.items()) {
             if (key == "Language" || key == "Version" || key == "Filetype") continue;
@@ -93,7 +94,7 @@ public:
                 entry_buffer.crc32_id = std::stoi(key, nullptr, 16);
             } else {
                 entry_buffer.crc32_id = nucc::hash(key);
-                if (kojo::system_endian() != kojo::endian::big)
+                if (kojo::system_endian() == kojo::endian::big)
                     entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
             }
 
@@ -120,7 +121,7 @@ public:
             }
 
             if (value.contains("ADX2_File"))
-                entry_buffer.file_index = get_adx2_index_ref(value["Character"]);
+                entry_buffer.file_index = convert_file_str(value["ADX2_File"]);
 
             if (value.contains("ADX2_Cue_Index"))
                 entry_buffer.cue_index = value["ADX2_Cue_Index"];
@@ -209,6 +210,83 @@ public:
     }
 
 private:
+    std::unordered_map<std::string, int> adx2_file_list;
+
+    void load_adx2_file_list() {
+        adx2_file_list["v_sys_etc"]     = 1;
+        adx2_file_list["v_mob"]         = 2;
+        adx2_file_list["v_btl_0bao01"]  = 3;
+        adx2_file_list["v_btl_1dio01"]  = 4;
+        adx2_file_list["v_btl_1jnt01"]  = 5;
+        adx2_file_list["v_btl_1sdw01"]  = 6;
+        adx2_file_list["v_btl_1zpl01"]  = 7;
+        adx2_file_list["v_btl_2csr01"]  = 8;
+        adx2_file_list["v_btl_2esd01"]  = 9;
+        adx2_file_list["v_btl_2jsp01"]  = 10;
+        adx2_file_list["v_btl_2krs01"]  = 11;
+        adx2_file_list["v_btl_2lsa01"]  = 12;
+        adx2_file_list["v_btl_2wmu01"]  = 13;
+        adx2_file_list["v_btl_3abd01"]  = 14;
+        adx2_file_list["v_btl_3dio01"]  = 15;
+        adx2_file_list["v_btl_3hhs01"]  = 16;
+        adx2_file_list["v_btl_3igy01"]  = 17;
+        adx2_file_list["v_btl_3jsp01"]  = 18;
+        adx2_file_list["v_btl_3jtr01"]  = 19;
+        adx2_file_list["v_btl_3kki01"]  = 20;
+        adx2_file_list["v_btl_3mra01"]  = 21;
+        adx2_file_list["v_btl_3pln01"]  = 22;
+        adx2_file_list["v_btl_3psp01"]  = 23;
+        adx2_file_list["v_btl_3vni01"]  = 24;
+        adx2_file_list["v_btl_4jsk01"]  = 25;
+        adx2_file_list["v_btl_4jtr01"]  = 26;
+        adx2_file_list["v_btl_4kir01"]  = 27;
+        adx2_file_list["v_btl_4koi01"]  = 28;
+        adx2_file_list["v_btl_4kwk01"]  = 29;
+        adx2_file_list["v_btl_4oky01"]  = 30;
+        adx2_file_list["v_btl_4oti01"]  = 31;
+        adx2_file_list["v_btl_4rhn01"]  = 32;
+        adx2_file_list["v_btl_4sgc01"]  = 33;
+        adx2_file_list["v_btl_4ykk01"]  = 34;
+        adx2_file_list["v_btl_5bct01"]  = 35;
+        adx2_file_list["v_btl_5dvl01"]  = 36;
+        adx2_file_list["v_btl_5fgo01"]  = 37;
+        adx2_file_list["v_btl_5gac01"]  = 38;
+        adx2_file_list["v_btl_5grn01"]  = 39;
+        adx2_file_list["v_btl_5mst01"]  = 40;
+        adx2_file_list["v_btl_5nrc01"]  = 41;
+        adx2_file_list["v_btl_5prs01"]  = 42;
+        adx2_file_list["v_btl_5trs01"]  = 43;
+        adx2_file_list["v_btl_6ans01"]  = 44;
+        adx2_file_list["v_btl_6elm01"]  = 45;
+        adx2_file_list["v_btl_6fit01"]  = 46;
+        adx2_file_list["v_btl_6jln01"]  = 47;
+        adx2_file_list["v_btl_6pci02"]  = 48;
+        adx2_file_list["v_btl_7dio01"]  = 49;
+        adx2_file_list["v_btl_7jir01"]  = 50;
+        adx2_file_list["v_btl_7jny01"]  = 51;
+        adx2_file_list["v_btl_7vtn01"]  = 52;
+        adx2_file_list["v_btl_8jsk01"]  = 53;
+        adx2_file_list["v_card"]        = 56;
+        adx2_file_list["v_gallery"]     = 57;
+        adx2_file_list["v_btl_6wet01"]  = 58;
+        adx2_file_list["v_sys_6wet01"]  = 59;
+        adx2_file_list["v_btl_5ris01"]  = 60;
+        adx2_file_list["v_sys_5ris01"]  = 61;
+        adx2_file_list["v_btl_6pci01"]  = 62;
+        adx2_file_list["v_sys_6pci01"]  = 63;
+        adx2_file_list["v_btl_2shm01"]  = 64;
+        adx2_file_list["v_sys_2shm01"]  = 65;
+        adx2_file_list["v_btl_4kch01"]  = 66;
+        adx2_file_list["v_sys_4kch01"]  = 67;
+        adx2_file_list["v_btl_7dio02"]  = 68;
+        adx2_file_list["v_sys_7dio02"]  = 69;
+        adx2_file_list["v_btl_5abc01"]  = 70;
+        adx2_file_list["v_sys_5abc01"]  = 71;
+        adx2_file_list["v_btl_4fgm01"]  = 72;
+        adx2_file_list["v_sys_4fgm01"]  = 73;
+        adx2_file_list["v_btl_8wou01"]  = 74;
+        adx2_file_list["v_sys_8wou01"]  = 75;
+    }
     std::string convert_file_index(int index) {
         switch(index) {
             case 1:     return "v_sys_etc";
@@ -216,7 +294,7 @@ private:
             case 3:     return "v_btl_0bao01";
             case 4:     return "v_btl_1dio01";
             case 5:     return "v_btl_1jnt01";
-            case 6:     return "v_btl_0bao01";
+            case 6:     return "v_btl_1sdw01";
             case 7:     return "v_btl_1zpl01";
             case 8:     return "v_btl_2csr01";
             case 9:     return "v_btl_2esd01";
@@ -286,6 +364,10 @@ private:
             case 75:    return "v_sys_8wou01";
         }
         return std::to_string(index);
+    }
+    int convert_file_str(std::string file) {
+        if (!adx2_file_list.contains(file)) return -1;
+        return adx2_file_list[file];
     }
 };
 
