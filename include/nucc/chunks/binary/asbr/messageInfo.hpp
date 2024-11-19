@@ -91,7 +91,7 @@ public:
             Entry entry_buffer;
 
             if (std::regex_match(key, std::regex("^([0-9a-fA-F]{8})$"))) {
-                entry_buffer.crc32_id = std::stoi(key, nullptr, 16);
+                entry_buffer.crc32_id = std::stoul(key, nullptr, 16);
             } else {
                 entry_buffer.crc32_id = nucc::hash(key);
                 if (kojo::system_endian() == kojo::endian::big)
@@ -117,7 +117,7 @@ public:
             
             if (value.contains("Reference_Hash")) {
                 entry_buffer.is_ref = 1;
-                entry_buffer.ref_crc32_id = std::stoi(value["Reference_Hash"].template get<std::string>(), nullptr, 16);
+                entry_buffer.ref_crc32_id = std::stoul(value["Reference_Hash"].template get<std::string>(), nullptr, 16);
             }
 
             if (value.contains("ADX2_File"))
