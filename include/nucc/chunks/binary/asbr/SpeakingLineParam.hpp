@@ -2,7 +2,6 @@
 #define KOJO_NUCC_ASBR_SPEAKINGLINEPARAM
 
 #include "../binary_data.hpp"
-#include "utils.hpp"
 
 namespace nucc {
     namespace ASBR {

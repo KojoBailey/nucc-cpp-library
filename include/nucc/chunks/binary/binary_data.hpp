@@ -1,8 +1,11 @@
 #ifndef KOJO_NUCC_BINARY_DATA
 #define KOJO_NUCC_BINARY_DATA
 
-#include "../../external/binary-lib/binary/binary.hpp"
 #include "../../error_handling.hpp"
+#include "../../utils.hpp"
+#include "../../hash.hpp"
+
+#include <kojo/binary.hpp>
 #include <nlohmann/json.hpp>
 
 #include <bit>

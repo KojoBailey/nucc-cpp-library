@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include "external/binary-lib/binary/binary.hpp"
+#include <kojo/binary.hpp>
 
 #include "error_handling.hpp"
 #include "page.hpp"
@@ -9,8 +9,6 @@
 
 #include <filesystem>
 #include <iostream>
-
-// #include <format>
 
 namespace nucc {
 

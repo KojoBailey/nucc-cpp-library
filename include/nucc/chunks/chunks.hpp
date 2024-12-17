@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_CHUNKS
 #define KOJO_NUCC_CHUNKS
 
-#include "../external/binary-lib/binary/binary.hpp"
+#include <kojo/binary.hpp>
 
 namespace nucc {
 

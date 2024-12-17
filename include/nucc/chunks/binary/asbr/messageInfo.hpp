@@ -2,8 +2,6 @@
 #define KOJO_NUCC_ASBR_MESSAGEINFO
 
 #include "../binary_data.hpp"
-#include "utils.hpp"
-#include "../../../hash.hpp"
 
 namespace nucc {
     namespace ASBR {

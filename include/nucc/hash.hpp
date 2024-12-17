@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_HASH
 #define KOJO_NUCC_HASH
 
-#include "external/binary-lib/binary/binary.hpp"
+#include <kojo/binary.hpp>
 
 #include <bit>
 #include <cstdint>
