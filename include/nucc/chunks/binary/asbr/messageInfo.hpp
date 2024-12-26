@@ -160,7 +160,12 @@ public:
 
         return (std::uint64_t*)storage.data();
     }
-    nlohmann::ordered_json write_to_json() {
+    nlohmann::ordered_json write_to_json(std::filesystem::path hashlist_path) {
+        nlohmann::json hashlist;
+        if (std::filesystem::exists(hashlist_path)) {
+            std::ifstream hashlist_file(hashlist_path);
+            hashlist = nlohmann::json::parse(hashlist_path);
+        }
         nlohmann::ordered_json json;
 
         json["Version"] = 241003;
@@ -172,8 +177,13 @@ public:
             auto& json_entry = json[std::format("{:08x}", value)];
             json_entry["Message"] = entry.message;
 
-            if (entry.is_ref == 1)
-                json_entry["Reference Hash"] = std::format("{:08x}", entry.ref_crc32_id);
+            if (entry.is_ref == 1) {
+                std::string hash = std::format("{:08x}", entry.ref_crc32_id);
+                if (hashlist.contains(hash))
+                    json_entry["Reference Hash"] = hashlist[hash];
+                else
+                    json_entry["Reference Hash"] = hash;
+            }
 
             if (entry.file_index != -1)
                 json_entry["ADX2 File"] = convert_file_index(entry.file_index);
