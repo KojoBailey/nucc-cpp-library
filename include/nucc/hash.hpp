@@ -1,6 +1,8 @@
 #ifndef KOJO_NUCC_HASH
 #define KOJO_NUCC_HASH
 
+#include <kojo/binary.hpp>
+
 #include <bit>
 #include <cstdint>
 #include <string_view>
@@ -42,8 +44,8 @@ inline std::uint64_t hash(std::string_view str) {
     }
     v2 = ~v2;
 
-    if (std::endian::native == std::endian::little) {
-        return std::byteswap(v2);
+    if (kojo::system_endian() == kojo::endian::little) {
+        return kojo::byteswap(v2);
     }
     return v2;
 }

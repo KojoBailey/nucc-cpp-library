@@ -24,6 +24,10 @@ public:
     std::uint64_t first_pointer;
     std::map<std::string, Entry> entries;
 
+    static const std::string path() {
+        return R"(PlayerColorParam.bin)";
+    }
+
     PlayerColorParam(void* input, size_t size_input = -1) {
         load(input, size_input);
     }
@@ -57,11 +61,22 @@ public:
 
         return 0;
     }
-    int load(nlohmann::ordered_json input) {
+    int load(nlohmann::ordered_json& input) {
         if (input.is_null()) return 0;
 
         for (const auto& [key, value] : input.items()) {
-            if (!value.is_string()) continue;
+            if (key == "Version" || key == "Filetype") continue;
+
+            if (!value.is_string()) return error_handler({
+                nucc::Status_Code::JSON_VALUE,
+                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+                "Ensure all hex codes are strings with the format \"#RRGGBB\"."
+            });
+            if (value.template get<std::string>().length() != 7) return error_handler({
+                nucc::Status_Code::JSON_VALUE,
+                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+                "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
+            });
 
             Entry entry_buffer;
             entry_buffer.character_id = key.substr(0, 4) + "0" + key.at(5);

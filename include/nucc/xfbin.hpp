@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_PLUS_PLUS
 #define KOJO_NUCC_PLUS_PLUS
 
-#include "external/binary-lib/binary/binary.hpp"
+#include <kojo/binary.hpp>
 
 #include "error_handling.hpp"
 #include "page.hpp"
@@ -9,8 +9,6 @@
 
 #include <filesystem>
 #include <iostream>
-
-// #include <format>
 
 namespace nucc {
 
@@ -28,6 +26,8 @@ enum class Game {
     ASBR,   /** JoJo's Bizarre Adventure: All-Star Battle R */
     NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
 };
+std::string game_to_string(Game game);
+Game string_to_game(std::string str);
 
 enum class Optimize {
     MATCH = 0,  // Matches whatever chunks the XFBIN already has.

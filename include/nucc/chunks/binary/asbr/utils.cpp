@@ -578,12 +578,5 @@ std::string convert_character_index(int index) {
     return std::to_string(index);
 }
 
-std::string lowercase_str(std::string input) {
-    std::transform(input.begin(), input.end(), input.begin(), [](unsigned char c) {
-        return std::tolower(c);
-    });
-    return input;
-}
-
     } // ASBR
 } // nucc

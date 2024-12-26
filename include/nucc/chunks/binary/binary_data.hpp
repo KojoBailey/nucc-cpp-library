@@ -1,10 +1,14 @@
 #ifndef KOJO_NUCC_BINARY_DATA
 #define KOJO_NUCC_BINARY_DATA
 
-#include "../../external/binary-lib/binary/binary.hpp"
 #include "../../error_handling.hpp"
+#include "../../utils.hpp"
+#include "../../hash.hpp"
+
+#include <kojo/binary.hpp>
 #include <nlohmann/json.hpp>
 
+#include <bit>
 #include <format>
 #include <map>
 #include <sstream>
@@ -14,10 +18,10 @@
 namespace nucc {
 
 struct RGB {
-    std::uint32_t red, green, blue, rgb;
+    std::uint32_t red, green, blue, alpha;
 
-    void consolidate() {
-        rgb = (blue | ((green | (red << 8)) << 8)) << 8;
+    std::uint32_t consolidate() {
+        return alpha | ((blue | ((green | (red << 8)) << 8)) << 8);
     }
 
     RGB hex_to_rgb(std::string hex_str) {
@@ -42,8 +46,6 @@ struct RGB {
 
 class Binary_Data {
 public:
-
-
     // Return size of would-be binary data.
     virtual size_t size() { return -1; }
     // Clear all variables.
