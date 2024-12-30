@@ -163,7 +163,7 @@ public:
 
         return (std::uint64_t*)storage.data();
     }
-    nlohmann::ordered_json write_to_json() {
+    nlohmann::ordered_json write_to_json(std::filesystem::path hashlist_path = "NO PATH") {
         nlohmann::ordered_json json;
 
         json["Version"] = 241001;

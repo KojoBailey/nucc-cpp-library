@@ -184,7 +184,7 @@ public:
         nlohmann::json hashlist;
         if (std::filesystem::exists(hashlist_path)) {
             std::ifstream hashlist_file(hashlist_path);
-            hashlist = nlohmann::json::parse(hashlist_path);
+            hashlist = nlohmann::json::parse(hashlist_file);
         }
         nlohmann::ordered_json json;
 
@@ -196,16 +196,18 @@ public:
             auto& entry = entries[value];
             if (kojo::system_endian() != kojo::endian::big)
                 value = kojo::byteswap(value);
-            auto& json_entry = json[std::format("{:08x}", value)];
+
+            std::string hash = std::format("{:08x}", value);
+            nlohmann::ordered_json& json_entry = json[hash];
+            if (hashlist.contains(hash)) {
+                std::string hashlist_item = hashlist[hash];
+                json_entry = json[hashlist_item];
+            }
+
             json_entry["Message"] = entry.message;
 
-            if (entry.is_ref == 1) {
-                std::string hash = std::format("{:08x}", entry.ref_crc32_id);
-                if (hashlist.contains(hash))
-                    json_entry["Reference Hash"] = hashlist[hash];
-                else
-                    json_entry["Reference Hash"] = hash;
-            }
+            if (entry.is_ref == 1)
+                json_entry["Reference Hash"] = std::format("{:08x}", entry.ref_crc32_id);
 
             if (entry.file_index != -1)
                 json_entry["ADX2 File"] = convert_file_index(entry.file_index);
