@@ -32,15 +32,15 @@ public:
     std::map<std::string, std::uint32_t> entry_order;
 
     static const std::string path() {
-        return R"(WIN64/eng/\d{3}/messageInfo.bin)";
+        return R"(WIN64/.{3}/\d{3}/messageInfo\.bin)";
     }
 
     messageInfo() {};
-    messageInfo(void* input, size_t size_input = -1) {
-        load(input, size_input);
+    messageInfo(void* input, size_t size_input = -1, std::string lang_input = "") {
+        load(input, size_input, lang_input);
     }
 
-    int load(void* input, size_t size_input = -1) {
+    int load(void* input, size_t size_input = -1, std::string lang_input = "") {
         if (input == nullptr) return error_handler({
             nucc::Status_Code::POINTER_NULL,
             "Attempted to load messageInfo chunk data, but received null input.",
@@ -74,6 +74,8 @@ public:
             entries[entry_buffer.key()] = entry_buffer;
             entry_order[entry_buffer.order_key()] = entry_buffer.key();
         }
+
+        if (lang_input != "") language = lang_input;
 
         return 0;
     }
@@ -180,11 +182,12 @@ public:
 
         return (std::uint64_t*)storage.data();
     }
-    nlohmann::ordered_json write_to_json(std::filesystem::path hashlist_path) {
-        nlohmann::json hashlist;
-        if (std::filesystem::exists(hashlist_path)) {
-            std::ifstream hashlist_file(hashlist_path);
-            hashlist = nlohmann::json::parse(hashlist_file);
+    nlohmann::ordered_json write_to_json(std::string hashlist_path) {
+        std::unordered_map<std::string, std::string> hashlist;
+        kojo::binary hashlist_data{hashlist_path};
+        while (!hashlist_data.at_end()) {
+            std::string buffer = hashlist_data.read<std::string>();
+            hashlist[buffer] = hashlist_data.read<std::string>();
         }
         nlohmann::ordered_json json;
 
@@ -198,11 +201,10 @@ public:
                 value = kojo::byteswap(value);
 
             std::string hash = std::format("{:08x}", value);
-            nlohmann::ordered_json& json_entry = json[hash];
             if (hashlist.contains(hash)) {
-                std::string hashlist_item = hashlist[hash];
-                json_entry = json[hashlist_item];
+                hash = hashlist[hash];
             }
+            nlohmann::ordered_json& json_entry = json[hash];
 
             json_entry["Message"] = entry.message;
 
