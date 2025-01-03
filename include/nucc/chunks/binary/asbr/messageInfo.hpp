@@ -32,7 +32,7 @@ public:
     std::map<std::string, std::uint32_t> entry_order;
 
     static const std::string path() {
-        return R"(WIN64/.{3}/\d{3}/messageInfo\.bin)";
+        return R"(WIN64/.{3}(?:/\d{3})?/messageInfo\.bin)";
     }
 
     messageInfo() {};
