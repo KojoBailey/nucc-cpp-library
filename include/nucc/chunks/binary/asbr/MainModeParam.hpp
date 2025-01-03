@@ -306,6 +306,8 @@ public:
 
                 if (player_information.contains("Assist"))
                     entry_buffer.player.assist_id = get_character_id_ref(player_information["Assist"]);
+                else if (player_information.contains("Character"))
+                    entry_buffer.player.assist_id = "";
 
                 if (player_information.contains("Start_Dialogue")) {
                     if (player_information["Start_Dialogue"] == "<EMPTY>")
@@ -361,6 +363,8 @@ public:
 
                 if (enemy_information.contains("Assist"))
                     entry_buffer.enemy.assist_id = get_character_id_ref(enemy_information["Assist"]);
+                else if (enemy_information.contains("Character"))
+                    entry_buffer.enemy.assist_id = "";
 
                 if (enemy_information.contains("Start_Dialogue")) {
                     if (enemy_information["Start_Dialogue"] == "<EMPTY>")

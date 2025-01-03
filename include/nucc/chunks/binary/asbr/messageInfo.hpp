@@ -85,8 +85,13 @@ public:
         language = input["Language"];
         load_adx2_file_list();
 
+        std::unordered_map<std::string, std::string> colors;
+        for (auto& [key, value] : input["Colors"].items()) {
+            colors[key] = value.template get<std::string>().substr(1, 8);
+        }
+
         for (const auto& [key, value] : input.items()) {
-            if (key == "Language" || key == "Version" || key == "Filetype") continue;
+            if (key == "Language" || key == "Version" || key == "Filetype" || key == "Colors") continue;
 
             Entry entry_buffer;
 
@@ -108,7 +113,19 @@ public:
                         std::format("Field \"Page\" in JSON entry \"{}\" contains value reserved for error detection.", key),
                         "Change this value to something else."
                     });
-                else entry_buffer.message = value["Message"];
+                else {
+                    entry_buffer.message = value["Message"];
+                    for (auto& [key, value] : colors) {
+                        entry_buffer.message = std::regex_replace(entry_buffer.message,
+                            std::regex(std::format("<{}>", key)),
+                            std::format("<color 0x{}>", value)
+                        );
+                        entry_buffer.message = std::regex_replace(entry_buffer.message,
+                            std::regex(std::format("</{}>", key)),
+                            "</color>"
+                        );
+                    }
+                }
             } else if (entry_buffer.message == "<EMPTY>") return error_handler({
                 nucc::Status_Code::JSON_MISSING_FIELD,
                 std::format("JSON data for entry \"{}\" does not contain required field \"Message\".", key),
