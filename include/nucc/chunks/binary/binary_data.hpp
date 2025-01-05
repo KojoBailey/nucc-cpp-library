@@ -59,6 +59,7 @@ protected:
     kojo::binary storage;
 
     std::vector<std::string> str_tracker;
+    std::uint32_t ptr_buffer32;
     std::uint64_t ptr_buffer64;
     size_t last_pos;
 
@@ -75,6 +76,17 @@ protected:
             ptr_buffer64 += ceiling(str.size() + 1, 8); // ceiling to nearest 8
         } else {
             storage.write<std::uint64_t>(0, kojo::endian::little);
+        }
+    }
+    void write_offset_str32(std::string& str) {
+        if (str.size() > 0) {
+            str_tracker.push_back(str);
+            ptr_buffer32 -= (storage.get_pos() - last_pos);
+            last_pos = storage.get_pos();
+            storage.write<std::uint32_t>(ptr_buffer32, kojo::endian::little);
+            ptr_buffer32 += ceiling(str.size() + 1, 4); // ceiling to nearest 4
+        } else {
+            storage.write<std::uint32_t>(0, kojo::endian::little);
         }
     }
 };

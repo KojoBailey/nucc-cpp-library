@@ -62,7 +62,8 @@ std::string game_to_string(Game game) {
         case Game::NSUNS3   : return "Naruto Shippuden: Ultimate Ninja Storm 3";
         case Game::ASB      : return "JoJo's Bizarre Adventure: All-Star Battle";
         case Game::NSUNSR   : return "Naruto Shippuden: Ultimate Ninja Storm Revolution";
-        case Game::EOH      : return "JoJo's Bizarre Adventure: Eyes of Heaven";
+        case Game::EOHPS3   : return "JoJo's Bizarre Adventure: Eyes of Heaven (PS3)";
+        case Game::EOHPS4   : return "JoJo's Bizarre Adventure: Eyes of Heaven (PS4)";
         case Game::NSUNS4   : return "Naruto Shippuden: Ultimate Ninja Storm 4";
         case Game::ASBR     : return "JoJo's Bizarre Adventure: All-Star Battle R";
         case Game::NXBUNSC  : return "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS";
@@ -70,19 +71,25 @@ std::string game_to_string(Game game) {
     return "Unknown";
 }
 Game string_to_game(std::string str) {
-    if (str == "Naruto Shippuden: Ultimate Ninja Storm 3" || str == "NSUNS3")
+    // Convert to lowercase.
+    std::transform(str.begin(), str.end(), str.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+
+    if (str == "naruto shippuden: ultimate ninja storm 3" || str == "nsuns3")
         return Game::NSUNS3;
-    else if (str == "JoJo's Bizarre Adventure: All-Star Battle" || str == "ASB")
+    else if (str == "jojo's bizarre adventure: all-star battle" || str == "asb")
         return Game::ASB;
-    else if (str == "Naruto Shippuden: Ultimate Ninja Storm Revolution" || str == "NSUNSR")
+    else if (str == "naruto shippuden: ultimate ninja storm revolution" || str == "nsunsr")
         return Game::NSUNSR;
-    else if (str == "JoJo's Bizarre Adventure: Eyes of Heaven" || str == "EOH" || str == "EoH")
-        return Game::EOH;
-    else if (str == "Naruto Shippuden: Ultimate Ninja Storm 4" || str == "NSUNS4")
+    else if (str == "jojo's bizarre adventure: eyes of heaven (ps3)" || str == "eohps3")
+        return Game::EOHPS3;
+    else if (str == "jojo's bizarre adventure: eyes of heaven (ps4)" || str == "eohps4")
+        return Game::EOHPS4;
+    else if (str == "naruto shippuden: ultimate ninja storm 4" || str == "nsuns4")
         return Game::NSUNS4;
-    else if (str == "JoJo's Bizarre Adventure: All-Star Battle R" || str == "ASBR")
+    else if (str == "jojo's bizarre adventure: all-star battle r" || str == "asbr")
         return Game::ASBR;
-    else if (str == "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS" || str == "NXBUNSC")
+    else if (str == "naruto x boruto ultimate ninja storm connections" || str == "nxbunsc")
         return Game::NXBUNSC;
     else
         return Game::UNKNOWN;

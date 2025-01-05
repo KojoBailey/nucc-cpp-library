@@ -1,10 +1,10 @@
-#ifndef KOJO_NUCC_EOH_MESSAGEINFO
-#define KOJO_NUCC_EOH_MESSAGEINFO
+#ifndef KOJO_NUCC_EOHPS3_MESSAGEINFO
+#define KOJO_NUCC_EOHPS3_MESSAGEINFO
 
 #include "../binary_data.hpp"
 
 namespace nucc {
-    namespace EOH {
+    namespace EOHPS3 {
         
 class messageInfo : public Binary_Data {
 public:
@@ -13,8 +13,8 @@ public:
         std::string message{"<EMPTY>"};
         std::uint32_t ref_crc32_id{0};
         std::int16_t is_ref{-1};
-        std::int64_t file_index{-1};
-        std::int64_t cue_index{-1};
+        std::int16_t file_index{-1};
+        std::int16_t cue_index{-1};
 
         std::uint32_t key() {
             return crc32_id;
@@ -25,22 +25,17 @@ public:
     };
 
     std::uint32_t version{250103};
-    std::string language{"Unknown"};
     std::uint32_t entry_count;
-    std::uint64_t first_pointer;
+    std::uint32_t first_pointer;
     std::map<std::uint32_t, Entry> entries;
     std::map<std::string, std::uint32_t> entry_order;
 
-    static const std::string path() {
-        return R"(PS4/.{3}/messageInfo\.bin)";
-    }
-
     messageInfo() {};
-    messageInfo(void* input, size_t size_input = -1, std::string lang_input = "") {
-        load(input, size_input, lang_input);
+    messageInfo(void* input, size_t size_input = -1) {
+        load(input, size_input);
     }
 
-    int load(void* input, size_t size_input = -1, std::string lang_input = "") {
+    int load(void* input, size_t size_input = -1) {
         if (input == nullptr) return error_handler({
             nucc::Status_Code::POINTER_NULL,
             "Attempted to load messageInfo chunk data, but received null input.",
@@ -48,41 +43,38 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(kojo::endian::little);
+        version = storage.read<std::uint32_t>(kojo::endian::big);
         if (version != 1001)
             return error_handler({
                 nucc::Status_Code::VERSION,
                 std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
                 std::format("Ensure the data is of version `{}`.", 1001)
             });
-        entry_count = storage.read<std::uint32_t>(kojo::endian::little);
-        first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
-        storage.change_pos(first_pointer - 8);
+        entry_count = storage.read<std::uint32_t>(kojo::endian::big);
+        first_pointer = storage.read<std::uint32_t>(kojo::endian::big);
+        storage.change_pos(first_pointer - sizeof(first_pointer));
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
             entry_buffer.crc32_id       = storage.read<std::uint32_t>(kojo::endian::big);
-            storage.change_pos(12); // Skip unknown constants.
-            ptr_buffer64                = storage.read<std::uint64_t>(kojo::endian::little);
-            entry_buffer.message        = storage.read<std::string>(0, ptr_buffer64 - 8);
+            storage.change_pos(4); // Skip unknown constant.
+            ptr_buffer32                = storage.read<std::uint32_t>(kojo::endian::big);
+            entry_buffer.message        = storage.read<std::string>(0, ptr_buffer32 - sizeof(ptr_buffer32));
             entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(kojo::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::little);
-            entry_buffer.file_index     = storage.read<std::int16_t>(kojo::endian::little);
-            entry_buffer.cue_index         = storage.read<std::int16_t>(kojo::endian::little);
-            storage.change_pos(6); // Skip unknown constants.
+            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::big);
+            entry_buffer.file_index     = storage.read<std::int16_t>(kojo::endian::big);
+            entry_buffer.cue_index      = storage.read<std::int16_t>(kojo::endian::big);
+            storage.change_pos(2); // Skip padding.
 
             entries[entry_buffer.key()] = entry_buffer;
             entry_order[entry_buffer.order_key()] = entry_buffer.key();
         }
-
-        if (lang_input != "") language = lang_input;
 
         return 0;
     }
     int load(nlohmann::ordered_json& input) {
         if (input.is_null()) return 0;
 
-        language = input["Language"];
         load_adx2_file_list();
 
         std::unordered_map<std::string, std::string> colors;
@@ -91,7 +83,7 @@ public:
         }
 
         for (const auto& [key, value] : input.items()) {
-            if (key == "Language" || key == "Version" || key == "Filetype" || key == "Colors") continue;
+            if (key == "Version" || key == "Filetype" || key == "Colors") continue;
 
             Entry entry_buffer;
 
@@ -150,19 +142,19 @@ public:
     }
 
     size_t size() {
-        size_t size_buffer = entries.size() * 40 + 8 + first_pointer;
+        size_t size_buffer = entries.size() * 24 + 8 + first_pointer;
         size_t size_buffer2;
 
         for (auto& [key, entry] : entries) {
             if ((size_buffer2 = entry.message.size()) > 0)
-                size_buffer += ceiling(size_buffer2 + 1, 8);
+                size_buffer += ceiling(size_buffer2 + 1, 4);
         }
 
         return size_buffer;
     }
     void clear() {
         entry_count = 0;
-        first_pointer = 8;
+        first_pointer = sizeof(first_pointer);
         entries.clear();
     }
 
@@ -170,31 +162,28 @@ public:
         storage.clear();
         
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, kojo::endian::little);
-        storage.write<std::uint32_t>(entry_count, kojo::endian::little);
-        storage.write<std::uint64_t>(first_pointer, kojo::endian::little);
+        storage.write<std::uint32_t>(version, kojo::endian::big);
+        storage.write<std::uint32_t>(entry_count, kojo::endian::big);
+        storage.write<std::uint32_t>(first_pointer, kojo::endian::big);
 
         last_pos = 8 + first_pointer; // Size of header
-        ptr_buffer64 = (40 * entry_count);
+        ptr_buffer32 = (24 * entry_count);
         for (auto& [key, entry] : entries) {
             storage.write<std::uint32_t>(entry.crc32_id, kojo::endian::big);
 
-            storage.write<std::uint32_t>(0, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
+            storage.write<std::uint32_t>(0, kojo::endian::big); // unk
 
-            write_offset_str(entry.message);
+            write_offset_str32(entry.message);
             storage.write<std::uint32_t>(entry.ref_crc32_id, kojo::endian::big);
-            storage.write<std::int16_t>(entry.is_ref, kojo::endian::little);
-            storage.write<std::int16_t>(entry.file_index, kojo::endian::little);
-            storage.write<std::int16_t>(entry.cue_index, kojo::endian::little);
+            storage.write<std::int16_t>(entry.is_ref, kojo::endian::big);
+            storage.write<std::int16_t>(entry.file_index, kojo::endian::big);
+            storage.write<std::int16_t>(entry.cue_index, kojo::endian::big);
 
-            storage.write<std::int16_t>(-1, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
+            storage.write<std::uint16_t>(0, kojo::endian::big); // padding
         }
         for (auto& str : str_tracker) {
             storage.write<std::string>(str);
-            storage.align_by(8);
+            storage.align_by(4);
         }
 
         return (std::uint64_t*)storage.data();
@@ -210,7 +199,6 @@ public:
 
         json["Version"] = 250103;
         json["Filetype"] = "messageInfo";
-        json["Language"] = language;
         
         for (auto& [key, value] : entry_order) {
             auto& entry = entries[value];
@@ -226,13 +214,13 @@ public:
             json_entry["Message"] = entry.message;
 
             if (entry.is_ref == 1)
-                json_entry["Reference Hash"] = std::format("{:08x}", entry.ref_crc32_id);
+                json_entry["Reference_Hash"] = std::format("{:08x}", entry.ref_crc32_id);
 
             if (entry.file_index != -1)
-                json_entry["ADX2 File"] = convert_file_index(entry.file_index);
+                json_entry["ADX2_File"] = convert_file_index(entry.file_index);
 
             if (entry.cue_index != -1)
-                json_entry["ADX2 Cue Index"] = entry.cue_index;
+                json_entry["ADX2_Cue_Index"] = entry.cue_index;
         }
 
         return json;
@@ -390,7 +378,7 @@ private:
     }
 };
 
-    } // namespace EOH
+    } // namespace EOHPS3
 } // namespace nucc
 
-#endif // KOJO_NUCC_EOH_MESSAGEINFO
+#endif // KOJO_NUCC_EOHPS3_MESSAGEINFO

@@ -1,7 +1,7 @@
 #include "utils.hpp"
 
 namespace nucc {
-    namespace EOH {
+    namespace EOHPS4 {
 
 std::unordered_map<std::string, std::string> character_id_reflist = {
     {"Baoh",                            "0bao01"},
@@ -578,5 +578,5 @@ std::string convert_character_index(int index) {
     return std::to_string(index);
 }
 
-    } // EOH
+    } // EOHPS4
 } // nucc

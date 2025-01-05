@@ -21,7 +21,8 @@ enum class Game {
     NSUNS3, /** Naruto Shippuden: Ultimate Ninja Storm 3 */
     ASB,    /** JoJo's Bizarre Adventure: All-Star Battle */
     NSUNSR, /** Naruto Shippuden: Ultimate Ninja Storm Revolution */
-    EOH,    /** JoJo's Bizarre Adventure: Eyes of Heaven */
+    EOHPS3, /** JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 3) */
+    EOHPS4, /** JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 4) */
     NSUNS4, /** Naruto Shippuden: Ultimate Ninja Storm 4 */
     ASBR,   /** JoJo's Bizarre Adventure: All-Star Battle R */
     NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
@@ -31,8 +32,8 @@ Game string_to_game(std::string str);
 
 enum class Optimize {
     MATCH = 0,  // Matches whatever chunks the XFBIN already has.
-    YES,       // Removes unnecessary chunks and their metadata.
-    NO       // Adds the unnecessary chunks where they're "supposed to be".
+    YES,        // Removes unnecessary chunks and their metadata.
+    NO          // Adds the unnecessary chunks where they're "supposed to be".
 };
 
 /**
