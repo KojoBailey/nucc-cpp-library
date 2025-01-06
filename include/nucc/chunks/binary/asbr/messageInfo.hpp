@@ -31,10 +31,6 @@ public:
     std::map<std::uint32_t, Entry> entries;
     std::map<std::string, std::uint32_t> entry_order;
 
-    static const std::string path() {
-        return R"(WIN64/.{3}(?:/\d{3})?/messageInfo\.bin)";
-    }
-
     messageInfo() {};
     messageInfo(void* input, size_t size_input = -1, std::string lang_input = "") {
         load(input, size_input, lang_input);
@@ -68,7 +64,7 @@ public:
             entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(kojo::endian::big);
             entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::little);
             entry_buffer.file_index     = storage.read<std::int16_t>(kojo::endian::little);
-            entry_buffer.cue_index         = storage.read<std::int16_t>(kojo::endian::little);
+            entry_buffer.cue_index      = storage.read<std::int16_t>(kojo::endian::little);
             storage.change_pos(6); // Skip unknown constants.
 
             entries[entry_buffer.key()] = entry_buffer;
