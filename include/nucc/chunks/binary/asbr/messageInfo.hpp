@@ -44,27 +44,27 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(kojo::endian::little);
+        version = storage.read<std::uint32_t>(std::endian::little);
         if (version != 1001)
             return error_handler({
                 nucc::Status_Code::VERSION,
                 std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
                 std::format("Ensure the data is of version `{}`.", 1001)
             });
-        entry_count = storage.read<std::uint32_t>(kojo::endian::little);
-        first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
+        entry_count = storage.read<std::uint32_t>(std::endian::little);
+        first_pointer = storage.read<std::uint64_t>(std::endian::little);
         storage.change_pos(first_pointer - 8);
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.crc32_id       = storage.read<std::uint32_t>(kojo::endian::big);
+            entry_buffer.crc32_id       = storage.read<std::uint32_t>(std::endian::big);
             storage.change_pos(12); // Skip unknown constants.
-            ptr_buffer64                = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.message        = storage.read<std::string>(0, ptr_buffer64 - 8);
-            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(kojo::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::little);
-            entry_buffer.file_index     = storage.read<std::int16_t>(kojo::endian::little);
-            entry_buffer.cue_index      = storage.read<std::int16_t>(kojo::endian::little);
+            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(std::endian::big);
+            entry_buffer.is_ref         = storage.read<std::int16_t>(std::endian::little);
+            entry_buffer.file_index     = storage.read<std::int16_t>(std::endian::little);
+            entry_buffer.cue_index      = storage.read<std::int16_t>(std::endian::little);
             storage.change_pos(6); // Skip unknown constants.
 
             entries[entry_buffer.key()] = entry_buffer;
@@ -95,7 +95,7 @@ public:
                 entry_buffer.crc32_id = std::stoul(key, nullptr, 16);
             } else {
                 entry_buffer.crc32_id = nucc::hash(key);
-                if (kojo::system_endian() == kojo::endian::big)
+                if (kojo::system_endian() == std::endian::big)
                     entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
             }
 
@@ -166,27 +166,27 @@ public:
         storage.clear();
         
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, kojo::endian::little);
-        storage.write<std::uint32_t>(entry_count, kojo::endian::little);
-        storage.write<std::uint64_t>(first_pointer, kojo::endian::little);
+        storage.write<std::uint32_t>(version, std::endian::little);
+        storage.write<std::uint32_t>(entry_count, std::endian::little);
+        storage.write<std::uint64_t>(first_pointer, std::endian::little);
 
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer64 = (40 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint32_t>(entry.crc32_id, kojo::endian::big);
+            storage.write<std::uint32_t>(entry.crc32_id, std::endian::big);
 
-            storage.write<std::uint32_t>(0, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
+            storage.write<std::uint32_t>(0, std::endian::little);
+            storage.write<std::uint32_t>(0, std::endian::little);
+            storage.write<std::uint32_t>(0, std::endian::little);
 
             write_offset_str(entry.message);
-            storage.write<std::uint32_t>(entry.ref_crc32_id, kojo::endian::big);
-            storage.write<std::int16_t>(entry.is_ref, kojo::endian::little);
-            storage.write<std::int16_t>(entry.file_index, kojo::endian::little);
-            storage.write<std::int16_t>(entry.cue_index, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
+            storage.write<std::int16_t>(entry.is_ref, std::endian::little);
+            storage.write<std::int16_t>(entry.file_index, std::endian::little);
+            storage.write<std::int16_t>(entry.cue_index, std::endian::little);
 
-            storage.write<std::int16_t>(-1, kojo::endian::little);
-            storage.write<std::uint32_t>(0, kojo::endian::little);
+            storage.write<std::int16_t>(-1, std::endian::little);
+            storage.write<std::uint32_t>(0, std::endian::little);
         }
         for (auto& str : str_tracker) {
             storage.write<std::string>(str);
@@ -210,8 +210,6 @@ public:
         
         for (auto& [key, value] : entry_order) {
             auto& entry = entries[value];
-            if (kojo::system_endian() != kojo::endian::big)
-                value = kojo::byteswap(value);
 
             std::string hash = std::format("{:08x}", value);
             if (hashlist.contains(hash)) {
@@ -219,10 +217,15 @@ public:
             }
             nlohmann::ordered_json& json_entry = json[hash];
 
-            json_entry["Message"] = entry.message;
-
-            if (entry.is_ref == 1)
-                json_entry["Reference_Hash"] = std::format("{:08x}", entry.ref_crc32_id);
+            if (entry.is_ref == 1) {
+                hash = std::format("{:08x}", entry.ref_crc32_id);
+                if (hashlist.contains(hash)) {
+                    hash = hashlist[hash];
+                }
+                json_entry["Reference"] = hash;
+            } else {
+                json_entry["Message"] = entry.message;
+            }
 
             if (entry.file_index != -1)
                 json_entry["ADX2_File"] = convert_file_index(entry.file_index);

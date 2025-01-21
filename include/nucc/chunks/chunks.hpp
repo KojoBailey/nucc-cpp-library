@@ -107,10 +107,10 @@ public:
     int load(void* input, size_t pos = 0) {
         if (input == nullptr) return -1;
         kojo::binary buffer{input, pos};
-        size = buffer.read<std::uint32_t>(kojo::endian::big);
-        map_index = buffer.read<std::uint32_t>(kojo::endian::big);
-        version = buffer.read<std::uint16_t>(kojo::endian::big);
-        unk = buffer.read<std::uint16_t>(kojo::endian::big);
+        size = buffer.read<std::uint32_t>(std::endian::big);
+        map_index = buffer.read<std::uint32_t>(std::endian::big);
+        version = buffer.read<std::uint16_t>(std::endian::big);
+        unk = buffer.read<std::uint16_t>(std::endian::big);
         storage.load(buffer, buffer.get_pos(), size);
         parse();
         return 0;

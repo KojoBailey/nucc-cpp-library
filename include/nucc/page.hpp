@@ -28,8 +28,8 @@ public:
 
     kojo::binary& dump() {
         output.clear();
-        output.write<std::uint32_t>(content.map_offset, kojo::endian::big);
-        output.write<std::uint32_t>(content.extra_offset, kojo::endian::big);
+        output.write<std::uint32_t>(content.map_offset, std::endian::big);
+        output.write<std::uint32_t>(content.extra_offset, std::endian::big);
         for (auto& chunk : chunks) {
             output.write<kojo::binary>(chunk.dump());
         }
@@ -39,8 +39,8 @@ public:
 private:
     void parse() {
         storage.set_pos(0);
-        content.map_offset = storage.read<std::uint32_t>(kojo::endian::big);
-        content.extra_offset = storage.read<std::uint32_t>(kojo::endian::big);
+        content.map_offset = storage.read<std::uint32_t>(std::endian::big);
+        content.extra_offset = storage.read<std::uint32_t>(std::endian::big);
     }
 };
 

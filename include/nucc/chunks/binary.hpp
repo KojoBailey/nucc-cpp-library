@@ -37,7 +37,7 @@ public:
 
     void update() {
         storage.clear();
-        storage.write<std::uint32_t>(content.size, kojo::endian::big);
+        storage.write<std::uint32_t>(content.size, std::endian::big);
         for (int i = 0; i < content.binary_data.size(); i++) {
             storage.write<char>(content.binary_data.read<char>());
         }
@@ -51,7 +51,7 @@ public:
 private:
     void parse() {
         storage.set_pos(0);
-        content.size = storage.read<std::uint32_t>(kojo::endian::big);
+        content.size = storage.read<std::uint32_t>(std::endian::big);
         content.binary_data.load(storage, 4);
     }
 };

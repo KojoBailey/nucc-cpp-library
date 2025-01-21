@@ -12,7 +12,7 @@ namespace nucc {
 
 static std::vector<std::uint32_t> hash_array;
 
-inline std::uint64_t hash(std::string_view str) {
+inline std::uint32_t hash(std::string_view str) {
     if (hash_array.empty()) {
         std::uint32_t polynomial = 0x4C11DB7;
         for (int i = 0; i < 256; i++) {
@@ -44,7 +44,7 @@ inline std::uint64_t hash(std::string_view str) {
     }
     v2 = ~v2;
 
-    if (kojo::system_endian() == kojo::endian::little) {
+    if (kojo::system_endian() == std::endian::little) {
         return kojo::byteswap(v2);
     }
     return v2;

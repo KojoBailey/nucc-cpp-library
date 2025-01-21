@@ -84,82 +84,82 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(kojo::endian::little);
-        entry_count = storage.read<std::uint32_t>(kojo::endian::little);
-        first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
+        version = storage.read<std::uint32_t>(std::endian::little);
+        entry_count = storage.read<std::uint32_t>(std::endian::little);
+        first_pointer = storage.read<std::uint64_t>(std::endian::little);
         storage.change_pos(first_pointer - 8);
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.part                   = storage.read<std::uint64_t>(kojo::endian::little);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            entry_buffer.part                   = storage.read<std::uint64_t>(std::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.panel_id               = storage.read<std::string>(0, ptr_buffer64 - 8);
-            entry_buffer.page                   = storage.read<std::uint64_t>(kojo::endian::little);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            entry_buffer.page                   = storage.read<std::uint64_t>(std::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.boss_panel             = storage.read<std::string>(0, ptr_buffer64 - 8);
             storage.change_pos(16); // 2 unk
-            entry_buffer.gold_reward            = storage.read<std::uint32_t>(kojo::endian::little);
-            entry_buffer.type                   = (Entry::Panel_Type)storage.read<std::uint32_t>(kojo::endian::little);
+            entry_buffer.gold_reward            = storage.read<std::uint32_t>(std::endian::little);
+            entry_buffer.type                   = (Entry::Panel_Type)storage.read<std::uint32_t>(std::endian::little);
 
             // Adjacent panels
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.adjacent_panels.up     = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.adjacent_panels.down   = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.adjacent_panels.left   = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.adjacent_panels.right  = storage.read<std::string>(0, ptr_buffer64 - 8);
 
-            entry_buffer.display_difficulty     = storage.read<std::uint32_t>(kojo::endian::little);
-            entry_buffer.cpu_level              = storage.read<std::uint32_t>(kojo::endian::little);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            entry_buffer.display_difficulty     = storage.read<std::uint32_t>(std::endian::little);
+            entry_buffer.cpu_level              = storage.read<std::uint32_t>(std::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.stage_id               = storage.read<std::string>(0, ptr_buffer64 - 8);
             storage.change_pos(8); // unk
-            entry_buffer.first_speaker          = storage.read<std::uint64_t>(kojo::endian::little);
+            entry_buffer.first_speaker          = storage.read<std::uint64_t>(std::endian::little);
 
             // Player
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.player.id              = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.player.assist_id       = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.player.btlst_id        = storage.read<std::string>(0, ptr_buffer64 - 8);
             storage.change_pos(8); // unk
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.player.btlwin_id       = storage.read<std::string>(0, ptr_buffer64 - 8);
 
             // Enemy
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.enemy.id               = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.enemy.assist_id        = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.enemy.btlst_id         = storage.read<std::string>(0, ptr_buffer64 - 8);
             storage.change_pos(8); // unk
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.enemy.btlwin_id        = storage.read<std::string>(0, ptr_buffer64 - 8);
 
             // Special rules
-            entry_buffer.special_rule[0]    = storage.read<std::int32_t>(kojo::endian::little);
-            entry_buffer.special_rule[1]    = storage.read<std::int32_t>(kojo::endian::little);
-            entry_buffer.special_rule[2]    = storage.read<std::int32_t>(kojo::endian::little);
-            entry_buffer.special_rule[3]    = storage.read<std::int32_t>(kojo::endian::little);
+            entry_buffer.special_rule[0]    = storage.read<std::int32_t>(std::endian::little);
+            entry_buffer.special_rule[1]    = storage.read<std::int32_t>(std::endian::little);
+            entry_buffer.special_rule[2]    = storage.read<std::int32_t>(std::endian::little);
+            entry_buffer.special_rule[3]    = storage.read<std::int32_t>(std::endian::little);
 
             // Secret missions
             for (int i = 0; i < 4; i++) {
-                entry_buffer.secret_mission[i].condition    = storage.read<std::int32_t>(kojo::endian::little);
-                entry_buffer.secret_mission[i].unk          = storage.read<std::int32_t>(kojo::endian::little);
-                ptr_buffer64                                = storage.read<std::uint64_t>(kojo::endian::little);
+                entry_buffer.secret_mission[i].condition    = storage.read<std::int32_t>(std::endian::little);
+                entry_buffer.secret_mission[i].unk          = storage.read<std::int32_t>(std::endian::little);
+                ptr_buffer64                                = storage.read<std::uint64_t>(std::endian::little);
                 entry_buffer.secret_mission[i].reward_id    = storage.read<std::string>(0, ptr_buffer64 - 8);
-                entry_buffer.secret_mission[i].gold_reward  = storage.read<std::uint64_t>(kojo::endian::little);
+                entry_buffer.secret_mission[i].gold_reward  = storage.read<std::uint64_t>(std::endian::little);
             }
 
-            entry_buffer.unk0                                   = storage.read<std::uint32_t>(kojo::endian::little);
-            entry_buffer.unk1                                   = storage.read<std::uint32_t>(kojo::endian::little);
-            entry_buffer.unk2                                   = storage.read<std::uint32_t>(kojo::endian::little);
+            entry_buffer.unk0                                   = storage.read<std::uint32_t>(std::endian::little);
+            entry_buffer.unk1                                   = storage.read<std::uint32_t>(std::endian::little);
+            entry_buffer.unk2                                   = storage.read<std::uint32_t>(std::endian::little);
 
-            entry_buffer.index                                  = storage.read<std::uint32_t>(kojo::endian::little);
+            entry_buffer.index                                  = storage.read<std::uint32_t>(std::endian::little);
 
             entries[entry_buffer.key()] = entry_buffer;
         }
@@ -485,61 +485,61 @@ public:
         
         version = 1000;
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, kojo::endian::little);
-        storage.write<std::uint32_t>(entry_count, kojo::endian::little);
-        storage.write<std::uint64_t>(first_pointer, kojo::endian::little);
+        storage.write<std::uint32_t>(version, std::endian::little);
+        storage.write<std::uint32_t>(entry_count, std::endian::little);
+        storage.write<std::uint64_t>(first_pointer, std::endian::little);
 
         str_tracker.clear();
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer64 = 328 * entry_count;
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint64_t>(entry.part, kojo::endian::little);
+            storage.write<std::uint64_t>(entry.part, std::endian::little);
             write_offset_str(entry.panel_id);
-            storage.write<std::uint64_t>(entry.page, kojo::endian::little);
+            storage.write<std::uint64_t>(entry.page, std::endian::little);
             write_offset_str(entry.boss_panel);
-            storage.write<std::uint64_t>(0, kojo::endian::little); // unk
-            storage.write<std::uint64_t>(0, kojo::endian::little); // unk
-            storage.write<std::uint32_t>(entry.gold_reward, kojo::endian::little);
-            storage.write<std::uint32_t>((int)entry.type, kojo::endian::little);
+            storage.write<std::uint64_t>(0, std::endian::little); // unk
+            storage.write<std::uint64_t>(0, std::endian::little); // unk
+            storage.write<std::uint32_t>(entry.gold_reward, std::endian::little);
+            storage.write<std::uint32_t>((int)entry.type, std::endian::little);
 
             write_offset_str(entry.adjacent_panels.up);
             write_offset_str(entry.adjacent_panels.down);
             write_offset_str(entry.adjacent_panels.left);
             write_offset_str(entry.adjacent_panels.right);
 
-            storage.write<std::uint32_t>(entry.display_difficulty, kojo::endian::little);
-            storage.write<std::uint32_t>(entry.cpu_level, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.display_difficulty, std::endian::little);
+            storage.write<std::uint32_t>(entry.cpu_level, std::endian::little);
             write_offset_str(entry.stage_id);
-            storage.write<std::uint64_t>(1, kojo::endian::little); // unk
-            storage.write<std::uint64_t>(entry.first_speaker, kojo::endian::little);
+            storage.write<std::uint64_t>(1, std::endian::little); // unk
+            storage.write<std::uint64_t>(entry.first_speaker, std::endian::little);
 
             write_offset_str(entry.player.id);
             write_offset_str(entry.player.assist_id);
             write_offset_str(entry.player.btlst_id);
-            storage.write<std::uint64_t>(0, kojo::endian::little); // unk
+            storage.write<std::uint64_t>(0, std::endian::little); // unk
             write_offset_str(entry.player.btlwin_id);
             write_offset_str(entry.enemy.id);
             write_offset_str(entry.enemy.assist_id);
             write_offset_str(entry.enemy.btlst_id);
-            storage.write<std::uint64_t>(0, kojo::endian::little); // unk
+            storage.write<std::uint64_t>(0, std::endian::little); // unk
             write_offset_str(entry.enemy.btlwin_id);
 
             for (int i = 0; i < 4; i++) {
-              storage.write<std::uint32_t>((int)entry.special_rule[i], kojo::endian::little);
+              storage.write<std::uint32_t>((int)entry.special_rule[i], std::endian::little);
             }
 
             for (int i = 0; i < 4; i++) {
-                storage.write<std::uint32_t>((int)entry.secret_mission[i].condition, kojo::endian::little);
-                storage.write<std::int32_t>(entry.secret_mission[i].unk, kojo::endian::little);
+                storage.write<std::uint32_t>((int)entry.secret_mission[i].condition, std::endian::little);
+                storage.write<std::int32_t>(entry.secret_mission[i].unk, std::endian::little);
                 write_offset_str(entry.secret_mission[i].reward_id);
-                storage.write<std::uint64_t>(entry.secret_mission[i].gold_reward, kojo::endian::little);
+                storage.write<std::uint64_t>(entry.secret_mission[i].gold_reward, std::endian::little);
             }
 
-            storage.write<std::uint32_t>(entry.unk0, kojo::endian::little);
-            storage.write<std::uint32_t>(entry.unk1, kojo::endian::little);
-            storage.write<std::uint32_t>(entry.unk2, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.unk0, std::endian::little);
+            storage.write<std::uint32_t>(entry.unk1, std::endian::little);
+            storage.write<std::uint32_t>(entry.unk2, std::endian::little);
 
-            storage.write<std::uint32_t>(entry.index, kojo::endian::little);
+            storage.write<std::uint32_t>(entry.index, std::endian::little);
         }
         for (auto& str : str_tracker) {
             storage.write<std::string>(str);

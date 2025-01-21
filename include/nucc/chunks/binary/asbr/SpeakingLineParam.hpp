@@ -52,22 +52,22 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(kojo::endian::little);
-        entry_count = storage.read<std::uint32_t>(kojo::endian::little);
-        first_pointer = storage.read<std::uint64_t>(kojo::endian::little);
+        version = storage.read<std::uint32_t>(std::endian::little);
+        entry_count = storage.read<std::uint32_t>(std::endian::little);
+        first_pointer = storage.read<std::uint64_t>(std::endian::little);
         storage.change_pos(first_pointer - 8);
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.interaction_type       = (Entry::Interaction_Type)storage.read<std::uint32_t>(kojo::endian::little);
-            entry_buffer.is_animation           = storage.read<std::uint32_t>(kojo::endian::little);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            entry_buffer.interaction_type       = (Entry::Interaction_Type)storage.read<std::uint32_t>(std::endian::little);
+            entry_buffer.is_animation           = storage.read<std::uint32_t>(std::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.character_1.id         = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.character_2.id         = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.character_1.audio   = storage.read<std::string>(0, ptr_buffer64 - 8);
-            ptr_buffer64                        = storage.read<std::uint64_t>(kojo::endian::little);
+            ptr_buffer64                        = storage.read<std::uint64_t>(std::endian::little);
             entry_buffer.character_2.audio   = storage.read<std::string>(0, ptr_buffer64 - 8);
 
             entries[entry_buffer.key()] = entry_buffer;
@@ -136,15 +136,15 @@ public:
         
         version = 1000;
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, kojo::endian::little);
-        storage.write<std::uint32_t>(entry_count, kojo::endian::little);
-        storage.write<std::uint64_t>(first_pointer, kojo::endian::little);
+        storage.write<std::uint32_t>(version, std::endian::little);
+        storage.write<std::uint32_t>(entry_count, std::endian::little);
+        storage.write<std::uint64_t>(first_pointer, std::endian::little);
 
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer64 = (40 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint32_t>((int)entry.interaction_type, kojo::endian::little);
-            storage.write<std::uint32_t>((int)entry.is_animation, kojo::endian::little);
+            storage.write<std::uint32_t>((int)entry.interaction_type, std::endian::little);
+            storage.write<std::uint32_t>((int)entry.is_animation, std::endian::little);
             write_offset_str(entry.character_1.id);
             write_offset_str(entry.character_2.id);
             write_offset_str(entry.character_1.audio);

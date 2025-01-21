@@ -9,6 +9,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <string_view>
 
 namespace nucc {
 
@@ -45,8 +46,8 @@ public:
     Game game{Game::UNKNOWN};                   /** Game that the XFBIN is from. */
     std::string game_as_string();
 
-    std::string magic{"NUCC"};                  /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
-    std::uint32_t version{121};                 /** e.g. `121` = 1.2.1 */
+    static constexpr std::string_view magic{"NUCC"};    /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
+    std::uint32_t version{121};                         /** e.g. `121` = 1.2.1 */
     
     std::vector<Page> pages;
 

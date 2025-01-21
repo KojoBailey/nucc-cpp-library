@@ -43,27 +43,27 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(kojo::endian::big);
+        version = storage.read<std::uint32_t>(std::endian::big);
         if (version != 1001)
             return error_handler({
                 nucc::Status_Code::VERSION,
                 std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
                 std::format("Ensure the data is of version `{}`.", 1001)
             });
-        entry_count = storage.read<std::uint32_t>(kojo::endian::big);
-        first_pointer = storage.read<std::uint32_t>(kojo::endian::big);
+        entry_count = storage.read<std::uint32_t>(std::endian::big);
+        first_pointer = storage.read<std::uint32_t>(std::endian::big);
         storage.change_pos(first_pointer - sizeof(first_pointer));
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.crc32_id       = storage.read<std::uint32_t>(kojo::endian::big);
+            entry_buffer.crc32_id       = storage.read<std::uint32_t>(std::endian::big);
             storage.change_pos(4); // Skip unknown constant.
-            ptr_buffer32                = storage.read<std::uint32_t>(kojo::endian::big);
+            ptr_buffer32                = storage.read<std::uint32_t>(std::endian::big);
             entry_buffer.message        = storage.read<std::string>(0, ptr_buffer32 - sizeof(ptr_buffer32));
-            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(kojo::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(kojo::endian::big);
-            entry_buffer.file_index     = storage.read<std::int16_t>(kojo::endian::big);
-            entry_buffer.cue_index      = storage.read<std::int16_t>(kojo::endian::big);
+            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(std::endian::big);
+            entry_buffer.is_ref         = storage.read<std::int16_t>(std::endian::big);
+            entry_buffer.file_index     = storage.read<std::int16_t>(std::endian::big);
+            entry_buffer.cue_index      = storage.read<std::int16_t>(std::endian::big);
             storage.change_pos(2); // Skip padding.
 
             entries[entry_buffer.key()] = entry_buffer;
@@ -91,7 +91,7 @@ public:
                 entry_buffer.crc32_id = std::stoul(key, nullptr, 16);
             } else {
                 entry_buffer.crc32_id = nucc::hash(key);
-                if (kojo::system_endian() == kojo::endian::big)
+                if (kojo::system_endian() == std::endian::big)
                     entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
             }
 
@@ -162,24 +162,24 @@ public:
         storage.clear();
         
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, kojo::endian::big);
-        storage.write<std::uint32_t>(entry_count, kojo::endian::big);
-        storage.write<std::uint32_t>(first_pointer, kojo::endian::big);
+        storage.write<std::uint32_t>(version, std::endian::big);
+        storage.write<std::uint32_t>(entry_count, std::endian::big);
+        storage.write<std::uint32_t>(first_pointer, std::endian::big);
 
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer32 = (24 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint32_t>(entry.crc32_id, kojo::endian::big);
+            storage.write<std::uint32_t>(entry.crc32_id, std::endian::big);
 
-            storage.write<std::uint32_t>(0, kojo::endian::big); // unk
+            storage.write<std::uint32_t>(0, std::endian::big); // unk
 
             write_offset_str32(entry.message);
-            storage.write<std::uint32_t>(entry.ref_crc32_id, kojo::endian::big);
-            storage.write<std::int16_t>(entry.is_ref, kojo::endian::big);
-            storage.write<std::int16_t>(entry.file_index, kojo::endian::big);
-            storage.write<std::int16_t>(entry.cue_index, kojo::endian::big);
+            storage.write<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
+            storage.write<std::int16_t>(entry.is_ref, std::endian::big);
+            storage.write<std::int16_t>(entry.file_index, std::endian::big);
+            storage.write<std::int16_t>(entry.cue_index, std::endian::big);
 
-            storage.write<std::uint16_t>(0, kojo::endian::big); // padding
+            storage.write<std::uint16_t>(0, std::endian::big); // padding
         }
         for (auto& str : str_tracker) {
             storage.write<std::string>(str);
@@ -202,7 +202,7 @@ public:
         
         for (auto& [key, value] : entry_order) {
             auto& entry = entries[value];
-            if (kojo::system_endian() != kojo::endian::big)
+            if (kojo::system_endian() != std::endian::big)
                 value = kojo::byteswap(value);
 
             std::string hash = std::format("{:08x}", value);

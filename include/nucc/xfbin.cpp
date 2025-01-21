@@ -135,7 +135,7 @@ int XFBIN::read() {
             std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", magic)
         });
 
-    version = input.read<std::uint32_t>(kojo::endian::big);
+    version = input.read<std::uint32_t>(std::endian::big);
     if (version != 121)
         return error_handler({
             Status_Code::VERSION,
@@ -143,20 +143,20 @@ int XFBIN::read() {
             "Ensure the XFBIN's version is `121`."
         });
 
-    input.read<std::uint64_t>(kojo::endian::big); /** Flags. @note Parse these at some point. */
+    input.read<std::uint64_t>(std::endian::big); /** Flags. @note Parse these at some point. */
 
     // Deserialise Index.
         input.change_pos(12); // Chunk header (useless for Index).
-        index.type_count          = input.read<std::uint32_t>(kojo::endian::big);
-        index.type_size           = input.read<std::uint32_t>(kojo::endian::big);
-        index.path_count          = input.read<std::uint32_t>(kojo::endian::big);
-        index.path_size           = input.read<std::uint32_t>(kojo::endian::big);
-        index.name_count          = input.read<std::uint32_t>(kojo::endian::big);
-        index.name_size           = input.read<std::uint32_t>(kojo::endian::big);
-        index.map_count           = input.read<std::uint32_t>(kojo::endian::big);
-        index.map_size            = input.read<std::uint32_t>(kojo::endian::big);
-        index.map_indices_count   = input.read<std::uint32_t>(kojo::endian::big);
-        index.extra_indices_count = input.read<std::uint32_t>(kojo::endian::big);
+        index.type_count          = input.read<std::uint32_t>(std::endian::big);
+        index.type_size           = input.read<std::uint32_t>(std::endian::big);
+        index.path_count          = input.read<std::uint32_t>(std::endian::big);
+        index.path_size           = input.read<std::uint32_t>(std::endian::big);
+        index.name_count          = input.read<std::uint32_t>(std::endian::big);
+        index.name_size           = input.read<std::uint32_t>(std::endian::big);
+        index.map_count           = input.read<std::uint32_t>(std::endian::big);
+        index.map_size            = input.read<std::uint32_t>(std::endian::big);
+        index.map_indices_count   = input.read<std::uint32_t>(std::endian::big);
+        index.extra_indices_count = input.read<std::uint32_t>(std::endian::big);
 
         // Store strings.
             for (int i = 0; i < index.type_count; i++)
@@ -171,17 +171,17 @@ int XFBIN::read() {
         // Store maps.
         for (int i = 0; i < index.map_count; i++)
             index.maps.push_back({
-                input.read<std::uint32_t>(kojo::endian::big),
-                input.read<std::uint32_t>(kojo::endian::big),
-                input.read<std::uint32_t>(kojo::endian::big)
+                input.read<std::uint32_t>(std::endian::big),
+                input.read<std::uint32_t>(std::endian::big),
+                input.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < index.extra_indices_count; i++)
             index.extra_indices.push_back({
-                input.read<std::uint32_t>(kojo::endian::big),
-                input.read<std::uint32_t>(kojo::endian::big)
+                input.read<std::uint32_t>(std::endian::big),
+                input.read<std::uint32_t>(std::endian::big)
             });
         for (int i = 0; i < index.map_indices_count; i++)
-            index.map_indices.push_back(input.read<std::uint32_t>(kojo::endian::big));
+            index.map_indices.push_back(input.read<std::uint32_t>(std::endian::big));
 
     // Read chunks.
     pages.clear();
@@ -284,24 +284,24 @@ void XFBIN::calculate(Optimize optimize) {
 
 void XFBIN::write(std::string output_path, Optimize optimize) {
     output.write<std::string>(magic, 4);
-    output.write<std::uint32_t>(version, kojo::endian::big);
-    output.write<std::uint64_t>(0, kojo::endian::big);
+    output.write<std::uint32_t>(version, std::endian::big);
+    output.write<std::uint64_t>(0, std::endian::big);
 
-        output.write<std::uint32_t>(0, kojo::endian::big);
-        output.write<std::uint32_t>(0, kojo::endian::big);
-        output.write<std::uint16_t>(0, kojo::endian::big);
-        output.write<std::uint16_t>(0, kojo::endian::big);
+        output.write<std::uint32_t>(0, std::endian::big);
+        output.write<std::uint32_t>(0, std::endian::big);
+        output.write<std::uint16_t>(0, std::endian::big);
+        output.write<std::uint16_t>(0, std::endian::big);
         calculate(optimize);
-        output.write<std::uint32_t>(index.type_count,             kojo::endian::big);
-        output.write<std::uint32_t>(index.type_size,              kojo::endian::big);
-        output.write<std::uint32_t>(index.path_count,             kojo::endian::big);
-        output.write<std::uint32_t>(index.path_size,              kojo::endian::big);
-        output.write<std::uint32_t>(index.name_count,             kojo::endian::big);
-        output.write<std::uint32_t>(index.name_size,              kojo::endian::big);
-        output.write<std::uint32_t>(index.map_count,              kojo::endian::big);
-        output.write<std::uint32_t>(index.map_size,               kojo::endian::big);
-        output.write<std::uint32_t>(index.map_indices_count,      kojo::endian::big);
-        output.write<std::uint32_t>(index.extra_indices_count,    kojo::endian::big);
+        output.write<std::uint32_t>(index.type_count,             std::endian::big);
+        output.write<std::uint32_t>(index.type_size,              std::endian::big);
+        output.write<std::uint32_t>(index.path_count,             std::endian::big);
+        output.write<std::uint32_t>(index.path_size,              std::endian::big);
+        output.write<std::uint32_t>(index.name_count,             std::endian::big);
+        output.write<std::uint32_t>(index.name_size,              std::endian::big);
+        output.write<std::uint32_t>(index.map_count,              std::endian::big);
+        output.write<std::uint32_t>(index.map_size,               std::endian::big);
+        output.write<std::uint32_t>(index.map_indices_count,      std::endian::big);
+        output.write<std::uint32_t>(index.extra_indices_count,    std::endian::big);
 
         // Write strings.
         for (auto& type : index.types) output.write<std::string>(type);
@@ -312,26 +312,26 @@ void XFBIN::write(std::string output_path, Optimize optimize) {
 
         // Write maps.
         for (auto& map : index.maps) {
-            output.write<std::uint32_t>(map.type_index, kojo::endian::big);
-            output.write<std::uint32_t>(map.path_index, kojo::endian::big);
-            output.write<std::uint32_t>(map.name_index, kojo::endian::big);
+            output.write<std::uint32_t>(map.type_index, std::endian::big);
+            output.write<std::uint32_t>(map.path_index, std::endian::big);
+            output.write<std::uint32_t>(map.name_index, std::endian::big);
         }
         for (auto& extra_indices_group : index.extra_indices) {
-            output.write<std::uint32_t>(extra_indices_group.name_index, kojo::endian::big);
-            output.write<std::uint32_t>(extra_indices_group.map_index, kojo::endian::big);
+            output.write<std::uint32_t>(extra_indices_group.name_index, std::endian::big);
+            output.write<std::uint32_t>(extra_indices_group.map_index, std::endian::big);
         }
         for (auto& map_index : index.map_indices) {
-            output.write<std::uint32_t>(map_index, kojo::endian::big);
+            output.write<std::uint32_t>(map_index, std::endian::big);
         }
 
     /* nuccChunk */
     for (auto& page : pages) {
         for (auto& chunk : page.chunks) {
             if (!(optimize == Optimize::YES && chunk.type == Chunk_Type::Null)) {
-                output.write<std::uint32_t>(chunk.size, kojo::endian::big);
-                output.write<std::uint32_t>(chunk.map_index, kojo::endian::big);
-                output.write<std::uint16_t>(chunk.version, kojo::endian::big);
-                output.write<std::uint16_t>(chunk.unk, kojo::endian::big);
+                output.write<std::uint32_t>(chunk.size, std::endian::big);
+                output.write<std::uint32_t>(chunk.map_index, std::endian::big);
+                output.write<std::uint16_t>(chunk.version, std::endian::big);
+                output.write<std::uint16_t>(chunk.unk, std::endian::big);
                 output.write<kojo::binary>(chunk.dump());
             }
         }
