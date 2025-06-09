@@ -58,7 +58,7 @@ public:
         std::uint32_t unk1{0};
         std::uint32_t unk2{2};
 
-        std::string key() {
+        std::string key() const {
             return panel_id;
         }
     };

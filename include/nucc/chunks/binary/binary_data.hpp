@@ -44,6 +44,33 @@ struct RGB {
     }
 };
 
+struct CRC32 {
+    std::uint32_t id;
+
+    CRC32() = default;
+    CRC32(std::uint32_t _id) : id(_id) {}
+    CRC32(std::string str) {
+        load(str);
+    }
+
+    void load(std::uint32_t _id) {
+        id = _id;
+    }
+    void load(std::string str) {
+        if (std::regex_match(str, std::regex("^([0-9a-fA-F]{8})$"))) {
+            id = std::stoul(str, nullptr, 16);
+        } else {
+            id = nucc::hash(str);
+            if (kojo::system_endian() == std::endian::big)
+                id = kojo::byteswap(id);
+        }
+    }
+
+    std::string to_string() {
+        return std::format("{:08x}", id);
+    }
+};
+
 class Binary_Data {
 public:
     // Return size of would-be binary data.

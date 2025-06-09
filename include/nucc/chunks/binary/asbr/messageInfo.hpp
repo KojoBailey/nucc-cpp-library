@@ -9,18 +9,18 @@ namespace nucc {
 class messageInfo : public Binary_Data {
 public:
     struct Entry {
-        std::uint32_t crc32_id;
+        CRC32 crc32_id;
         std::string message{"<EMPTY>"};
         std::uint32_t ref_crc32_id{0};
         std::int16_t is_ref{-1};
         std::int64_t file_index{-1};
         std::int64_t cue_index{-1};
 
-        std::uint32_t key() {
-            return crc32_id;
+        std::uint32_t key() const {
+            return crc32_id.id;
         }
-        std::string order_key () {
-            return std::format("{:03}{:03}{:08x}", file_index, cue_index, crc32_id);
+        std::string order_key() {
+            return std::format("{:03}{:03}{}", file_index, cue_index, crc32_id.to_string());
         }
     };
 
@@ -57,7 +57,7 @@ public:
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.crc32_id       = storage.read_int<std::uint32_t>(std::endian::big);
+            entry_buffer.crc32_id.id    = storage.read_int<std::uint32_t>(std::endian::big);
             storage.change_pos(12); // Skip unknown constants.
             ptr_buffer64                = storage.read_int<std::uint64_t>(std::endian::little);
             entry_buffer.message        = storage.read_str(0, ptr_buffer64 - 8);
@@ -91,13 +91,7 @@ public:
 
             Entry entry_buffer;
 
-            if (std::regex_match(key, std::regex("^([0-9a-fA-F]{8})$"))) {
-                entry_buffer.crc32_id = std::stoul(key, nullptr, 16);
-            } else {
-                entry_buffer.crc32_id = nucc::hash(key);
-                if (kojo::system_endian() == std::endian::big)
-                    entry_buffer.crc32_id = kojo::byteswap(entry_buffer.crc32_id);
-            }
+            entry_buffer.crc32_id.load(key);
 
             if (entries.contains(entry_buffer.key()))
                 entry_buffer = entries[entry_buffer.key()];
@@ -175,7 +169,7 @@ public:
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer64 = (40 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write_int<std::uint32_t>(entry.crc32_id, std::endian::big);
+            storage.write_int<std::uint32_t>(entry.crc32_id.id, std::endian::big);
 
             storage.write_int<std::uint32_t>(0, std::endian::little);
             storage.write_int<std::uint32_t>(0, std::endian::little);
