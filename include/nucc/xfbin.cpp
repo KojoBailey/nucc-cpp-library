@@ -126,8 +126,14 @@ std::string XFBIN::Index::get_name(std::uint32_t map_index) {
 }
 
 int XFBIN::read() {
-    // Deserialise header.
-    std::string magic_input = input.read<std::string>(4);
+    int result = read_header();
+    if (result != 0) return result;
+    read_index();
+    read_chunks();
+    return 0;
+}
+int XFBIN::read_header() {
+    std::string magic_input = input.read_str(4);
     if (magic != magic_input)
         return error_handler({
             Status_Code::FILE_MAGIC,
@@ -135,7 +141,7 @@ int XFBIN::read() {
             std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", magic)
         });
 
-    version = input.read<std::uint32_t>(std::endian::big);
+    version = input.read_int<std::uint32_t>(std::endian::big);
     if (version != 121)
         return error_handler({
             Status_Code::VERSION,
@@ -143,59 +149,60 @@ int XFBIN::read() {
             "Ensure the XFBIN's version is `121`."
         });
 
-    input.read<std::uint64_t>(std::endian::big); /** Flags. @note Parse these at some point. */
+    input.read_int<std::uint64_t>(std::endian::big); /** Flags. @note Parse these at some point. */
+    return 0; // No errors.
+}
+void XFBIN::read_index() {
+    input.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
+    index.type_count          = input.read_int<std::uint32_t>(std::endian::big);
+    index.type_size           = input.read_int<std::uint32_t>(std::endian::big);
+    index.path_count          = input.read_int<std::uint32_t>(std::endian::big);
+    index.path_size           = input.read_int<std::uint32_t>(std::endian::big);
+    index.name_count          = input.read_int<std::uint32_t>(std::endian::big);
+    index.name_size           = input.read_int<std::uint32_t>(std::endian::big);
+    index.map_count           = input.read_int<std::uint32_t>(std::endian::big);
+    index.map_size            = input.read_int<std::uint32_t>(std::endian::big);
+    index.map_indices_count   = input.read_int<std::uint32_t>(std::endian::big);
+    index.extra_indices_count = input.read_int<std::uint32_t>(std::endian::big);
 
-    // Deserialise Index.
-        input.change_pos(12); // Chunk header (useless for Index).
-        index.type_count          = input.read<std::uint32_t>(std::endian::big);
-        index.type_size           = input.read<std::uint32_t>(std::endian::big);
-        index.path_count          = input.read<std::uint32_t>(std::endian::big);
-        index.path_size           = input.read<std::uint32_t>(std::endian::big);
-        index.name_count          = input.read<std::uint32_t>(std::endian::big);
-        index.name_size           = input.read<std::uint32_t>(std::endian::big);
-        index.map_count           = input.read<std::uint32_t>(std::endian::big);
-        index.map_size            = input.read<std::uint32_t>(std::endian::big);
-        index.map_indices_count   = input.read<std::uint32_t>(std::endian::big);
-        index.extra_indices_count = input.read<std::uint32_t>(std::endian::big);
+    // Store strings.
+    for (int i = 0; i < index.type_count; i++)
+        index.types.push_back(input.read_str());
+    for (int i = 0; i < index.path_count; i++)
+        index.paths.push_back(input.read_str());
+    for (int i = 0; i < index.name_count; i++)
+        index.names.push_back(input.read_str());
 
-        // Store strings.
-            for (int i = 0; i < index.type_count; i++)
-                index.types.push_back(input.read<std::string>());
-            for (int i = 0; i < index.path_count; i++)
-                index.paths.push_back(input.read<std::string>());
-            for (int i = 0; i < index.name_count; i++)
-                index.names.push_back(input.read<std::string>());
+    input.align_by(4);
 
-        input.align_by(4);
-
-        // Store maps.
-        for (int i = 0; i < index.map_count; i++)
-            index.maps.push_back({
-                input.read<std::uint32_t>(std::endian::big),
-                input.read<std::uint32_t>(std::endian::big),
-                input.read<std::uint32_t>(std::endian::big)
-            });
-        for (int i = 0; i < index.extra_indices_count; i++)
-            index.extra_indices.push_back({
-                input.read<std::uint32_t>(std::endian::big),
-                input.read<std::uint32_t>(std::endian::big)
-            });
-        for (int i = 0; i < index.map_indices_count; i++)
-            index.map_indices.push_back(input.read<std::uint32_t>(std::endian::big));
-
-    // Read chunks.
+    // Store maps.
+    for (int i = 0; i < index.map_count; i++)
+        index.maps.push_back({
+            input.read_int<std::uint32_t>(std::endian::big),
+            input.read_int<std::uint32_t>(std::endian::big),
+            input.read_int<std::uint32_t>(std::endian::big)
+        });
+    for (int i = 0; i < index.extra_indices_count; i++)
+        index.extra_indices.push_back({
+            input.read_int<std::uint32_t>(std::endian::big),
+            input.read_int<std::uint32_t>(std::endian::big)
+        });
+    for (int i = 0; i < index.map_indices_count; i++)
+        index.map_indices.push_back(input.read_int<std::uint32_t>(std::endian::big));
+}
+void XFBIN::read_chunks() {
     pages.clear();
     for (int page_it = 0; !input.at_end(); page_it++) {
         pages.emplace_back();
         auto& page = pages[page_it];
 
-        for (int i = 0; true; i++) {
+        while (!input.at_end()) {
             Chunk chunk;
             chunk.load(input.data(), input.get_pos());
             chunk.type = index.get_type(chunk.map_index);
             chunk.path = index.get_path(chunk.map_index);
             chunk.name = index.get_name(chunk.map_index);
-            input.change_pos(chunk.size + 12); // 12 being size of header
+            input.change_pos(chunk.size + HEADER_SIZE);
             if (chunk.type == Chunk_Type::Page) {
                 page.load(&chunk);
                 index.running_map_offset += page.content.map_offset;
@@ -205,8 +212,6 @@ int XFBIN::read() {
             page.chunks.push_back(&chunk);
         }
     }
-    
-    return 0;
 }
 
 Chunk* XFBIN::fetch(Chunk_Type chunk_type, size_t index) {
@@ -243,17 +248,17 @@ void XFBIN::calculate(Optimize optimize) {
         for (auto& chunk : page.chunks) {
             if (!(optimize == Optimize::YES && chunk.type == Chunk_Type::Null)) {
                 std::string type = chunk.type_as_string();
-                if ( type_tracker.count(type) == 0 ) {
+                if (type_tracker.count(type) == 0) {
                     type_tracker[type] = type_tracker.size();
                     index.types.push_back(type);
                     index.type_size += type.size() + 1;
                 }
-                if ( path_tracker.count(chunk.path) == 0 ) {
+                if (path_tracker.count(chunk.path) == 0) {
                     path_tracker[chunk.path] = path_tracker.size();
                     index.paths.push_back(chunk.path);
                     index.path_size += chunk.path.size() + 1;
                 }
-                if ( name_tracker.count(chunk.name) == 0 ) {
+                if (name_tracker.count(chunk.name) == 0) {
                     name_tracker[chunk.name] = name_tracker.size();
                     index.names.push_back(chunk.name);
                     index.name_size += chunk.name.size() + 1;
@@ -280,59 +285,66 @@ void XFBIN::calculate(Optimize optimize) {
     index.name_count = index.names.size();
     index.map_count = index.maps.size();
     index.map_indices_count = index.map_indices.size();
+    index.extra_indices_count = 0;
 }
 
 void XFBIN::write(std::string output_path, Optimize optimize) {
-    output.write<std::string>(magic, 4);
-    output.write<std::uint32_t>(version, std::endian::big);
-    output.write<std::uint64_t>(0, std::endian::big);
+    output.write_str(magic, 4);
+    output.write_int<std::uint32_t>(version, std::endian::big);
+    output.write_int<std::uint64_t>(0, std::endian::big);
 
-        output.write<std::uint32_t>(0, std::endian::big);
-        output.write<std::uint32_t>(0, std::endian::big);
-        output.write<std::uint16_t>(0, std::endian::big);
-        output.write<std::uint16_t>(0, std::endian::big);
+        output.write_int<std::uint32_t>(0, std::endian::big);
+        output.write_int<std::uint32_t>(0, std::endian::big);
+        output.write_int<std::uint16_t>(0, std::endian::big);
+        output.write_int<std::uint16_t>(0, std::endian::big);
         calculate(optimize);
-        output.write<std::uint32_t>(index.type_count,             std::endian::big);
-        output.write<std::uint32_t>(index.type_size,              std::endian::big);
-        output.write<std::uint32_t>(index.path_count,             std::endian::big);
-        output.write<std::uint32_t>(index.path_size,              std::endian::big);
-        output.write<std::uint32_t>(index.name_count,             std::endian::big);
-        output.write<std::uint32_t>(index.name_size,              std::endian::big);
-        output.write<std::uint32_t>(index.map_count,              std::endian::big);
-        output.write<std::uint32_t>(index.map_size,               std::endian::big);
-        output.write<std::uint32_t>(index.map_indices_count,      std::endian::big);
-        output.write<std::uint32_t>(index.extra_indices_count,    std::endian::big);
+        output.write_int<std::uint32_t>(index.type_count,             std::endian::big);
+        output.write_int<std::uint32_t>(index.type_size,              std::endian::big);
+        output.write_int<std::uint32_t>(index.path_count,             std::endian::big);
+        output.write_int<std::uint32_t>(index.path_size,              std::endian::big);
+        output.write_int<std::uint32_t>(index.name_count,             std::endian::big);
+        output.write_int<std::uint32_t>(index.name_size,              std::endian::big);
+        output.write_int<std::uint32_t>(index.map_count,              std::endian::big);
+        output.write_int<std::uint32_t>(index.map_size,               std::endian::big);
+        output.write_int<std::uint32_t>(index.map_indices_count,      std::endian::big);
+        output.write_int<std::uint32_t>(index.extra_indices_count,    std::endian::big);
 
         // Write strings.
-        for (auto& type : index.types) output.write<std::string>(type);
-        for (auto& path : index.paths) output.write<std::string>(path);
-        for (auto& name : index.names) output.write<std::string>(name);
+        for (auto& type : index.types) output.write_str(type);
+        for (auto& path : index.paths) {
+            if (path == "") output.write_char('\0');
+            else output.write_str(path);
+        }
+        for (auto& name : index.names) {
+            if (name == "") output.write_char('\0');
+            else output.write_str(name);
+        }
 
         output.align_by(4);
 
         // Write maps.
         for (auto& map : index.maps) {
-            output.write<std::uint32_t>(map.type_index, std::endian::big);
-            output.write<std::uint32_t>(map.path_index, std::endian::big);
-            output.write<std::uint32_t>(map.name_index, std::endian::big);
+            output.write_int<std::uint32_t>(map.type_index, std::endian::big);
+            output.write_int<std::uint32_t>(map.path_index, std::endian::big);
+            output.write_int<std::uint32_t>(map.name_index, std::endian::big);
         }
         for (auto& extra_indices_group : index.extra_indices) {
-            output.write<std::uint32_t>(extra_indices_group.name_index, std::endian::big);
-            output.write<std::uint32_t>(extra_indices_group.map_index, std::endian::big);
+            output.write_int<std::uint32_t>(extra_indices_group.name_index, std::endian::big);
+            output.write_int<std::uint32_t>(extra_indices_group.map_index, std::endian::big);
         }
         for (auto& map_index : index.map_indices) {
-            output.write<std::uint32_t>(map_index, std::endian::big);
+            output.write_int<std::uint32_t>(map_index, std::endian::big);
         }
 
     /* nuccChunk */
     for (auto& page : pages) {
         for (auto& chunk : page.chunks) {
             if (!(optimize == Optimize::YES && chunk.type == Chunk_Type::Null)) {
-                output.write<std::uint32_t>(chunk.size, std::endian::big);
-                output.write<std::uint32_t>(chunk.map_index, std::endian::big);
-                output.write<std::uint16_t>(chunk.version, std::endian::big);
-                output.write<std::uint16_t>(chunk.unk, std::endian::big);
-                output.write<kojo::binary>(chunk.dump());
+                output.write_int<std::uint32_t>(chunk.size, std::endian::big);
+                output.write_int<std::uint32_t>(chunk.map_index, std::endian::big);
+                output.write_int<std::uint16_t>(chunk.version, std::endian::big);
+                output.write_int<std::uint16_t>(chunk.unk, std::endian::big);
+                output.write_binary(chunk.dump());
             }
         }
     }

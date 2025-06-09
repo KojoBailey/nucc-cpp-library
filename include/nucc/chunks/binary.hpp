@@ -27,7 +27,7 @@ public:
 
     void load_data(Binary_Data& input) {
         content.size = input.size();
-        content.binary_data.load(input.write_to_bin());
+        content.binary_data.load(input.write_to_bin(), 0, content.size);
         update();
     }
 
@@ -37,11 +37,10 @@ public:
 
     void update() {
         storage.clear();
-        storage.write<std::uint32_t>(content.size, std::endian::big);
-        for (int i = 0; i < content.binary_data.size(); i++) {
-            storage.write<char>(content.binary_data.read<char>());
-        }
+        storage.write_int<std::uint32_t>(content.size, std::endian::big);
+        storage.write_binary(content.binary_data);
         type = Chunk_Type::Binary;
+        size = content.size + 4;
     }
 
     kojo::binary& dump() {
@@ -51,7 +50,7 @@ public:
 private:
     void parse() {
         storage.set_pos(0);
-        content.size = storage.read<std::uint32_t>(std::endian::big);
+        content.size = storage.read_int<std::uint32_t>(std::endian::big);
         content.binary_data.load(storage, 4);
     }
 };

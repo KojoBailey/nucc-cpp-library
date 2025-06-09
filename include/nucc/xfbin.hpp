@@ -42,12 +42,14 @@ enum class Optimize {
  */
 class XFBIN {
 public:
-    std::string name;                           /** External filename, not included within the XFBIN file itself. */
-    Game game{Game::UNKNOWN};                   /** Game that the XFBIN is from. */
+    std::string name;               /** External filename, not included within the XFBIN file itself. */
+    Game game{Game::UNKNOWN};       /** Game that the XFBIN is from. */
     std::string game_as_string();
 
     static constexpr std::string_view magic{"NUCC"};    /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
     std::uint32_t version{121};                         /** e.g. `121` = 1.2.1 */
+
+    static const int HEADER_SIZE{12};
     
     std::vector<Page> pages;
 
@@ -116,6 +118,11 @@ public:
         return nullptr;
     }
 
+    Page* create_page() {
+        pages.emplace_back();
+        return &pages[pages.size() - 1];
+    }
+
     void write(std::string output_path, Optimize optimize = Optimize::MATCH);
 
 private:
@@ -123,6 +130,9 @@ private:
     kojo::binary output;
 
     int read();
+    int read_header();
+    void read_index();
+    void read_chunks();
 
     void calculate(Optimize optimize);
 };

@@ -43,27 +43,27 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(std::endian::big);
+        version = storage.read_int<std::uint32_t>(std::endian::big);
         if (version != 1001)
             return error_handler({
                 nucc::Status_Code::VERSION,
                 std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
                 std::format("Ensure the data is of version `{}`.", 1001)
             });
-        entry_count = storage.read<std::uint32_t>(std::endian::big);
-        first_pointer = storage.read<std::uint32_t>(std::endian::big);
+        entry_count = storage.read_int<std::uint32_t>(std::endian::big);
+        first_pointer = storage.read_int<std::uint32_t>(std::endian::big);
         storage.change_pos(first_pointer - sizeof(first_pointer));
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.crc32_id       = storage.read<std::uint32_t>(std::endian::big);
+            entry_buffer.crc32_id       = storage.read_int<std::uint32_t>(std::endian::big);
             storage.change_pos(4); // Skip unknown constant.
-            ptr_buffer32                = storage.read<std::uint32_t>(std::endian::big);
-            entry_buffer.message        = storage.read<std::string>(0, ptr_buffer32 - sizeof(ptr_buffer32));
-            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(std::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(std::endian::big);
-            entry_buffer.file_index     = storage.read<std::int16_t>(std::endian::big);
-            entry_buffer.cue_index      = storage.read<std::int16_t>(std::endian::big);
+            ptr_buffer32                = storage.read_int<std::uint32_t>(std::endian::big);
+            entry_buffer.message        = storage.read_str(0, ptr_buffer32 - sizeof(ptr_buffer32));
+            entry_buffer.ref_crc32_id   = storage.read_int<std::uint32_t>(std::endian::big);
+            entry_buffer.is_ref         = storage.read_int<std::int16_t>(std::endian::big);
+            entry_buffer.file_index     = storage.read_int<std::int16_t>(std::endian::big);
+            entry_buffer.cue_index      = storage.read_int<std::int16_t>(std::endian::big);
             storage.change_pos(2); // Skip padding.
 
             entries[entry_buffer.key()] = entry_buffer;
@@ -162,27 +162,27 @@ public:
         storage.clear();
         
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, std::endian::big);
-        storage.write<std::uint32_t>(entry_count, std::endian::big);
-        storage.write<std::uint32_t>(first_pointer, std::endian::big);
+        storage.write_int<std::uint32_t>(version, std::endian::big);
+        storage.write_int<std::uint32_t>(entry_count, std::endian::big);
+        storage.write_int<std::uint32_t>(first_pointer, std::endian::big);
 
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer32 = (24 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint32_t>(entry.crc32_id, std::endian::big);
+            storage.write_int<std::uint32_t>(entry.crc32_id, std::endian::big);
 
-            storage.write<std::uint32_t>(0, std::endian::big); // unk
+            storage.write_int<std::uint32_t>(0, std::endian::big); // unk
 
             write_offset_str32(entry.message);
-            storage.write<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
-            storage.write<std::int16_t>(entry.is_ref, std::endian::big);
-            storage.write<std::int16_t>(entry.file_index, std::endian::big);
-            storage.write<std::int16_t>(entry.cue_index, std::endian::big);
+            storage.write_int<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
+            storage.write_int<std::int16_t>(entry.is_ref, std::endian::big);
+            storage.write_int<std::int16_t>(entry.file_index, std::endian::big);
+            storage.write_int<std::int16_t>(entry.cue_index, std::endian::big);
 
-            storage.write<std::uint16_t>(0, std::endian::big); // padding
+            storage.write_int<std::uint16_t>(0, std::endian::big); // padding
         }
         for (auto& str : str_tracker) {
-            storage.write<std::string>(str);
+            storage.write_str(str);
             storage.align_by(4);
         }
 
@@ -192,8 +192,8 @@ public:
         std::unordered_map<std::string, std::string> hashlist;
         kojo::binary hashlist_data{hashlist_path};
         while (!hashlist_data.at_end()) {
-            std::string buffer = hashlist_data.read<std::string>();
-            hashlist[buffer] = hashlist_data.read<std::string>();
+            std::string buffer = hashlist_data.read_str();
+            hashlist[buffer] = hashlist_data.read_str();
         }
         nlohmann::ordered_json json;
 

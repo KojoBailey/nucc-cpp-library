@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 project(nucc-cpp-library VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
 
 # Find source files
-file(GLOB SOURCES include/nucc/*.cpp include/nucc/chunks/binary/asbr/*.cpp)
+file(GLOB SOURCES include/nucc/*.cpp include/nucc/chunks/*.cpp include/nucc/chunks/binary/asbr/*.cpp)
 
 # Create shared library
 add_library(nucc-cpp-library STATIC ${SOURCES})

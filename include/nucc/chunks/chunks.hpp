@@ -3,6 +3,8 @@
 
 #include <kojo/binary.hpp>
 
+#include <unordered_map>
+
 namespace nucc {
 
 /**
@@ -43,6 +45,10 @@ enum class Chunk_Type {
     Sprite2Anm,
     Nub,
 };
+
+extern std::unordered_map<std::string, Chunk_Type> string_to_chunk_type_table;
+
+Chunk_Type string_to_chunk_type(std::string str);
 
 /**
  * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
@@ -107,10 +113,10 @@ public:
     int load(void* input, size_t pos = 0) {
         if (input == nullptr) return -1;
         kojo::binary buffer{input, pos};
-        size = buffer.read<std::uint32_t>(std::endian::big);
-        map_index = buffer.read<std::uint32_t>(std::endian::big);
-        version = buffer.read<std::uint16_t>(std::endian::big);
-        unk = buffer.read<std::uint16_t>(std::endian::big);
+        size = buffer.read_int<std::uint32_t>(std::endian::big);
+        map_index = buffer.read_int<std::uint32_t>(std::endian::big);
+        version = buffer.read_int<std::uint16_t>(std::endian::big);
+        unk = buffer.read_int<std::uint16_t>(std::endian::big);
         storage.load(buffer, buffer.get_pos(), size);
         parse();
         return 0;

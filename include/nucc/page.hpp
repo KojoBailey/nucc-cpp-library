@@ -11,8 +11,8 @@ namespace nucc {
 */
 class Page : public Chunk {
 public:
-    Chunk_Type type{Chunk_Type::Page};
-    std::string name{"Page0"};
+    static constexpr Chunk_Type type{Chunk_Type::Page};
+    static constexpr std::string_view name{"Page0"};
 
     struct {
         std::uint32_t map_offset;
@@ -26,12 +26,21 @@ public:
         load(chunk);
     }
 
+    Chunk* create_chunk(Chunk_Type type = Chunk_Type::Null, std::string_view path = "", std::string_view name = "") {
+        chunks.emplace_back();
+        auto& chunk = chunks[chunks.size() - 1];
+        chunk.type = type;
+        chunk.path = path;
+        chunk.name = name;
+        return &chunk;
+    }
+
     kojo::binary& dump() {
         output.clear();
-        output.write<std::uint32_t>(content.map_offset, std::endian::big);
-        output.write<std::uint32_t>(content.extra_offset, std::endian::big);
+        output.write_int<std::uint32_t>(content.map_offset, std::endian::big);
+        output.write_int<std::uint32_t>(content.extra_offset, std::endian::big);
         for (auto& chunk : chunks) {
-            output.write<kojo::binary>(chunk.dump());
+            output.write_binary(chunk.dump());
         }
         return output;
     }
@@ -39,8 +48,8 @@ public:
 private:
     void parse() {
         storage.set_pos(0);
-        content.map_offset = storage.read<std::uint32_t>(std::endian::big);
-        content.extra_offset = storage.read<std::uint32_t>(std::endian::big);
+        content.map_offset = storage.read_int<std::uint32_t>(std::endian::big);
+        content.extra_offset = storage.read_int<std::uint32_t>(std::endian::big);
     }
 };
 

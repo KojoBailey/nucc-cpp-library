@@ -24,10 +24,10 @@ public:
         }
     };
 
-    std::uint32_t version{250103};
+    std::uint32_t version{1001};
     std::string language{"Unknown"};
     std::uint32_t entry_count;
-    std::uint64_t first_pointer;
+    std::uint64_t first_pointer{8};
     std::map<std::uint32_t, Entry> entries;
     std::map<std::string, std::uint32_t> entry_order;
 
@@ -44,27 +44,27 @@ public:
         });
         storage.load(input, 0, size_input);
 
-        version = storage.read<std::uint32_t>(std::endian::little);
+        version = storage.read_int<std::uint32_t>(std::endian::little);
         if (version != 1001)
             return error_handler({
                 nucc::Status_Code::VERSION,
                 std::format("Expected version `{}` for messageInfo data, but instead got `{}`.", 1001, version),
                 std::format("Ensure the data is of version `{}`.", 1001)
             });
-        entry_count = storage.read<std::uint32_t>(std::endian::little);
-        first_pointer = storage.read<std::uint64_t>(std::endian::little);
+        entry_count = storage.read_int<std::uint32_t>(std::endian::little);
+        first_pointer = storage.read_int<std::uint64_t>(std::endian::little);
         storage.change_pos(first_pointer - 8);
 
         Entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
-            entry_buffer.crc32_id       = storage.read<std::uint32_t>(std::endian::big);
+            entry_buffer.crc32_id       = storage.read_int<std::uint32_t>(std::endian::big);
             storage.change_pos(12); // Skip unknown constants.
-            ptr_buffer64                = storage.read<std::uint64_t>(std::endian::little);
-            entry_buffer.message        = storage.read<std::string>(0, ptr_buffer64 - 8);
-            entry_buffer.ref_crc32_id   = storage.read<std::uint32_t>(std::endian::big);
-            entry_buffer.is_ref         = storage.read<std::int16_t>(std::endian::little);
-            entry_buffer.file_index     = storage.read<std::int16_t>(std::endian::little);
-            entry_buffer.cue_index      = storage.read<std::int16_t>(std::endian::little);
+            ptr_buffer64                = storage.read_int<std::uint64_t>(std::endian::little);
+            entry_buffer.message        = storage.read_str(0, ptr_buffer64 - 8);
+            entry_buffer.ref_crc32_id   = storage.read_int<std::uint32_t>(std::endian::big);
+            entry_buffer.is_ref         = storage.read_int<std::int16_t>(std::endian::little);
+            entry_buffer.file_index     = storage.read_int<std::int16_t>(std::endian::little);
+            entry_buffer.cue_index      = storage.read_int<std::int16_t>(std::endian::little);
             storage.change_pos(6); // Skip unknown constants.
 
             entries[entry_buffer.key()] = entry_buffer;
@@ -122,15 +122,17 @@ public:
                         );
                     }
                 }
-            } else if (entry_buffer.message == "<EMPTY>") return error_handler({
+            } else if (entry_buffer.message == "<EMPTY>" && !entry_buffer.is_ref) return error_handler({
                 nucc::Status_Code::JSON_MISSING_FIELD,
                 std::format("JSON data for entry \"{}\" does not contain required field \"Message\".", key),
-                "Add the \"Message\" field."
+                "Add the \"Message\" field, or the \"Reference\" field if a reference."
             });
             
-            if (value.contains("Reference_Hash")) {
+            if (value.contains("Reference")) {
                 entry_buffer.is_ref = 1;
-                entry_buffer.ref_crc32_id = std::stoul(value["Reference_Hash"].template get<std::string>(), nullptr, 16);
+                std::string reference_str = value["Reference"];
+                entry_buffer.ref_crc32_id = nucc::hash(reference_str);
+                entry_buffer.message = std::format("<text {} text_2 />", reference_str);
             }
 
             if (value.contains("ADX2_File"))
@@ -166,30 +168,30 @@ public:
         storage.clear();
         
         entry_count = entries.size();
-        storage.write<std::uint32_t>(version, std::endian::little);
-        storage.write<std::uint32_t>(entry_count, std::endian::little);
-        storage.write<std::uint64_t>(first_pointer, std::endian::little);
+        storage.write_int<std::uint32_t>(version, std::endian::little);
+        storage.write_int<std::uint32_t>(entry_count, std::endian::little);
+        storage.write_int<std::uint64_t>(first_pointer, std::endian::little);
 
         last_pos = 8 + first_pointer; // Size of header
         ptr_buffer64 = (40 * entry_count);
         for (auto& [key, entry] : entries) {
-            storage.write<std::uint32_t>(entry.crc32_id, std::endian::big);
+            storage.write_int<std::uint32_t>(entry.crc32_id, std::endian::big);
 
-            storage.write<std::uint32_t>(0, std::endian::little);
-            storage.write<std::uint32_t>(0, std::endian::little);
-            storage.write<std::uint32_t>(0, std::endian::little);
+            storage.write_int<std::uint32_t>(0, std::endian::little);
+            storage.write_int<std::uint32_t>(0, std::endian::little);
+            storage.write_int<std::uint32_t>(0, std::endian::little);
 
             write_offset_str(entry.message);
-            storage.write<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
-            storage.write<std::int16_t>(entry.is_ref, std::endian::little);
-            storage.write<std::int16_t>(entry.file_index, std::endian::little);
-            storage.write<std::int16_t>(entry.cue_index, std::endian::little);
+            storage.write_int<std::uint32_t>(entry.ref_crc32_id, std::endian::big);
+            storage.write_int<std::int16_t>(entry.is_ref, std::endian::little);
+            storage.write_int<std::int16_t>(entry.file_index, std::endian::little);
+            storage.write_int<std::int16_t>(entry.cue_index, std::endian::little);
 
-            storage.write<std::int16_t>(-1, std::endian::little);
-            storage.write<std::uint32_t>(0, std::endian::little);
+            storage.write_int<std::int16_t>(-1, std::endian::little);
+            storage.write_int<std::uint32_t>(0, std::endian::little);
         }
         for (auto& str : str_tracker) {
-            storage.write<std::string>(str);
+            storage.write_str(str);
             storage.align_by(8);
         }
 
@@ -199,8 +201,8 @@ public:
         std::unordered_map<std::string, std::string> hashlist;
         kojo::binary hashlist_data{hashlist_path};
         while (!hashlist_data.at_end()) {
-            std::string buffer = hashlist_data.read<std::string>();
-            hashlist[buffer] = hashlist_data.read<std::string>();
+            std::string buffer = hashlist_data.read_str();
+            hashlist[buffer] = hashlist_data.read_str();
         }
         nlohmann::ordered_json json;
 
