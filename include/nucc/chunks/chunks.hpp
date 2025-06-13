@@ -72,7 +72,7 @@ public:
         load(chunk);
     }
 
-    std::string type_as_string() {
+    std::string type_as_string() const {
         switch (type) {
             case Chunk_Type::Index                  : return "nuccChunkIndex";
             case Chunk_Type::Null                   : return "nuccChunkNull";
