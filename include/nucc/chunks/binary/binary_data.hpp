@@ -17,14 +17,14 @@
 
 namespace nucc {
 
-struct RGB {
+struct rgb {
     std::uint32_t red, green, blue, alpha;
 
     std::uint32_t consolidate() {
         return alpha | ((blue | ((green | (red << 8)) << 8)) << 8);
     }
 
-    RGB hex_to_rgb(std::string hex_str) {
+    rgb hex_to_rgb(std::string hex_str) {
         std::erase(hex_str, '#');
         std::stringstream buffer;
         buffer << std::hex << hex_str.substr(0, 2);
@@ -44,12 +44,12 @@ struct RGB {
     }
 };
 
-struct CRC32 {
+struct crc32 {
     std::uint32_t id;
 
-    CRC32() = default;
-    CRC32(std::uint32_t _id) : id(_id) {}
-    CRC32(std::string str) {
+    crc32() = default;
+    crc32(std::uint32_t _id) : id(_id) {}
+    crc32(std::string str) {
         load(str);
     }
 
@@ -61,8 +61,7 @@ struct CRC32 {
             id = std::stoul(str, nullptr, 16);
         } else {
             id = nucc::hash(str);
-            if (kojo::system_endian() == std::endian::big)
-                id = kojo::byteswap(id);
+            kojo::binary::set_endian(id, std::endian::big);
         }
     }
 
@@ -71,16 +70,16 @@ struct CRC32 {
     }
 };
 
-class Binary_Data {
+class binary_data {
 public:
-    // Return size of would-be binary data.
-    virtual size_t size() { return -1; }
-    // Clear all variables.
-    virtual void clear() {}
+    virtual size_t size() const = 0;
+    virtual void clear() = 0;
 
-    // Write to binary or JSON output.
-    virtual std::uint64_t* write_to_bin() { return (std::uint64_t*)storage.data(); }
-    virtual nlohmann::ordered_json write_to_json() { return nullptr; }
+    virtual void read_bin(const std::byte* src, const size_t size = 0) = 0;
+    virtual void read_json(const nlohmann::ordered_json& input) = 0;
+
+    virtual std::shared_ptr<std::byte> write_bin() = 0;
+    virtual nlohmann::ordered_json write_json() = 0;
 
 protected:
     kojo::binary storage;
@@ -94,26 +93,15 @@ protected:
         return value + (factor - value % factor) % factor;
     }
 
-    void write_offset_str(std::string& str) {
+    template<std::integral T>void write_offset_str(std::string& str) {
         if (str.size() > 0) {
             str_tracker.push_back(str);
             ptr_buffer64 -= (storage.get_pos() - last_pos);
             last_pos = storage.get_pos();
-            storage.write_int<std::uint64_t>(ptr_buffer64, std::endian::little);
-            ptr_buffer64 += ceiling(str.size() + 1, 8); // ceiling to nearest 8
+            storage.write<T>(static_cast<T>(ptr_buffer64), std::endian::little);
+            ptr_buffer64 += ceiling(str.size() + 1, sizeof(T)); // ceiling to nearest 8
         } else {
-            storage.write_int<std::uint64_t>(0, std::endian::little);
-        }
-    }
-    void write_offset_str32(std::string& str) {
-        if (str.size() > 0) {
-            str_tracker.push_back(str);
-            ptr_buffer32 -= (storage.get_pos() - last_pos);
-            last_pos = storage.get_pos();
-            storage.write_int<std::uint32_t>(ptr_buffer32, std::endian::little);
-            ptr_buffer32 += ceiling(str.size() + 1, 4); // ceiling to nearest 4
-        } else {
-            storage.write_int<std::uint32_t>(0, std::endian::little);
+            storage.write<T>(0, std::endian::little);
         }
     }
 };

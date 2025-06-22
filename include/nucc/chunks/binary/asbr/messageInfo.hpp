@@ -6,10 +6,10 @@
 namespace nucc {
     namespace ASBR {
         
-class messageInfo : public Binary_Data {
+class messageInfo : public binary_data {
 public:
-    struct Entry {
-        CRC32 crc32_id;
+    struct entry {
+        crc32 crc32_id;
         std::string message{"<EMPTY>"};
         std::uint32_t ref_crc32_id{0};
         std::int16_t is_ref{-1};
@@ -28,7 +28,7 @@ public:
     std::string language{"Unknown"};
     std::uint32_t entry_count;
     std::uint64_t first_pointer{8};
-    std::map<std::uint32_t, Entry> entries;
+    std::map<std::uint32_t, entry> entries;
     std::map<std::string, std::uint32_t> entry_order;
 
     messageInfo() {};
@@ -55,7 +55,7 @@ public:
         first_pointer = storage.read_int<std::uint64_t>(std::endian::little);
         storage.change_pos(first_pointer - 8);
 
-        Entry entry_buffer;
+        entry entry_buffer;
         for (int i = 0; i < entry_count; i++) {
             entry_buffer.crc32_id.id    = storage.read_int<std::uint32_t>(std::endian::big);
             storage.change_pos(12); // Skip unknown constants.
@@ -89,7 +89,7 @@ public:
         for (const auto& [key, value] : input.items()) {
             if (key == "Language" || key == "Version" || key == "Filetype" || key == "Colors") continue;
 
-            Entry entry_buffer;
+            entry entry_buffer;
 
             entry_buffer.crc32_id.load(key);
 
