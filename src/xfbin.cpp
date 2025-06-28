@@ -12,11 +12,11 @@ XFBIN::XFBIN() {}
 XFBIN::XFBIN(const std::filesystem::path input_path) {
     load(input_path);
 }
-XFBIN::XFBIN(kojo::binary& input_data, size_t start, size_t end) {
-    load(input_data, start, end);
+XFBIN::XFBIN(const std::byte* src) {
+    load(src);
 }
-XFBIN::XFBIN(void* pointer_data, size_t start, size_t end) {
-    load(pointer_data, start, end);
+XFBIN::XFBIN(const kojo::binary& binary) {
+    load(binary);
 }
 
 /** Loading */
