@@ -17,7 +17,7 @@ enum class Status_Code {
     JSON_VALUE
 };
 
-struct Error {
+class Error {
 public:
     Error(Status_Code in_code, std::string in_specific, std::string in_suggestion) {
         code_store = in_code;
@@ -50,15 +50,15 @@ public:
         return suggestion_store;
     }
 
+    static void print(Error error) {
+        std::cout << std::format("NUCC++ Error Code: {:03} - {}\n{}\nSuggestion: {}\n",
+            error.number(), error.generic(), error.specific(), error.suggestion());
+    }
+
 private:
     Status_Code code_store;
     std::string specific_store;
     std::string suggestion_store;
-};
-
-inline std::function<int (Error)> error_handler = [](Error e) {
-    std::cout << std::format("NUCC++ Error Code: {:03} - {}\n{}\nSuggestion: {}\n", e.number(), e.generic(), e.specific(), e.suggestion());
-    return e.number();
 };
 
 } // namespace nucc

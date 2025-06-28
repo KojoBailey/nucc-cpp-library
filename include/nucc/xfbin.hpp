@@ -8,7 +8,6 @@
 #include "chunks/binary.hpp"
 
 #include <filesystem>
-#include <iostream>
 #include <string_view>
 
 namespace nucc {
@@ -19,14 +18,14 @@ namespace nucc {
 enum class Game {
     // In order from old to new.
     UNKNOWN = 0,
-    NSUNS3, /** Naruto Shippuden: Ultimate Ninja Storm 3 */
-    ASB,    /** JoJo's Bizarre Adventure: All-Star Battle */
-    NSUNSR, /** Naruto Shippuden: Ultimate Ninja Storm Revolution */
-    EOHPS3, /** JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 3) */
-    EOHPS4, /** JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 4) */
-    NSUNS4, /** Naruto Shippuden: Ultimate Ninja Storm 4 */
-    ASBR,   /** JoJo's Bizarre Adventure: All-Star Battle R */
-    NXBUNSC /** NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS */
+    NSUNS3, // Naruto Shippuden: Ultimate Ninja Storm 3
+    ASB,    // JoJo's Bizarre Adventure: All-Star Battle
+    NSUNSR, // Naruto Shippuden: Ultimate Ninja Storm Revolution
+    EOHPS3, // JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 3)
+    EOHPS4, // JoJo's Bizarre Adventure: Eyes of Heaven (PlayStation 4)
+    NSUNS4, // Naruto Shippuden: Ultimate Ninja Storm 4
+    ASBR,   // JoJo's Bizarre Adventure: All-Star Battle R
+    NXBUNSC // NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS
 };
 std::string game_to_string(Game game);
 Game string_to_game(std::string str);
@@ -42,14 +41,11 @@ enum class Optimize {
  */
 class XFBIN {
 public:
-    std::string name;               /** External filename, not included within the XFBIN file itself. */
-    Game game{Game::UNKNOWN};       /** Game that the XFBIN is from. */
-    std::string game_as_string();
+    std::string name;               // External filename, not included within the XFBIN file itself.
+    Game game{Game::UNKNOWN};       // Game that the XFBIN is from.
 
-    static constexpr std::string_view magic{"NUCC"};    /** If a file doesn't begin with these bytes, it's not recognised as an XFBIN. */
-    std::uint32_t version{121};                         /** e.g. `121` = 1.2.1 */
-
-    static const int HEADER_SIZE{12};
+    static constexpr std::string_view magic{"NUCC"};    // If a file doesn't begin with these bytes, it's not recognised as an XFBIN.
+    std::uint32_t version{121};                         // e.g. `121` = 1.2.1
     
     std::vector<Page> pages;
 
@@ -102,7 +98,8 @@ public:
     int load(void* pointer_data, size_t start = 0, size_t end = -1);
     
     Chunk* fetch(Chunk_Type chunk_type, size_t index = 0);
-    template<typename T = Chunk> T* fetch(std::string chunk_name, size_t index = 0) {
+    template <typename T = Chunk>
+    T* fetch(std::string chunk_name, size_t index = 0) {
         size_t i = 0;
         for (auto& page : pages) {
             for (auto& chunk : page.chunks) {
@@ -128,6 +125,8 @@ public:
 private:
     kojo::binary input;
     kojo::binary output;
+
+    static const int HEADER_SIZE{12};
 
     int read();
     int read_header();
