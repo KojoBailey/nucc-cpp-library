@@ -1,11 +1,13 @@
 #ifndef KOJO_NUCC_PAGE
 #define KOJO_NUCC_PAGE
 
-#include <nucc/chunks_new.hpp>
+#include <nucc/chunk_types.hpp>
 
 #include <vector>
 
 namespace nucc {
+
+class Chunk;
 
 class Page {
 public:

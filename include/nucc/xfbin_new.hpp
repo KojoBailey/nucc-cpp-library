@@ -2,11 +2,13 @@
 #define KOJO_NUCC_XFBIN
 
 #include <nucc/game.hpp>
-#include <nucc/page_new.hpp>
+#include <nucc/chunk_types.hpp>
 
 #include <kojo/binary.hpp>
 
 namespace nucc {
+
+class Page;
 
 class XFBIN {
 public:
@@ -38,17 +40,17 @@ private:
 
     std::vector<std::string_view> types, paths, names;
     struct Chunk_Map {
-        u32 type_index;
-        u32 path_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
-        u32 name_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
+        std::uint32_t type_index;
+        std::uint32_t path_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
+        std::uint32_t name_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
     };
     std::vector<Chunk_Map> maps;
     struct Extra_Indices {
-        u32 name_index; // Used for clones of same clumps - optimisation feature.
-        u32 map_index;
+        std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
+        std::uint32_t map_index;
     };
     std::vector<Extra_Indices> extra_indices; // Used (mostly) for animations.
-    std::vector<u32> map_indices;
+    std::vector<std::uint32_t> map_indices;
     std::uint32_t running_map_offset{0};       /** Running total for page chunk map offsets. */
     std::uint32_t running_extra_offset{0};     /** Running total for page extra map offsets. */
 

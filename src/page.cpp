@@ -1,4 +1,5 @@
 #include <nucc/page_new.hpp>
+#include <nucc/chunks_new.hpp>
 
 using namespace nucc;
 
@@ -9,7 +10,7 @@ void Page::add(Chunk chunk) {
 const Chunk& Page::fetch(size_t index) const {
     return chunks[index];
 }
-const Chunk& Page::fetch(ChunkType type, size_t index = 0) const {
+const Chunk& Page::fetch(ChunkType type, size_t index) const {
     size_t i = 0;
     for (const Chunk& chunk : chunks) {
         if (chunk.type() == type) {
@@ -20,7 +21,7 @@ const Chunk& Page::fetch(ChunkType type, size_t index = 0) const {
     }
     return fetch_last();
 }
-const Chunk& Page::fetch(std::string_view name, size_t index = 0) const {
+const Chunk& Page::fetch(std::string_view name, size_t index) const {
     size_t i = 0;
     for (const Chunk& chunk : chunks) {
         if (chunk.path() == name || chunk.name() == name) {

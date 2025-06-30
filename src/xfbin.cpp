@@ -1,4 +1,6 @@
 #include <nucc/xfbin_new.hpp>
+#include <nucc/page_new.hpp>
+#include <nucc/chunks_new.hpp>
 #include <nucc/error_handling.hpp>
 
 #include <unordered_map>
@@ -123,8 +125,6 @@ void XFBIN::read_chunks(kojo::binary_view data) {
         }
     }
 }
-
-/** Other Functions */
 
 ChunkType XFBIN::get_type(std::uint32_t map_index) const {
     return string_to_chunk_type(types[maps[map_indices[map_index + running_map_offset]].type_index]);

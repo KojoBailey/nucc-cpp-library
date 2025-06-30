@@ -2,11 +2,12 @@
 #define KOJO_NUCC_CHUNKS
 
 #include <nucc/chunk_types.hpp>
-#include <nucc/xfbin_new.hpp>
 
 #include <kojo/binary.hpp>
 
 namespace nucc {
+
+class XFBIN;
 
 class Chunk {
 public:

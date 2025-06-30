@@ -1,4 +1,5 @@
 #include <nucc/chunks_new.hpp>
+#include <nucc/xfbin_new.hpp>
 
 using namespace nucc;
 using namespace kojo::binary_types;
