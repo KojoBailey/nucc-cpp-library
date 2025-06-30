@@ -24,8 +24,8 @@ public:
     constexpr std::uint32_t version() const { return VERSION; }
 
     ChunkType get_type(std::uint32_t map_index) const;
-    std::string get_path(std::uint32_t map_index) const;
-    std::string get_name(std::uint32_t map_index) const;
+    std::string_view get_path(std::uint32_t map_index) const;
+    std::string_view get_name(std::uint32_t map_index) const;
 
 private:
     std::string m_filename;
