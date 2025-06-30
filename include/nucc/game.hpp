@@ -19,8 +19,8 @@ enum class Game {
     NXBUNSC // NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS (2023)
 };
 
-std::string game_to_string(Game _game);
-Game string_to_game(std::string _string);
+std::string game_to_string(Game);
+Game string_to_game(std::string);
 
 }
 

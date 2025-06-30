@@ -5,8 +5,8 @@
 
 using namespace nucc;
 
-std::string game_to_string(Game _game) {
-    switch (_game) {
+std::string game_to_string(Game game) {
+    switch (game) {
         case Game::NSUNS3   : return "Naruto Shippuden: Ultimate Ninja Storm 3";
         case Game::ASB      : return "JoJo's Bizarre Adventure: All-Star Battle";
         case Game::NSUNSR   : return "Naruto Shippuden: Ultimate Ninja Storm Revolution";
@@ -19,8 +19,8 @@ std::string game_to_string(Game _game) {
     return "Unknown";
 }
 
-Game string_to_game(std::string _string) {
-    static const std::unordered_map<std::string, Game> string_game_map = {
+Game string_to_game(std::string str) {
+    static const std::unordered_map<std::string_view, Game> string_game_map = {
         {"naruto shippuden: ultimate ninja storm 3", Game::NSUNS3},
         {"nsuns3", Game::NSUNS3},
         {"jojo's bizarre adventure: all-star battle", Game::ASB},
@@ -39,8 +39,8 @@ Game string_to_game(std::string _string) {
         {"nxbunsc", Game::NXBUNSC},
     };
 
-    _string = to_lowercase(_string);
-    auto iterator = string_game_map.find(_string);
+    str = to_lowercase(str);
+    auto iterator = string_game_map.find(str);
     if (iterator != string_game_map.end())
         return iterator->second;
     return Game::UNKNOWN;

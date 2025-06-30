@@ -1,30 +1,24 @@
-#include "chunks.hpp"
+#include <nucc/chunks_new.hpp>
 
-namespace nucc {
+using namespace nucc;
+using namespace kojo::binary_types;
 
-std::unordered_map<std::string, Chunk_Type> string_to_chunk_type_table{
-    {"nuccChunkIndex", Chunk_Type::Index},
-    {"nuccChunkNull", Chunk_Type::Null},
-    {"nuccChunkUnknown", Chunk_Type::Unknown},
-    {"nuccChunkPage", Chunk_Type::Page},
-    {"nuccChunkTexture", Chunk_Type::Texture},
-    {"nuccChunkModel", Chunk_Type::Model},
-    {"nuccChunkModelHit", Chunk_Type::ModelHit},
-    {"nuccChunkMaterial", Chunk_Type::Material},
-    {"nuccChunkCamera", Chunk_Type::Camera},
-    {"nuccChunkAnm", Chunk_Type::Anm},
-    {"nuccChunkBillboard", Chunk_Type::Billboard},
-    {"nuccChunkCoord", Chunk_Type::Coord},
-    {"nuccChunkSprite", Chunk_Type::Sprite},
-    {"nuccChunkParticle", Chunk_Type::Particle},
-    {"nuccChunkDynamics", Chunk_Type::Dynamics},
-    {"nuccChunkBinary", Chunk_Type::Binary}
-};
-
-Chunk_Type string_to_chunk_type(std::string str) {
-    if (string_to_chunk_type_table.contains(str))
-        return string_to_chunk_type_table[str];
-    return Chunk_Type::Unknown;
+Chunk::Chunk(const std::byte* input, size_t position, const XFBIN* xfbin) {
+    load(input, position, xfbin);
 }
 
-} // namespace nucc
+void Chunk::load(const std::byte* input, size_t position, const XFBIN* xfbin) {
+    kojo::binary_view input_data{input, position};
+    if (input_data.is_empty()) return;
+
+    auto size = input_data.read<u32>(std::endian::big);
+    auto map_index = input_data.read<u32>(std::endian::big);
+    m_version = input_data.read<u16>(std::endian::big);
+    auto unk = input_data.read<u16>(std::endian::big); // Potentially for animations.
+
+    m_type = xfbin->get_type(map_index);
+    m_path = xfbin->get_path(map_index);
+    m_name = xfbin->get_name(map_index);
+
+    data.load(input_data.data(), size, input_data.get_pos());
+}

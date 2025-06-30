@@ -3,56 +3,11 @@
 
 #include <kojo/binary.hpp>
 
-#include <unordered_map>
-
 namespace nucc {
 
 /**
- * List of NUCC chunk types used in XFBINs.
-*/
-enum class Chunk_Type {
-    Index = 0,  // Supported
-    Null,       // Supported
-    Unknown,
-    Page,       // Supported
-    Texture,    // WIP
-    Model,
-    ModelHit,
-    Material,
-    Camera,
-    Anm,
-    Billboard,
-    Coord,
-    Sprite,
-    Particle,
-    Dynamics,
-    Binary,     // WIP
-    LightDirc,
-    LightPoint,
-    Ambient,
-    SpriteAnm,
-    Font,
-    Trail,
-    PrimitiveVertex,
-    ModelPrimitiveBranch,
-    MorphPrimitive,
-    LayerSet,
-    ModelVertex,
-    MorphModel,
-    Clump,
-    LightSet,
-    Sprite2,
-    Sprite2Anm,
-    Nub,
-};
-
-extern std::unordered_map<std::string, Chunk_Type> string_to_chunk_type_table;
-
-Chunk_Type string_to_chunk_type(std::string str);
-
-/**
- * @brief Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
- * @post Must be defined before the XFBIN class. Forward declaration doesn't solve this.
+ * Stores the general data of a chunk, but does not parse data into chunk-specific structures. 
+ * Must be defined before the XFBIN class. Forward declaration doesn't solve this.
 */
 class Chunk {
 public:
@@ -60,9 +15,9 @@ public:
     std::string path;                   /** Internal chunk file path. @note Can usually be used to uniquely ID chunks. */
     std::string name;                   /** Chunk name. @warning Typically the same across game versions, so not reliable for IDs. */
 
-    std::uint32_t size{0};              /** Size of entire chunk in bytes. */
-    std::uint32_t map_index{0};
-    std::uint16_t version{121};         /** May differ from XFBIN version. */
+    std::uint32_t size;                 /** Size of entire chunk in bytes. */
+    std::uint32_t map_index;
+    std::uint16_t version;              /** May differ from XFBIN version. */
     std::uint16_t unk{0};               /** @note Unknown, but may be animation-related. */
 
     kojo::binary storage;

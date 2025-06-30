@@ -5,95 +5,126 @@
 #include <unordered_set>
 
 using namespace nucc;
+using namespace kojo::binary_types;
 
-/** Constructors */
-
-XFBIN::XFBIN() {}
 XFBIN::XFBIN(const std::filesystem::path input_path) {
     load(input_path);
 }
-XFBIN::XFBIN(const std::byte* src) {
-    load(src);
+XFBIN::XFBIN(kojo::binary_view input_binary, size_t _size) {
+    load(input_binary, _size);
 }
-XFBIN::XFBIN(const kojo::binary& binary) {
-    load(binary);
-}
-
-/** Loading */
 
 void XFBIN::load(const std::filesystem::path input_path) {
     kojo::binary input_data{input_path};
+    size = input_data.size();
     if (input_data.is_empty())
         Error::print({
             Status_Code::FILE_NULL,
             std::format("Could not load file at path `{}` into `nucc::XFBIN` object.", input_path.string()),
             "Ensure the file specified exists and is a valid XFBIN."
         });
-    filename = input_path.stem().string();
+    m_filename = input_path.stem().string();
     read(input_data);
 }
-int XFBIN::load(kojo::binary& input_data, size_t start, size_t end) {
-    if (input_data.data() == nullptr)
-        return error_handler({
-            Status_Code::POINTER_NULL,
-            "Could not load null data from `kojo::binary` object into `nucc::XFBIN` object.",
-            "Ensure the object provided contains accessible data."
-        });
-    input.load(input_data, start, end);
-    read();
-    return 0;
-}
-int XFBIN::load(void* pointer_data, size_t start, size_t end) {
-    if (pointer_data == nullptr)
-        return error_handler({
+void XFBIN::load(kojo::binary_view input_binary, size_t _size) {
+    if (input_binary.is_empty())
+        Error::print({
             Status_Code::POINTER_NULL,
             "Could not load from a null pointer into `nucc::XFBIN` object.",
             "Ensure the address provided contains appropiate data."
         });
-    input.load(pointer_data, start, end);
-    read();
-    return 0;
+    size = _size;
+    read(input_binary);
+}
+
+void XFBIN::read(kojo::binary_view data) {
+    read_header(data);
+    read_index(data);
+    read_chunks(data);
+}
+void XFBIN::read_header(kojo::binary_view data) {
+    auto magic_input = data.read<sv>(4);
+    if (magic_input != MAGIC) {
+        Error::print({
+            Status_Code::FILE_MAGIC,
+            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", m_filename, MAGIC, magic_input),
+            std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
+        });
+        return;
+    }
+
+    auto version_input = data.read<u32>(std::endian::big);
+    if (version_input != VERSION) {
+        Error::print({
+            Status_Code::VERSION,
+            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", m_filename, VERSION, version_input),
+            std::format("Ensure the XFBIN's version is `{}`.", VERSION)
+        });
+        return;
+    }
+
+    data.read<u64>(std::endian::big); // Flags. Parse these at some point.
+}
+void XFBIN::read_index(kojo::binary_view data) {
+    data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
+    auto type_count = data.read<u32>(std::endian::big);
+    auto type_size = data.read<u32>(std::endian::big);
+    auto path_count = data.read<u32>(std::endian::big);
+    auto path_size = data.read<u32>(std::endian::big);
+    auto name_count = data.read<u32>(std::endian::big);
+    auto name_size = data.read<u32>(std::endian::big);
+    auto map_count = data.read<u32>(std::endian::big);
+    auto map_size = data.read<u32>(std::endian::big);
+    auto map_indices_count = data.read<u32>(std::endian::big);
+    auto extra_indices_count = data.read<u32>(std::endian::big);
+
+    // Store strings.
+    for (size_t i = 0; i < type_count; i++)
+        types.push_back(data.read<sv>());
+    for (size_t i = 0; i < path_count; i++)
+        paths.push_back(data.read<sv>());
+    for (size_t i = 0; i < name_count; i++)
+        names.push_back(data.read<sv>());
+
+    data.align_by(4);
+
+    // Store maps.
+    for (int i = 0; i < map_count; i++)
+        maps.push_back({
+            data.read<u32>(std::endian::big),
+            data.read<u32>(std::endian::big),
+            data.read<u32>(std::endian::big)
+        });
+    for (int i = 0; i < extra_indices_count; i++)
+        extra_indices.push_back({
+            data.read<u32>(std::endian::big),
+            data.read<u32>(std::endian::big)
+        });
+    for (int i = 0; i < map_indices_count; i++)
+        map_indices.push_back(data.read<u32>(std::endian::big));
+}
+void XFBIN::read_chunks(kojo::binary_view data) {
+    pages.clear();
+    for (size_t page_it = 0; !(data.get_pos() >= size); page_it++) {
+        pages.emplace_back();
+        auto& page = pages[page_it];
+
+        while (!(data.get_pos() >= size)) {
+            Chunk chunk{data.data(), data.get_pos(), this};
+            data.change_pos(chunk.size() + HEADER_SIZE);
+            if (chunk.type() == ChunkType::Page) {
+                auto map_offset = data.read<u32>(std::endian::big);
+                auto extra_offset = data.read<u32>(std::endian::big);
+                running_map_offset += map_offset;
+                running_extra_offset += extra_offset;
+                break;
+            }
+            page.add(chunk);
+        }
+    }
 }
 
 /** Other Functions */
-
-std::string game_to_string(Game game) {
-    switch (game) {
-        case Game::NSUNS3   : return "Naruto Shippuden: Ultimate Ninja Storm 3";
-        case Game::ASB      : return "JoJo's Bizarre Adventure: All-Star Battle";
-        case Game::NSUNSR   : return "Naruto Shippuden: Ultimate Ninja Storm Revolution";
-        case Game::EOHPS3   : return "JoJo's Bizarre Adventure: Eyes of Heaven (PS3)";
-        case Game::EOHPS4   : return "JoJo's Bizarre Adventure: Eyes of Heaven (PS4)";
-        case Game::NSUNS4   : return "Naruto Shippuden: Ultimate Ninja Storm 4";
-        case Game::ASBR     : return "JoJo's Bizarre Adventure: All-Star Battle R";
-        case Game::NXBUNSC  : return "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS";
-    }
-    return "Unknown";
-}
-Game string_to_game(std::string str) {
-    // Convert to lowercase.
-    std::transform(str.begin(), str.end(), str.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-
-    if (str == "naruto shippuden: ultimate ninja storm 3" || str == "nsuns3")
-        return Game::NSUNS3;
-    else if (str == "jojo's bizarre adventure: all-star battle" || str == "asb")
-        return Game::ASB;
-    else if (str == "naruto shippuden: ultimate ninja storm revolution" || str == "nsunsr")
-        return Game::NSUNSR;
-    else if (str == "jojo's bizarre adventure: eyes of heaven (ps3)" || str == "eohps3")
-        return Game::EOHPS3;
-    else if (str == "jojo's bizarre adventure: eyes of heaven (ps4)" || str == "eohps4")
-        return Game::EOHPS4;
-    else if (str == "naruto shippuden: ultimate ninja storm 4" || str == "nsuns4")
-        return Game::NSUNS4;
-    else if (str == "jojo's bizarre adventure: all-star battle r" || str == "asbr")
-        return Game::ASBR;
-    else if (str == "naruto x boruto ultimate ninja storm connections" || str == "nxbunsc")
-        return Game::NXBUNSC;
-    else
-        return Game::UNKNOWN;
-}
 
 Chunk_Type XFBIN::Index::get_type(std::uint32_t map_index) {
     std::unordered_map<std::string, Chunk_Type> str_to_ChunkType;
@@ -123,95 +154,6 @@ std::string XFBIN::Index::get_path(std::uint32_t map_index) {
 }
 std::string XFBIN::Index::get_name(std::uint32_t map_index) {
     return names[maps[map_indices[map_index + running_map_offset]].name_index];
-}
-
-int XFBIN::read() {
-    int result = read_header();
-    if (result != 0) return result;
-    read_index();
-    read_chunks();
-    return 0;
-}
-int XFBIN::read_header() {
-    std::string magic_input = input.read_str(4);
-    if (magic != magic_input)
-        return error_handler({
-            Status_Code::FILE_MAGIC,
-            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", name, magic, magic_input),
-            std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", magic)
-        });
-
-    version = input.read_int<std::uint32_t>(std::endian::big);
-    if (version != 121)
-        return error_handler({
-            Status_Code::VERSION,
-            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", name, 121, version),
-            "Ensure the XFBIN's version is `121`."
-        });
-
-    input.read_int<std::uint64_t>(std::endian::big); /** Flags. @note Parse these at some point. */
-    return 0; // No errors.
-}
-void XFBIN::read_index() {
-    input.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
-    index.type_count          = input.read_int<std::uint32_t>(std::endian::big);
-    index.type_size           = input.read_int<std::uint32_t>(std::endian::big);
-    index.path_count          = input.read_int<std::uint32_t>(std::endian::big);
-    index.path_size           = input.read_int<std::uint32_t>(std::endian::big);
-    index.name_count          = input.read_int<std::uint32_t>(std::endian::big);
-    index.name_size           = input.read_int<std::uint32_t>(std::endian::big);
-    index.map_count           = input.read_int<std::uint32_t>(std::endian::big);
-    index.map_size            = input.read_int<std::uint32_t>(std::endian::big);
-    index.map_indices_count   = input.read_int<std::uint32_t>(std::endian::big);
-    index.extra_indices_count = input.read_int<std::uint32_t>(std::endian::big);
-
-    // Store strings.
-    for (int i = 0; i < index.type_count; i++)
-        index.types.push_back(input.read_str());
-    for (int i = 0; i < index.path_count; i++)
-        index.paths.push_back(input.read_str());
-    for (int i = 0; i < index.name_count; i++)
-        index.names.push_back(input.read_str());
-
-    input.align_by(4);
-
-    // Store maps.
-    for (int i = 0; i < index.map_count; i++)
-        index.maps.push_back({
-            input.read_int<std::uint32_t>(std::endian::big),
-            input.read_int<std::uint32_t>(std::endian::big),
-            input.read_int<std::uint32_t>(std::endian::big)
-        });
-    for (int i = 0; i < index.extra_indices_count; i++)
-        index.extra_indices.push_back({
-            input.read_int<std::uint32_t>(std::endian::big),
-            input.read_int<std::uint32_t>(std::endian::big)
-        });
-    for (int i = 0; i < index.map_indices_count; i++)
-        index.map_indices.push_back(input.read_int<std::uint32_t>(std::endian::big));
-}
-void XFBIN::read_chunks() {
-    pages.clear();
-    for (int page_it = 0; !input.at_end(); page_it++) {
-        pages.emplace_back();
-        auto& page = pages[page_it];
-
-        while (!input.at_end()) {
-            Chunk chunk;
-            chunk.load(input.data(), input.get_pos());
-            chunk.type = index.get_type(chunk.map_index);
-            chunk.path = index.get_path(chunk.map_index);
-            chunk.name = index.get_name(chunk.map_index);
-            input.change_pos(chunk.size + HEADER_SIZE);
-            if (chunk.type == Chunk_Type::Page) {
-                page.load(&chunk);
-                index.running_map_offset += page.content.map_offset;
-                index.running_extra_offset += page.content.extra_offset;
-                break;
-            }
-            page.chunks.push_back(&chunk);
-        }
-    }
 }
 
 Chunk* XFBIN::fetch(Chunk_Type chunk_type, size_t index) {

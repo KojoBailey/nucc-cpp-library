@@ -17,6 +17,6 @@ add_subdirectory(extern/json)
 target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json)
 target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/json/include)
 
-add_subdirectory(extern/binary-lib)
+add_subdirectory(extern/binary)
 target_link_libraries(${PROJECT_NAME} PUBLIC binary-cpp-library)
 target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/binary-lib/include)
