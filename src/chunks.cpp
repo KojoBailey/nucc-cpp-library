@@ -1,4 +1,4 @@
-#include <nucc/chunks_new.hpp>
+#include <nucc/chunk_new.hpp>
 #include <nucc/xfbin_new.hpp>
 
 using namespace nucc;
@@ -21,5 +21,5 @@ void Chunk::load(const std::byte* input, size_t position, const XFBIN* xfbin) {
     m_path = xfbin->get_path(map_index);
     m_name = xfbin->get_name(map_index);
 
-    data.load(input_data.data(), size, input_data.get_pos());
+    m_data.load(input_data.data(), size, input_data.get_pos());
 }

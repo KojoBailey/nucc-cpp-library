@@ -6,9 +6,7 @@
 
 namespace nucc {
 
-/**
- * Contains miscellaneous binary data, including formats not explicitly supported like XML.
-*/
+// Contains miscellaneous binary data, including formats not explicitly supported like XML.
 class Binary : public Chunk {
 public:
     struct {

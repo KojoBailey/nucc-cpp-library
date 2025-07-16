@@ -25,7 +25,7 @@ void XFBIN::load(const std::filesystem::path input_path) {
             std::format("Could not load file at path `{}` into `nucc::XFBIN` object.", input_path.string()),
             "Ensure the file specified exists and is a valid XFBIN."
         });
-    m_filename = input_path.stem().string();
+    filename = input_path.stem().string();
     read(input_data);
 }
 void XFBIN::load(kojo::binary_view input_binary, size_t _size) {
@@ -49,7 +49,7 @@ void XFBIN::read_header(kojo::binary_view data) {
     if (magic_input != MAGIC) {
         Error::print({
             Status_Code::FILE_MAGIC,
-            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", m_filename, MAGIC, magic_input),
+            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", filename, MAGIC, magic_input),
             std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
         });
         return;
@@ -59,7 +59,7 @@ void XFBIN::read_header(kojo::binary_view data) {
     if (version_input != VERSION) {
         Error::print({
             Status_Code::VERSION,
-            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", m_filename, VERSION, version_input),
+            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
             std::format("Ensure the XFBIN's version is `{}`.", VERSION)
         });
         return;

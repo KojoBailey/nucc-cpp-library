@@ -1,5 +1,5 @@
-#ifndef KOJO_NUCC_CHUNK_TYPES
-#define KOJO_NUCC_CHUNK_TYPES
+#ifndef KOJO_NUCC_CHUNK_TYPE
+#define KOJO_NUCC_CHUNK_TYPE
 
 #include <string>
 
@@ -46,4 +46,4 @@ ChunkType string_to_chunk_type(std::string_view);
 
 }
 
-#endif // KOJO_NUCC_CHUNK_TYPES
+#endif // KOJO_NUCC_CHUNK_TYPE
