@@ -1,4 +1,4 @@
-#include <nucc/chunk_types.hpp>
+#include <nucc/chunk_type.hpp>
 
 #include <string>
 #include <unordered_map>

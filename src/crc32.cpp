@@ -1,18 +1,30 @@
-#ifndef KOJO_NUCC_HASH
-#define KOJO_NUCC_HASH
+#include <nucc/crc32.hpp>
 
 #include <kojo/binary.hpp>
 
 #include <bit>
-#include <cstdint>
-#include <string_view>
-#include <vector>
+#include <format>
+#include <regex>
 
-namespace nucc {
+using namespace nucc;
 
-static std::vector<std::uint32_t> hash_array;
+void crc32::load(std::uint32_t _id) {
+    m_id = _id;
+}
+void crc32::load(std::string str) {
+    if (std::regex_match(str, std::regex("^([0-9a-fA-F]{8})$"))) {
+        m_id = std::stoul(str, nullptr, 16);
+    } else {
+        m_id = hash(str);
+        kojo::binary::set_endian(id, std::endian::big);
+    }
+}
 
-inline std::uint32_t hash(std::string_view str) {
+std::string crc32::string() {
+    return std::format("{:08x}", m_id);
+}
+
+std::uint32_t crc32::hash(std::string_view str) {
     if (hash_array.empty()) {
         std::uint32_t polynomial = 0x4C11DB7;
         for (int i = 0; i < 256; i++) {
@@ -44,12 +56,8 @@ inline std::uint32_t hash(std::string_view str) {
     }
     v2 = ~v2;
 
-    if (kojo::system_endian() == std::endian::little) {
-        return kojo::byteswap(v2);
+    if (std::endian::native == std::endian::little) {
+        return std::byteswap(v2);
     }
     return v2;
 }
-
-} // namespace nucc
-
-#endif // KOJO_NUCC_HASH

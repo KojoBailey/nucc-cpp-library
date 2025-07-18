@@ -1,22 +1,23 @@
 #ifndef KOJO_NUCC_ASBR_PLAYERCOLORPARAM
 #define KOJO_NUCC_ASBR_PLAYERCOLORPARAM
 
-#include "../binary_data.hpp"
+#include <nucc/chunks/binary/bytes_serializable.hpp>
+#include <nucc/chunks/binary/json_serializable.hpp>
+
+#include <nucc/rgb.hpp>
 
 namespace nucc {
-    namespace ASBR {
+    namespace asbr {
         
-class PlayerColorParam : public Binary_Data {
+class PlayerColorParam : public bytes_serializable, json_serializable {
 public:
     struct Entry {
         std::string character_id; // Length always 6.
         std::uint32_t tint_index; // Not written.
         std::uint32_t costume_index;
-        RGB color;
+        rgb color;
 
-        std::string key() {
-            return std::format("{}{}{}col{}", character_id.substr(0, 4), costume_index, character_id.at(5), tint_index);
-        }
+        std::string key();
     };
 
     std::uint32_t version;
@@ -24,15 +25,9 @@ public:
     std::uint64_t first_pointer;
     std::map<std::string, Entry> entries;
 
-    static const std::string path() {
-        return R"(PlayerColorParam.bin)";
-    }
+    static constexpr std::string_view path() { return "PlayerColorParam.bin"; }
 
-    PlayerColorParam(void* input, size_t size_input = -1) {
-        load(input, size_input);
-    }
-
-    int load(void* input, size_t size_input = -1) {
+    void read_bytes(const std::byte* src, const size_t size = 0) override {
         if (input == nullptr) return error_handler({
             nucc::Status_Code::POINTER_NULL,
             "Attempted to load PlayerColorParam chunk data, but received null input.",

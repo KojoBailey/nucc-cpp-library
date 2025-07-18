@@ -17,59 +17,6 @@
 
 namespace nucc {
 
-struct rgb {
-    std::uint32_t red, green, blue, alpha;
-
-    std::uint32_t consolidate() {
-        return alpha | ((blue | ((green | (red << 8)) << 8)) << 8);
-    }
-
-    rgb hex_to_rgb(std::string hex_str) {
-        std::erase(hex_str, '#');
-        std::stringstream buffer;
-        buffer << std::hex << hex_str.substr(0, 2);
-        buffer >> red;
-        buffer.clear();
-        buffer << std::hex << hex_str.substr(2, 2);
-        buffer >> green;
-        buffer.clear();
-        buffer << std::hex << hex_str.substr(4, 2);
-        buffer >> blue;
-        this->consolidate();
-        return *this;
-    }
-
-    std::string rgb_to_hex() {
-        return std::format("#{:02x}{:02x}{:02x}", red, green, blue);
-    }
-};
-
-struct crc32 {
-    std::uint32_t id;
-
-    crc32() = default;
-    crc32(std::uint32_t _id) : id(_id) {}
-    crc32(std::string str) {
-        load(str);
-    }
-
-    void load(std::uint32_t _id) {
-        id = _id;
-    }
-    void load(std::string str) {
-        if (std::regex_match(str, std::regex("^([0-9a-fA-F]{8})$"))) {
-            id = std::stoul(str, nullptr, 16);
-        } else {
-            id = nucc::hash(str);
-            kojo::binary::set_endian(id, std::endian::big);
-        }
-    }
-
-    std::string to_string() {
-        return std::format("{:08x}", id);
-    }
-};
-
 class binary_data {
 public:
     virtual size_t size() const = 0;

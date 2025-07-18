@@ -2,6 +2,7 @@
 #define KOJO_NUCC_CHUNK
 
 #include <nucc/chunk_type.hpp>
+#include <nucc/chunks/chunk_meta.hpp>
 
 #include <kojo/binary.hpp>
 
@@ -30,6 +31,8 @@ private:
     std::string m_path;
     std::string m_name;
     std::uint32_t m_version;
+
+    Chunk_Meta* m_meta;
 
     kojo::binary m_data;
 };
