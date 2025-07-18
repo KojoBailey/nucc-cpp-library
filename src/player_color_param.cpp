@@ -1,14 +1,14 @@
-#include <nucc/chunks/binary/asbr/PlayerColorParam.hpp>
+#include <nucc/chunks/binary/asbr/player_color_param.hpp>
 
 #include <format>
 
 using namespace nucc::asbr;
 
-std::string PlayerColorParam::Entry::key() {
+std::string player_color_param::entry::key() {
     return std::format("{}{}{}col{}", character_id.substr(0, 4), costume_index, character_id.at(5), tint_index);
 }
 
-void PlayerColorParam::read_bytes(const std::byte* src, const size_t size = 0) {
+void player_color_param::read_binary(const std::byte* src, const size_t size = 0) {
     if (input == nullptr) return error_handler({
         nucc::Status_Code::POINTER_NULL,
         "Attempted to load PlayerColorParam chunk data, but received null input.",
@@ -33,6 +33,34 @@ void PlayerColorParam::read_bytes(const std::byte* src, const size_t size = 0) {
         entry_buffer.tint_index = tint_tracker[std::format("{}-{}", entry_buffer.character_id, entry_buffer.costume_index)]++;
 
         entries[entry_buffer.key()] = entry_buffer;
+    }
+
+    return 0;
+}
+
+void player_color_param::read_json(const nlohmann::ordered_json& input) {
+
+    for (const auto& [key, value] : input.items()) {
+        if (key == "Version" || key == "Filetype") continue;
+
+        if (!value.is_string()) return error_handler({
+            nucc::Status_Code::JSON_VALUE,
+            std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+            "Ensure all hex codes are strings with the format \"#RRGGBB\"."
+        });
+        if (value.template get<std::string>().length() != 7) return error_handler({
+            nucc::Status_Code::JSON_VALUE,
+            std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+            "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
+        });
+
+        Entry entry_buffer;
+        entry_buffer.character_id = key.substr(0, 4) + "0" + key.at(5);
+        entry_buffer.costume_index = key.at(4) - '0';
+        entry_buffer.color.hex_to_rgb(value);
+        entry_buffer.tint_index = key.at(9);
+
+        entries[key] = entry_buffer;
     }
 
     return 0;
