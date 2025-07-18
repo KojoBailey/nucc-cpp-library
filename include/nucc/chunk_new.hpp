@@ -8,16 +8,16 @@
 
 namespace nucc {
 
-class XFBIN;
+class xfbin;
 
-class Chunk {
+class chunk {
 public:
-    Chunk() = default;
-    Chunk(const std::byte* input, size_t position, const XFBIN* xfbin);
+    chunk() = default;
+    chunk(const std::byte* input, size_t position, const xfbin* xfbin);
 
-    void load(const std::byte* input, size_t position, const XFBIN* xfbin);
+    void load(const std::byte* input, size_t position, const xfbin* xfbin);
 
-    ChunkType type() const { return m_type; }
+    chunk_type type() const { return m_type; }
     std::string type_string() const { return chunk_type_to_string(m_type); }
     std::string path() const { return m_path; }
     std::string name() const { return m_name; }
@@ -27,12 +27,12 @@ public:
     const std::byte* data() const { return m_data.data(); }
 
 private:
-    ChunkType m_type{ChunkType::Null};
+    chunk_type m_type{chunk_type::null};
     std::string m_path;
     std::string m_name;
     std::uint32_t m_version;
 
-    Chunk_Meta* m_meta;
+    chunk_meta* m_meta;
 
     kojo::binary m_data;
 };

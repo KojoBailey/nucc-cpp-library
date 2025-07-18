@@ -5,44 +5,44 @@
 
 namespace nucc {
 
-enum class ChunkType {
-    Index = 0,  // Supported
-    Null,       // Supported
-    Unknown,
-    Page,       // Supported
-    Texture,    // WIP
-    Model,
-    ModelHit,
-    Material,
-    Camera,
-    Anm,
-    Billboard,
-    Coord,
-    Sprite,
-    Particle,
-    Dynamics,
-    Binary,     // WIP
-    LightDirc,
-    LightPoint,
-    Ambient,
-    SpriteAnm,
-    Font,
-    Trail,
-    PrimitiveVertex,
-    ModelPrimitiveBranch,
-    MorphPrimitive,
-    LayerSet,
-    ModelVertex,
-    MorphModel,
-    Clump,
-    LightSet,
-    Sprite2,
-    Sprite2Anm,
-    Nub,
+enum class chunk_type {
+    index = 0,              // Supported
+    null,                   // Supported
+    unknown,
+    page,                   // Supported
+    texture,                // WIP
+    model,
+    model_hit,
+    material,
+    camera,
+    anm,
+    billboard,
+    coord,
+    sprite,
+    particle,
+    dynamics,
+    binary,                 // WIP
+    light_dirc,
+    light_point,
+    ambient,
+    sprite_anm,
+    font,
+    trail,
+    primitive_vertex,
+    model_primitive_branch,
+    morph_primitive,
+    layer_set,
+    model_vertex,
+    morph_model,
+    clump,
+    light_set,
+    sprite2,
+    sprite2_anm,
+    nub,
 };
 
-std::string chunk_type_to_string(ChunkType);
-ChunkType string_to_chunk_type(std::string_view);
+std::string chunk_type_to_string(chunk_type);
+chunk_type string_to_chunk_type(std::string_view);
 
 }
 

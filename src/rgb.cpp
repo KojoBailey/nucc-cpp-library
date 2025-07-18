@@ -3,6 +3,8 @@
 #include <format>
 #include <sstream>
 
+using namespace nucc;
+
 std::uint32_t rgb::consolidate() {
     return alpha | ((blue | ((green | (red << 8)) << 8)) << 8);
 }

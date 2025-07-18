@@ -6,26 +6,26 @@
 
 namespace nucc {
 
-enum class Status_Code {
-    OK = 0,
-    FILE_NULL,
-    FILE_MAGIC,
-    VERSION,
-    POINTER_NULL,
-    JSON_NULL,
-    JSON_MISSING_FIELD,
-    JSON_VALUE
+enum class status_code {
+    ok = 0,
+    null_file,
+    file_magic,
+    version,
+    null_pointer,
+    null_json,
+    json_missing_field,
+    json_value
 };
 
-class Error {
+class error {
 public:
-    Error(Status_Code in_code, std::string in_specific, std::string in_suggestion) {
+    error(status_code in_code, std::string in_specific, std::string in_suggestion) {
         code_store = in_code;
         specific_store = in_specific;
         suggestion_store = in_suggestion;
     }
 
-    Status_Code code() {
+    status_code code() {
         return code_store;
     }
     int number() {
@@ -33,13 +33,13 @@ public:
     }
     std::string generic() {
         switch (code_store) {
-            case Status_Code::FILE_NULL             : return "Attempted to load file with null data.";
-            case Status_Code::FILE_MAGIC            : return "File magic / signature does not match expected value.";
-            case Status_Code::VERSION               : return "Detected version does not match what is required.";
-            case Status_Code::POINTER_NULL          : return "Received null pointer/address, but expected data.";
-            case Status_Code::JSON_NULL             : return "JSON data is null.";
-            case Status_Code::JSON_MISSING_FIELD    : return "JSON field not defined.";
-            case Status_Code::JSON_VALUE            : return "Provided JSON value is invalid.";
+            case status_code::null_file             : return "Attempted to load file with null data.";
+            case status_code::file_magic            : return "File magic / signature does not match expected value.";
+            case status_code::version               : return "Detected version does not match what is required.";
+            case status_code::null_pointer          : return "Received null pointer/address, but expected data.";
+            case status_code::null_json             : return "JSON data is null.";
+            case status_code::json_missing_field    : return "JSON field not defined.";
+            case status_code::json_value            : return "Provided JSON value is invalid.";
         }
         return "Unknown error code.";
     }
@@ -50,13 +50,13 @@ public:
         return suggestion_store;
     }
 
-    static void print(Error error) {
+    static void print(error err) {
         std::cout << std::format("NUCC++ Error Code: {:03} - {}\n{}\nSuggestion: {}\n",
-            error.number(), error.generic(), error.specific(), error.suggestion());
+            err.number(), err.generic(), err.specific(), err.suggestion());
     }
 
 private:
-    Status_Code code_store;
+    status_code code_store;
     std::string specific_store;
     std::string suggestion_store;
 };

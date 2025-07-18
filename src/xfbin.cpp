@@ -1,6 +1,6 @@
 #include <nucc/xfbin_new.hpp>
 #include <nucc/page_new.hpp>
-#include <nucc/chunks_new.hpp>
+#include <nucc/chunk_new.hpp>
 #include <nucc/error_handling.hpp>
 
 #include <unordered_map>
@@ -9,46 +9,46 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-XFBIN::XFBIN(const std::filesystem::path input_path) {
+xfbin::xfbin(const std::filesystem::path input_path) {
     load(input_path);
 }
-XFBIN::XFBIN(kojo::binary_view input_binary, size_t _size) {
+xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
     load(input_binary, _size);
 }
 
-void XFBIN::load(const std::filesystem::path input_path) {
+void xfbin::load(const std::filesystem::path input_path) {
     kojo::binary input_data{input_path};
     size = input_data.size();
     if (input_data.is_empty())
-        Error::print({
-            Status_Code::FILE_NULL,
-            std::format("Could not load file at path `{}` into `nucc::XFBIN` object.", input_path.string()),
+        error::print({
+            status_code::null_file,
+            std::format("Could not load file at path `{}` into `nucc::xfbin` object.", input_path.string()),
             "Ensure the file specified exists and is a valid XFBIN."
         });
     filename = input_path.stem().string();
     read(input_data);
 }
-void XFBIN::load(kojo::binary_view input_binary, size_t _size) {
+void xfbin::load(kojo::binary_view input_binary, size_t _size) {
     if (input_binary.is_empty())
-        Error::print({
-            Status_Code::POINTER_NULL,
-            "Could not load from a null pointer into `nucc::XFBIN` object.",
+        error::print({
+            status_code::null_pointer,
+            "Could not load from a null pointer into `nucc::xfbin` object.",
             "Ensure the address provided contains appropiate data."
         });
     size = _size;
     read(input_binary);
 }
 
-void XFBIN::read(kojo::binary_view data) {
+void xfbin::read(kojo::binary_view data) {
     read_header(data);
     read_index(data);
     read_chunks(data);
 }
-void XFBIN::read_header(kojo::binary_view data) {
+void xfbin::read_header(kojo::binary_view data) {
     auto magic_input = data.read<sv>(4);
     if (magic_input != MAGIC) {
-        Error::print({
-            Status_Code::FILE_MAGIC,
+        error::print({
+            status_code::file_magic,
             std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", filename, MAGIC, magic_input),
             std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
         });
@@ -57,8 +57,8 @@ void XFBIN::read_header(kojo::binary_view data) {
 
     auto version_input = data.read<u32>(std::endian::big);
     if (version_input != VERSION) {
-        Error::print({
-            Status_Code::VERSION,
+        error::print({
+            status_code::version,
             std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
             std::format("Ensure the XFBIN's version is `{}`.", VERSION)
         });
@@ -67,7 +67,7 @@ void XFBIN::read_header(kojo::binary_view data) {
 
     data.read<u64>(std::endian::big); // Flags. Parse these at some point.
 }
-void XFBIN::read_index(kojo::binary_view data) {
+void xfbin::read_index(kojo::binary_view data) {
     data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
     auto type_count = data.read<u32>(std::endian::big);
     auto type_size = data.read<u32>(std::endian::big);
@@ -82,11 +82,11 @@ void XFBIN::read_index(kojo::binary_view data) {
 
     // Store strings.
     for (size_t i = 0; i < type_count; i++)
-        types.push_back(data.read<sv>());
+        m_types.push_back(data.read<sv>());
     for (size_t i = 0; i < path_count; i++)
-        paths.push_back(data.read<sv>());
+        m_paths.push_back(data.read<sv>());
     for (size_t i = 0; i < name_count; i++)
-        names.push_back(data.read<sv>());
+        m_names.push_back(data.read<sv>());
 
     data.align_by(4);
 
@@ -105,16 +105,16 @@ void XFBIN::read_index(kojo::binary_view data) {
     for (int i = 0; i < map_indices_count; i++)
         map_indices.push_back(data.read<u32>(std::endian::big));
 }
-void XFBIN::read_chunks(kojo::binary_view data) {
-    pages.clear();
+void xfbin::read_chunks(kojo::binary_view data) {
+    m_pages.clear();
     for (size_t page_it = 0; !(data.get_pos() >= size); page_it++) {
-        pages.emplace_back();
-        auto& page = pages[page_it];
+        m_pages.emplace_back();
+        auto& page = m_pages[page_it];
 
         while (!(data.get_pos() >= size)) {
-            Chunk chunk{data.data(), data.get_pos(), this};
+            chunk chunk{data.data(), data.get_pos(), this};
             data.change_pos(chunk.size() + HEADER_SIZE);
-            if (chunk.type() == ChunkType::Page) {
+            if (chunk.type() == chunk_type::page) {
                 auto map_offset = data.read<u32>(std::endian::big);
                 auto extra_offset = data.read<u32>(std::endian::big);
                 running_map_offset += map_offset;
@@ -126,17 +126,17 @@ void XFBIN::read_chunks(kojo::binary_view data) {
     }
 }
 
-ChunkType XFBIN::get_type(std::uint32_t map_index) const {
-    return string_to_chunk_type(types[maps[map_indices[map_index + running_map_offset]].type_index]);
+chunk_type xfbin::get_type(std::uint32_t map_index) const {
+    return string_to_chunk_type(m_types[maps[map_indices[map_index + running_map_offset]].type_index]);
 }
-std::string_view XFBIN::get_path(std::uint32_t map_index) const {
-    return paths[maps[map_indices[map_index + running_map_offset]].path_index];
+std::string_view xfbin::get_path(std::uint32_t map_index) const {
+    return m_paths[maps[map_indices[map_index + running_map_offset]].path_index];
 }
-std::string_view XFBIN::get_name(std::uint32_t map_index) const {
-    return names[maps[map_indices[map_index + running_map_offset]].name_index];
+std::string_view xfbin::get_name(std::uint32_t map_index) const {
+    return m_names[maps[map_indices[map_index + running_map_offset]].name_index];
 }
 
-// void XFBIN::calculate(Optimize optimize) {
+// void xfbin::calculate(Optimize optimize) {
 //     std::unordered_map<std::string, std::uint32_t> type_tracker;
 //     std::unordered_map<std::string, std::uint32_t> path_tracker;
 //     std::unordered_map<std::string, std::uint32_t> name_tracker;
@@ -194,7 +194,7 @@ std::string_view XFBIN::get_name(std::uint32_t map_index) const {
 //     index.extra_indices_count = 0;
 // }
 
-// void XFBIN::write(std::string output_path, Optimize optimize) {
+// void xfbin::write(std::string output_path, Optimize optimize) {
 //     output.write_str(magic, 4);
 //     output.write_int<std::uint32_t>(version, std::endian::big);
 //     output.write_int<std::uint64_t>(0, std::endian::big);

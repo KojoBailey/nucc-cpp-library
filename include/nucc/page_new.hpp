@@ -8,19 +8,19 @@
 
 namespace nucc {
 
-class Chunk;
+class chunk;
 
-class Page {
+class page {
 public:
-    Page() = default;
+    page() = default;
 
-    void add(Chunk chunk);
+    void add(chunk chunk);
 
-    const Chunk& fetch(size_t index) const;
-    const Chunk& fetch(ChunkType type, size_t index = 0) const;
-    const Chunk& fetch(std::string_view name, size_t index = 0) const;
+    const chunk& fetch(size_t index) const;
+    const chunk& fetch(chunk_type type, size_t index = 0) const;
+    const chunk& fetch(std::string_view name, size_t index = 0) const;
 
-    const std::vector<Chunk>& chunks() const { return m_chunks; }
+    const std::vector<chunk>& chunks() const { return m_chunks; }
 
     std::uint32_t version() const { return m_version; }
 
@@ -28,14 +28,14 @@ public:
     std::uint32_t extra_offset() const { return m_extra_offset; }
 
 private:
-    std::vector<Chunk> m_chunks;
+    std::vector<chunk> m_chunks;
 
     std::uint32_t m_version;
 
     std::uint32_t m_map_offset;
     std::uint32_t m_extra_offset;
 
-    const Chunk& fetch_last() const;
+    const chunk& fetch_last() const;
 };
 
 }

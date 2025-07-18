@@ -3,7 +3,7 @@
 
 namespace nucc {
 
-class Chunk_Meta {};
+class chunk_meta {};
 
 }
 

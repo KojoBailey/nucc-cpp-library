@@ -4,11 +4,11 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-Chunk::Chunk(const std::byte* input, size_t position, const XFBIN* xfbin) {
+chunk::chunk(const std::byte* input, size_t position, const xfbin* xfbin) {
     load(input, position, xfbin);
 }
 
-void Chunk::load(const std::byte* input, size_t position, const XFBIN* xfbin) {
+void chunk::load(const std::byte* input, size_t position, const xfbin* xfbin) {
     kojo::binary_view input_data{input, position};
     if (input_data.is_empty()) return;
 
