@@ -1,8 +1,8 @@
-#pragma once
+#ifndef KOJO_NUCC_ERROR_HANDLER
+#define KOJO_NUCC_ERROR_HANDLER
 
 #include <iostream>
 #include <format>
-#include <functional>
 
 namespace nucc {
 
@@ -19,20 +19,13 @@ enum class status_code {
 
 class error {
 public:
-    error(status_code in_code, std::string in_specific, std::string in_suggestion) {
-        code_store = in_code;
-        specific_store = in_specific;
-        suggestion_store = in_suggestion;
-    }
+    error(status_code _code, std::string _specific, std::string _suggestion) 
+    : m_code(_code), m_specific(_specific), m_suggestion(_suggestion) {}
 
-    status_code code() {
-        return code_store;
-    }
-    int number() {
-        return (int)code_store;
-    }
+    status_code code() { return m_code; }
+    int number() { return (int)m_code; }
     std::string generic() {
-        switch (code_store) {
+        switch (m_code) {
             case status_code::null_file             : return "Attempted to load file with null data.";
             case status_code::file_magic            : return "File magic / signature does not match expected value.";
             case status_code::version               : return "Detected version does not match what is required.";
@@ -44,21 +37,27 @@ public:
         return "Unknown error code.";
     }
     std::string specific() {
-        return specific_store;
+        return m_specific;
     }
     std::string suggestion() {
-        return suggestion_store;
+        return m_suggestion;
     }
 
     static void print(error err) {
         std::cout << std::format("NUCC++ Error Code: {:03} - {}\n{}\nSuggestion: {}\n",
             err.number(), err.generic(), err.specific(), err.suggestion());
     }
+    static void print(status_code _code, std::string _specific, std::string _suggestion) {
+        error err{_code, _specific, _suggestion};
+        print(err);
+    }
 
 private:
-    status_code code_store;
-    std::string specific_store;
-    std::string suggestion_store;
+    status_code m_code;
+    std::string m_specific;
+    std::string m_suggestion;
 };
 
-} // namespace nucc
+}
+
+#endif // KOJO_NUCC_ERROR_HANDLER

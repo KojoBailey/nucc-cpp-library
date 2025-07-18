@@ -9,12 +9,14 @@ class binary_serializable {
 public:
     virtual ~binary_serializable() = default;
 
-    binary_serializable(const std::byte* src, const size_t size = 0) {
-        read_binary(src, size);
+    binary_serializable(const std::byte* src, const size_t start = 0) {
+        read_binary(src, start);
     }
 
-    virtual void read_binary(const std::byte* src, const size_t size = 0) = 0;
-    virtual std::shared_ptr<std::byte> write_binary() = 0;
+    virtual size_t size() const = 0;
+
+    virtual void read_binary(const std::byte* src, const size_t start = 0) = 0;
+    virtual const std::shared_ptr<std::vector<std::byte>> write_binary() const = 0;
 };
 
 }

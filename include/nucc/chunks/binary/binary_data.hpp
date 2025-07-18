@@ -40,7 +40,7 @@ protected:
         return value + (factor - value % factor) % factor;
     }
 
-    template<std::integral T>void write_offset_str(std::string& str) {
+    template<std::integral T> void write_offset_str(std::string& str) {
         if (str.size() > 0) {
             str_tracker.push_back(str);
             ptr_buffer64 -= (storage.get_pos() - last_pos);

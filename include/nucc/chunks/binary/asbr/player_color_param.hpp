@@ -19,64 +19,26 @@ public:
 
         std::string key();
     };
-
-    std::uint32_t version;
-    std::uint32_t entry_count;
-    std::uint64_t first_pointer;
     std::map<std::string, entry> entries;
 
-    static constexpr std::string_view path() { return "PlayerColorParam.bin"; }
+    std::unordered_map<std::string, size_t> tint_tracker;
 
-    void read_binary(const std::byte* src, const size_t size = 0) override;
+    int version() const { return VERSION; }
+
+    size_t size() const override;
+
+    void read_binary(const std::byte* src, const size_t start = 0) override;
     void read_json(const nlohmann::ordered_json& input) override;
 
-    size_t size() {
-        return entry_count * 31 + 8 + first_pointer;
-    }
-    void clear() {
-        version = 1000;
-        entry_count = 0;
-        first_pointer = 8;
-        entries.clear();
-        tint_tracker.clear();
-    }
+    const std::shared_ptr<std::vector<std::byte>> write_binary() const override;
+    nlohmann::ordered_json write_json() override;
 
-    std::uint64_t* write_to_bin() {
-        version = 1000;
-        entry_count = entries.size();
-        storage.write_int<std::uint32_t>(version, std::endian::little);
-        storage.write_int<std::uint32_t>(entry_count, std::endian::little);
-        storage.write_int<std::uint64_t>(first_pointer, std::endian::little);
+private:
+    const std::uint32_t VERSION{1000};
 
-        size_t i = 0;
-        for (auto& [key, entry] : entries) {
-            ptr_buffer64 = (24 * entry_count) + (i * 7) - (i++ * 2);
-            storage.write_int<std::uint64_t>(ptr_buffer64, std::endian::little);
-            storage.write_int<std::uint32_t>(entry.costume_index, std::endian::little);
-            storage.write_int<std::uint32_t>(entry.color.red, std::endian::little);
-            storage.write_int<std::uint32_t>(entry.color.green, std::endian::little);
-            storage.write_int<std::uint32_t>(entry.color.blue, std::endian::little);
-        }
-        for (auto& [key, entry] : entries) {
-            storage.write_str(entry.character_id);
-        }
-
-        return (std::uint64_t*)storage.data();
-    }
-    nlohmann::ordered_json write_to_json() {
-        nlohmann::ordered_json json;
-
-        json["Version"] = 241001;
-        json["Filetype"] = "PlayerColorParam";
-        
-        for (auto& [key, entry] : entries) {
-            json[key] = entry.color.rgb_to_hex();
-        }
-
-        return json;
-    }
-
-    std::unordered_map<std::string, int> tint_tracker;
+    const size_t HEADER_SIZE{16};
+    const size_t ENTRY_SIZE{24};
+    const size_t CHARACTER_ID_LENGTH{8};
 };
 
     } // namespace ASBR
