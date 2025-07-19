@@ -21,5 +21,7 @@ void chunk::load(const std::byte* input, size_t position, const xfbin* xfbin) {
     m_path = xfbin->get_path(map_index);
     m_name = xfbin->get_name(map_index);
 
-    m_data.load(input_data.data(), size, input_data.get_pos());
+    size_t meta_size = m_meta->load(input_data);
+
+    m_data.load(input_data.data(), size - meta_size, input_data.get_pos());
 }

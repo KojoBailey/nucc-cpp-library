@@ -25,6 +25,7 @@ public:
     
     size_t size() const { return m_data.size(); }
     const std::byte* data() const { return m_data.data(); }
+    const kojo::binary* storage() const { return &m_data; }
 
 private:
     chunk_type m_type{chunk_type::null};

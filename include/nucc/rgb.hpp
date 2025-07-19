@@ -10,10 +10,10 @@ class rgb {
 public:
     std::uint32_t red, green, blue, alpha;
 
-    std::uint32_t consolidate();
+    std::uint32_t consolidate() const;
 
     rgb from_hex_code(std::string hex_code);
-    std::string to_hex_code();
+    std::string to_hex_code() const;
 };
 
 }

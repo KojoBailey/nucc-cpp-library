@@ -14,7 +14,7 @@ size_t player_color_param::size() const {
     return HEADER_SIZE + entries.size() * (ENTRY_SIZE + CHARACTER_ID_LENGTH);
 }
 
-void player_color_param::read_binary(const std::byte* src, const size_t start = 0) {
+void player_color_param::read(const std::byte* src, const size_t start = 0) {
     if (src == nullptr) return error::print(
         nucc::status_code::null_pointer,
         "Attempted to load PlayerColorParam chunk data, but received null input.",
@@ -43,32 +43,7 @@ void player_color_param::read_binary(const std::byte* src, const size_t start = 
     }
 }
 
-void player_color_param::read_json(const nlohmann::ordered_json& input) {
-    for (const auto& [key, value] : input.items()) {
-        if (key == "Version" || key == "Filetype") continue;
-
-        if (!value.is_string()) return error::print(
-            nucc::status_code::json_value,
-            std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
-            "Ensure all hex codes are strings with the format \"#RRGGBB\"."
-        );
-        if (value.template get<std::string>().length() != 7) return error::print(
-            nucc::status_code::json_value,
-            std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
-            "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
-        );
-
-        entry entry_buffer;
-        entry_buffer.character_id = key.substr(0, 4) + "0" + key.at(5);
-        entry_buffer.costume_index = key.at(4) - '0';
-        entry_buffer.color.from_hex_code(value);
-        entry_buffer.tint_index = key.at(9);
-
-        entries[key] = entry_buffer;
-    }
-}
-
-const std::shared_ptr<std::vector<std::byte>> player_color_param::write_binary() const {
+const std::shared_ptr<std::vector<std::byte>> player_color_param::write() const {
     kojo::binary output_data;
 
     const u32 entry_count = entries.size();
@@ -91,17 +66,4 @@ const std::shared_ptr<std::vector<std::byte>> player_color_param::write_binary()
     }
 
     return output_data.storage();
-}
-
-nlohmann::ordered_json player_color_param::write_json() {
-    nlohmann::ordered_json json;
-
-    json["Version"] = 250718;
-    json["Filetype"] = "PlayerColorParam";
-
-    for (auto& [key, entry] : entries) {
-        json[key] = entry.color.to_hex_code();
-    }
-
-    return json;
 }

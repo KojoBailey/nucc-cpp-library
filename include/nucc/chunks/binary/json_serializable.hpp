@@ -5,16 +5,11 @@
 
 namespace nucc {
 
-class json_serializable {
+template<typename T>
+class json_serializer {
 public:
-    virtual ~json_serializable() = default;
-
-    json_serializable(const nlohmann::ordered_json& input) {
-        read_json(input);
-    }
-
-    virtual void read_json(const nlohmann::ordered_json& input) = 0;
-    virtual nlohmann::ordered_json write_json() = 0;
+    static T read(const nlohmann::ordered_json&);
+    static nlohmann::ordered_json write(const T&);
 };
 
 }
