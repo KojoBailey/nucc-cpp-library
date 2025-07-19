@@ -4,6 +4,7 @@
 #include <nucc/chunks/binary/binary_data_new.hpp>
 #include <nucc/chunks/binary/json_serializable.hpp>
 
+#include <nucc/error_handler.hpp>
 #include <nucc/rgb.hpp>
 
 namespace nucc {
@@ -49,12 +50,12 @@ public:
         for (const auto& [key, value] : json.items()) {
             if (key == "Version" || key == "Filetype") continue;
 
-            if (!value.is_string()) return error::print(
+            if (!value.is_string()) error::print(
                 nucc::status_code::json_value,
                 std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
                 "Ensure all hex codes are strings with the format \"#RRGGBB\"."
             );
-            if (value.template get<std::string>().length() != 7) return error::print(
+            if (value.template get<std::string>().length() != 7) error::print(
                 nucc::status_code::json_value,
                 std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
                 "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."

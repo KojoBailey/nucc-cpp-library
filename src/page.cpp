@@ -1,18 +1,18 @@
 #include <nucc/page_new.hpp>
-#include <nucc/chunks_new.hpp>
+#include <nucc/chunk_new.hpp>
 
 using namespace nucc;
 
-void Page::add(Chunk chunk) {
-    chunks.push_back(chunk);
+void page::add(chunk chunk) {
+    m_chunks.push_back(chunk);
 }
 
-const Chunk& Page::fetch(size_t index) const {
-    return chunks[index];
+const chunk& page::fetch(size_t index) const {
+    return m_chunks[index];
 }
-const Chunk& Page::fetch(ChunkType type, size_t index) const {
+const chunk& page::fetch(chunk_type type, size_t index) const {
     size_t i = 0;
-    for (const Chunk& chunk : chunks) {
+    for (const chunk& chunk : m_chunks) {
         if (chunk.type() == type) {
             if (i == index)
                 return chunk;
@@ -21,9 +21,9 @@ const Chunk& Page::fetch(ChunkType type, size_t index) const {
     }
     return fetch_last();
 }
-const Chunk& Page::fetch(std::string_view name, size_t index) const {
+const chunk& page::fetch(std::string_view name, size_t index) const {
     size_t i = 0;
-    for (const Chunk& chunk : chunks) {
+    for (const chunk& chunk : m_chunks) {
         if (chunk.path() == name || chunk.name() == name) {
             if (i == index)
                 return chunk;
@@ -33,6 +33,6 @@ const Chunk& Page::fetch(std::string_view name, size_t index) const {
     return fetch_last();
 }
 
-const Chunk& Page::fetch_last() const {
-    return chunks[chunks.size() - 1];
+const chunk& page::fetch_last() const {
+    return m_chunks[m_chunks.size() - 1];
 }

@@ -1,7 +1,5 @@
 #include <nucc/chunks/binary/asbr/player_color_param.hpp>
 
-#include <nucc/error_handler.hpp>
-
 using namespace nucc::asbr;
 
 using namespace kojo::binary_types;
