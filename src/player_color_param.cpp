@@ -14,7 +14,7 @@ size_t player_color_param::size() const {
     return HEADER_SIZE + entries.size() * (ENTRY_SIZE + CHARACTER_ID_LENGTH);
 }
 
-void player_color_param::read(const std::byte* src, const size_t start = 0) {
+void player_color_param::read(const std::byte* src, const size_t start) {
     if (src == nullptr) return error::print(
         nucc::status_code::null_pointer,
         "Attempted to load PlayerColorParam chunk data, but received null input.",
