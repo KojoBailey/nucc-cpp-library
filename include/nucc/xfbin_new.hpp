@@ -7,6 +7,8 @@
 
 #include <kojo/binary.hpp>
 
+#include <optional>
+
 namespace nucc {
 
 class page;
@@ -36,6 +38,11 @@ public:
 
     const std::vector<page>& pages() const { return m_pages; }
 
+    const page& get_page(size_t page_index = 0) const;
+
+    const chunk& get_chunk(std::string_view chunk_name) const;
+    const chunk& get_chunk(chunk_type chunk_type) const;
+
 private:
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
     static const std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
@@ -59,7 +66,7 @@ private:
     std::uint32_t running_map_offset{0};       /** Running total for page chunk map offsets. */
     std::uint32_t running_extra_offset{0};     /** Running total for page extra map offsets. */
 
-    std::vector<page> m_pages;
+    std::vector<nucc::page> m_pages;
 
     void read(kojo::binary_view);
     void read_header(kojo::binary_view);

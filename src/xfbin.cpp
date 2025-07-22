@@ -3,6 +3,7 @@
 #include <nucc/chunk_new.hpp>
 #include <nucc/error_handler.hpp>
 
+#include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -121,7 +122,7 @@ void xfbin::read_chunks(kojo::binary_view data) {
                 running_extra_offset += extra_offset;
                 break;
             }
-            page.add(chunk);
+            page.add_chunk(chunk);
         }
     }
 }
@@ -134,6 +135,25 @@ std::string_view xfbin::get_path(std::uint32_t map_index) const {
 }
 std::string_view xfbin::get_name(std::uint32_t map_index) const {
     return m_names[maps[map_indices[map_index + running_map_offset]].name_index];
+}
+
+const page& xfbin::get_page(size_t page_index) const {
+    return m_pages[page_index];
+}
+
+const chunk& xfbin::get_chunk(std::string_view chunk_name) const {
+    for (const page& m_page : m_pages) {
+        if (m_page.has(chunk_name))
+            return m_page.get_chunk(chunk_name);
+    }
+    throw std::out_of_range(std::format("Chunk with name \"{}\" not found in {}.xfbin", chunk_name, filename));
+}
+const chunk& xfbin::get_chunk(chunk_type chunk_type) const {
+    for (const page& m_page : m_pages) {
+        if (m_page.has(chunk_type))
+            return m_page.get_chunk(chunk_type);
+    }
+    throw std::out_of_range(std::format("Chunk with type \"{}\" not found in {}.xfbin", nucc::chunk_type_to_string(chunk_type), filename));
 }
 
 // void xfbin::calculate(Optimize optimize) {
