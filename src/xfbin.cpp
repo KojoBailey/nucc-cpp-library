@@ -1,6 +1,4 @@
 #include <nucc/xfbin_new.hpp>
-#include <nucc/page_new.hpp>
-#include <nucc/chunk_new.hpp>
 #include <nucc/error_handler.hpp>
 
 #include <stdexcept>

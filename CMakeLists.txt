@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 project(nucc-cpp-library VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
 
 # Find source files
-file(GLOB SOURCES src/*.cpp)
+file(GLOB_RECURSE SOURCES src/*.cpp)
 
 # Create shared library
 add_library(nucc-cpp-library STATIC ${SOURCES})
@@ -20,3 +20,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/json/inc
 add_subdirectory(extern/binary)
 target_link_libraries(${PROJECT_NAME} PUBLIC binary-cpp-library)
 target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/binary-lib/include)
+
+message(STATUS "SOURCES = ${SOURCES}")

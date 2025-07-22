@@ -1,9 +1,8 @@
 #include <nucc/chunk_type.hpp>
 
-#include <string>
 #include <unordered_map>
 
-using namespace nucc;
+namespace nucc {
 
 std::string chunk_type_to_string(chunk_type chunk_type) {
     switch (chunk_type) {
@@ -67,4 +66,6 @@ chunk_type string_to_chunk_type(std::string_view str) {
     if (iterator != string_chunk_type_map.end())
         return iterator->second;
     return chunk_type::unknown;
+}
+
 }

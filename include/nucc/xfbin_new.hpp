@@ -2,12 +2,9 @@
 #define KOJO_NUCC_XFBIN
 
 #include <nucc/game.hpp>
-#include <nucc/chunk_type.hpp>
 #include <nucc/page_new.hpp>
 
 #include <kojo/binary.hpp>
-
-#include <optional>
 
 namespace nucc {
 
@@ -48,8 +45,8 @@ public:
 
 private:
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
-    static const std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
-    static const std::uint32_t HEADER_SIZE{12};
+    static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
+    static constexpr std::uint32_t HEADER_SIZE{12};
 
     size_t size;
 

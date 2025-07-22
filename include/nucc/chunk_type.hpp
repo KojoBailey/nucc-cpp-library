@@ -2,6 +2,7 @@
 #define KOJO_NUCC_CHUNK_TYPE
 
 #include <string>
+#include <string_view>
 
 namespace nucc {
 
