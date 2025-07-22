@@ -39,9 +39,12 @@ public:
     const std::vector<page>& pages() const { return m_pages; }
 
     const page& get_page(size_t page_index = 0) const;
+    const page& operator[](size_t page_index) const { return get_page(page_index); }
 
     const chunk& get_chunk(std::string_view chunk_name) const;
     const chunk& get_chunk(chunk_type chunk_type) const;
+    const chunk& operator[](std::string_view chunk_name) const { return get_chunk(chunk_name); }
+    const chunk& operator[](chunk_type chunk_type) const { return get_chunk(chunk_type); }
 
 private:
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
