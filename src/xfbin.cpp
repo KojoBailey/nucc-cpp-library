@@ -44,7 +44,7 @@ void xfbin::read(kojo::binary_view data) {
     read_chunks(data);
 }
 void xfbin::read_header(kojo::binary_view data) {
-    auto magic_input = data.read<sv>(4);
+    auto magic_input = data.read<str>(4);
     if (magic_input != MAGIC) {
         error::print({
             status_code::file_magic,
