@@ -61,7 +61,6 @@ void xfbin::read_header(kojo::binary_view data) {
             std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
             std::format("Ensure the XFBIN's version is `{}`.", VERSION)
         });
-        return;
     }
 
     data.read<u64>(std::endian::big); // Flags. Parse these at some point.
