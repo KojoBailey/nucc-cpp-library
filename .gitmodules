@@ -10,3 +10,6 @@
 [submodule "extern/binary"]
 	path = extern/binary
 	url = https://github.com/KojoBailey/binary-cpp-library
+[submodule "extern/logger"]
+	path = extern/logger
+	url = https://github.com/KojoBailey/logger
