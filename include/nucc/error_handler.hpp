@@ -12,9 +12,6 @@ enum class status_code {
     file_magic,
     version,
     null_pointer,
-    null_json,
-    json_missing_field,
-    json_value
 };
 
 class error {
@@ -30,9 +27,6 @@ public:
             case status_code::file_magic            : return "File magic / signature does not match expected value.";
             case status_code::version               : return "Detected version does not match what is required.";
             case status_code::null_pointer          : return "Received null pointer/address, but expected data.";
-            case status_code::null_json             : return "JSON data is null.";
-            case status_code::json_missing_field    : return "JSON field not defined.";
-            case status_code::json_value            : return "Provided JSON value is invalid.";
         }
         return "Unknown error code.";
     }

@@ -50,16 +50,16 @@ public:
         for (const auto& [key, value] : json.items()) {
             if (key == "Version" || key == "Filetype") continue;
 
-            if (!value.is_string()) error::print(
-                nucc::status_code::json_value,
-                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
-                "Ensure all hex codes are strings with the format \"#RRGGBB\"."
-            );
-            if (value.template get<std::string>().length() != 7) error::print(
-                nucc::status_code::json_value,
-                std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
-                "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
-            );
+            // if (!value.is_string()) error::print(
+            //     nucc::status_code::json_value,
+            //     std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+            //     "Ensure all hex codes are strings with the format \"#RRGGBB\"."
+            // );
+            // if (value.template get<std::string>().length() != 7) error::print(
+            //     nucc::status_code::json_value,
+            //     std::format("JSON data for entry \"{}\" is not a valid hex code.", key),
+            //     "Ensure all hex codes are strings with the format \"#RRGGBB\". Alpha channel is not supported."
+            // );
 
             nucc::asbr::player_color_param::entry entry_buffer;
             entry_buffer.character_id = key.substr(0, 4) + "0" + key.at(5);

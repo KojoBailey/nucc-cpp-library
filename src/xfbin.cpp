@@ -55,13 +55,14 @@ void xfbin::read_header(kojo::binary_view data) {
     }
 
     auto version_input = data.read<u32>(std::endian::big);
-    if (version_input != VERSION) {
-        error::print({
-            status_code::version,
-            std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
-            std::format("Ensure the XFBIN's version is `{}`.", VERSION)
-        });
-    }
+    // if (version_input != VERSION) {
+    //     error::print({
+    //         status_code::version,
+    //         std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
+    //         std::format("Ensure the XFBIN's version is `{}`.", VERSION)
+    //     });
+    //     return;
+    // }
 
     data.read<u64>(std::endian::big); // Flags. Parse these at some point.
 }
@@ -122,6 +123,8 @@ void xfbin::read_chunks(kojo::binary_view data) {
             page.add_chunk(chunk);
         }
     }
+
+    std::cout << "Finished chunks." << std::endl;
 }
 
 chunk_type xfbin::get_type(std::uint32_t map_index) const {
