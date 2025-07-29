@@ -1,4 +1,4 @@
-#include <nucc/chunks/chunk_binary.hpp>
+#include <nucc/chunk_binary.hpp>
 
 using namespace nucc;
 using namespace kojo::binary_types;

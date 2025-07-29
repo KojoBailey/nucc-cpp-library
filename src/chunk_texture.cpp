@@ -1,4 +1,4 @@
-#include <nucc/chunks/chunk_texture.hpp>
+#include <nucc/chunk_texture.hpp>
 
 using namespace nucc;
 using namespace kojo::binary_types;
