@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 project(nucc VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
+set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 add_library(nucc STATIC ${SOURCES})
@@ -8,7 +9,6 @@ target_include_directories(nucc
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
-set_target_properties(nucc PROPERTIES CXX_STANDARD 23)
 
 add_subdirectory(extern/binary)
 target_link_libraries(${PROJECT_NAME} PUBLIC kojo::binary)
