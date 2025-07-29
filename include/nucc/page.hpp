@@ -1,56 +1,46 @@
 #ifndef KOJO_NUCC_PAGE
 #define KOJO_NUCC_PAGE
 
-#include "chunks/chunks.hpp"
+#include <nucc/chunk_type.hpp>
+#include <nucc/chunk.hpp>
+
+#include <vector>
 
 namespace nucc {
-    
-/**
- * Separates chunks into distinct groups.
- * @note Might be because of clumps.
-*/
-class Page : public Chunk {
+
+class chunk;
+
+class page {
 public:
-    static constexpr Chunk_Type type{Chunk_Type::Page};
-    static constexpr std::string_view name{"Page0"};
+    page() = default;
 
-    struct {
-        std::uint32_t map_offset;
-        std::uint32_t extra_offset;
-    } content;
+    std::uint32_t version() const { return m_version; }
 
-    std::vector<Chunk> chunks;
+    std::uint32_t map_offset() const { return m_map_offset; }
+    std::uint32_t extra_offset() const { return m_extra_offset; }
 
-    Page() = default;
-    Page(Chunk* chunk) {
-        load(chunk);
-    }
+    const std::vector<chunk>& chunks() const { return m_chunks; }
 
-    Chunk* create_chunk(Chunk_Type type = Chunk_Type::Null, std::string_view path = "", std::string_view name = "") {
-        chunks.emplace_back();
-        auto& chunk = chunks[chunks.size() - 1];
-        chunk.type = type;
-        chunk.path = path;
-        chunk.name = name;
-        return &chunk;
-    }
+    const chunk& get_chunk(size_t index) const;
+    const chunk& get_chunk(chunk_type type, size_t index = 0) const;
+    const chunk& get_chunk(std::string_view name, size_t index = 0) const;
 
-    kojo::binary& dump() {
-        output.clear();
-        output.write_int<std::uint32_t>(content.map_offset, std::endian::big);
-        output.write_int<std::uint32_t>(content.extra_offset, std::endian::big);
-        for (auto& chunk : chunks) {
-            output.write_binary(chunk.dump());
-        }
-        return output;
-    }
+    bool has(std::string_view chunk_name) const;
+    bool has(chunk_type chunk_type) const;
+
+    void add_chunk(chunk& chunk);
+
+    std::vector<chunk>::const_iterator end() const { return m_chunks.end(); }
 
 private:
-    void parse() {
-        storage.set_pos(0);
-        content.map_offset = storage.read_int<std::uint32_t>(std::endian::big);
-        content.extra_offset = storage.read_int<std::uint32_t>(std::endian::big);
-    }
+    std::vector<chunk> m_chunks;
+
+    std::uint32_t m_version;
+
+    std::uint32_t m_map_offset;
+    std::uint32_t m_extra_offset;
+
+    const chunk& fetch_last() const;
 };
 
 }

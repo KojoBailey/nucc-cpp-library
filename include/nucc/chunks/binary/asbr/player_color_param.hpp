@@ -4,7 +4,6 @@
 #include <nucc/chunks/binary/binary_data_new.hpp>
 #include <nucc/chunks/binary/json_serializable.hpp>
 
-#include <nucc/error_handler.hpp>
 #include <nucc/rgb.hpp>
 
 namespace nucc {

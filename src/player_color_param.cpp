@@ -1,5 +1,7 @@
 #include <nucc/chunks/binary/asbr/player_color_param.hpp>
 
+#include <format>
+
 using namespace nucc::asbr;
 
 using namespace kojo::binary_types;
@@ -13,11 +15,11 @@ size_t player_color_param::size() const {
 }
 
 void player_color_param::read(const std::byte* src, const size_t start) {
-    if (src == nullptr) return error::print(
-        nucc::status_code::null_pointer,
-        "Attempted to load PlayerColorParam chunk data, but received null input.",
-        "Ensure the provided data is being passed correctly."
-    );
+    // if (src == nullptr) return error::print(
+    //     nucc::status_code::null_pointer,
+    //     "Attempted to load PlayerColorParam chunk data, but received null input.",
+    //     "Ensure the provided data is being passed correctly."
+    // );
     kojo::binary_view data{src, start};
 
     auto VERSION = data.read<u32>(std::endian::little);
