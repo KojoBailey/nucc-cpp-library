@@ -4,9 +4,6 @@
 [submodule "include/nucc/external/json"]
 	path = include/nucc/external/json
 	url = https://github.com/nlohmann/json
-[submodule "extern/json"]
-	path = extern/json
-	url = https://github.com/nlohmann/json
 [submodule "extern/binary"]
 	path = extern/binary
 	url = https://github.com/KojoBailey/binary-cpp-library
