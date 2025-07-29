@@ -16,57 +16,63 @@ xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::load(const std::filesystem::path input_path) {
+    log.show_debug = true;
     kojo::binary input_data{input_path};
-    size = input_data.size();
+    log.debug(std::format("kojo::binary error: {}", (int)input_data.get_error_status()));
     if (input_data.is_empty())
-        error::print({
-            status_code::null_file,
-            std::format("Could not load file at path `{}` into `nucc::xfbin` object.", input_path.string()),
-            "Ensure the file specified exists and is a valid XFBIN."
-        });
+        log.error(
+            kojo::logger::status::null_file,
+            std::format("Could not load file at path \"{}\".", input_path.string()),
+            "Ensure the file at the specified path exists and is a valid XFBIN."
+        );
+    size = input_data.size();
     filename = input_path.stem().string();
     read(input_data);
 }
 void xfbin::load(kojo::binary_view input_binary, size_t _size) {
     if (input_binary.is_empty())
-        error::print({
-            status_code::null_pointer,
-            "Could not load from a null pointer into `nucc::xfbin` object.",
+        log.error(
+            kojo::logger::status::null_pointer,
+            "Could not load from null memory.",
             "Ensure the address provided contains appropiate data."
-        });
+        );
     size = _size;
     read(input_binary);
 }
 
 void xfbin::read(kojo::binary_view data) {
+    log.debug("Reading header.");
     read_header(data);
+    log.debug("Reading index.");
     read_index(data);
+    log.debug("Reading chunks.");
     read_chunks(data);
+    log.debug("Finished.");
 }
-void xfbin::read_header(kojo::binary_view data) {
+void xfbin::read_header(kojo::binary_view& data) {
     auto magic_input = data.read<str>(4);
     if (magic_input != MAGIC) {
-        error::print({
-            status_code::file_magic,
-            std::format("When reading XFBIN `{}`, expected magic `{}` but instead got `{}`.", filename, MAGIC, magic_input),
-            std::format("Ensure the file's signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
-        });
+        log.error(
+            kojo::logger::status::file_magic,
+            std::format("XFBIN \"{}\" has invalid magic, `{}`.", filename, magic_input),
+            std::format("Ensure its file signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
+        );
         return;
     }
 
     auto version_input = data.read<u32>(std::endian::big);
-    // if (version_input != VERSION) {
-    //     error::print({
-    //         status_code::version,
-    //         std::format("When reading XFBIN `{}`, expected version `{}` but instead got `{}`.", filename, VERSION, version_input),
-    //         std::format("Ensure the XFBIN's version is `{}`.", VERSION)
-    //     });
-    //     return;
-    // }
+    if (version_input != VERSION) {
+        log.warn(
+            kojo::logger::status::version,
+            std::format("XFBIN \"{}\" has unknown version `{}`.", filename, version_input),
+            std::format("Ensure the format matches version `{}`, or errors may occur.", VERSION)
+        );
+        return;
+    }
 
     data.read<u64>(std::endian::big); // Flags. Parse these at some point.
 }
-void xfbin::read_index(kojo::binary_view data) {
+void xfbin::read_index(kojo::binary_view& data) {
     data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
     auto type_count = data.read<u32>(std::endian::big);
     auto type_size = data.read<u32>(std::endian::big);
@@ -104,27 +110,23 @@ void xfbin::read_index(kojo::binary_view data) {
     for (int i = 0; i < map_indices_count; i++)
         map_indices.push_back(data.read<u32>(std::endian::big));
 }
-void xfbin::read_chunks(kojo::binary_view data) {
+void xfbin::read_chunks(kojo::binary_view& data) {
     m_pages.clear();
     for (size_t page_it = 0; !(data.get_pos() >= size); page_it++) {
         m_pages.emplace_back();
         auto& page = m_pages[page_it];
 
-        while (!(data.get_pos() >= size)) {
-            chunk chunk{data.data(), data.get_pos(), this};
-            data.change_pos(chunk.size() + HEADER_SIZE);
+        while (data.get_pos() < size) {
+            chunk chunk{data, this};
             if (chunk.type() == chunk_type::page) {
-                auto map_offset = data.read<u32>(std::endian::big);
-                auto extra_offset = data.read<u32>(std::endian::big);
-                running_map_offset += map_offset;
-                running_extra_offset += extra_offset;
+                const chunk_page* page_chunk = chunk.meta<chunk_page>();
+                running_map_offset += page_chunk->chunk_map_offset();
+                running_extra_offset += page_chunk->extra_map_offset();
                 break;
             }
             page.add_chunk(chunk);
         }
     }
-
-    std::cout << "Finished chunks." << std::endl;
 }
 
 chunk_type xfbin::get_type(std::uint32_t map_index) const {

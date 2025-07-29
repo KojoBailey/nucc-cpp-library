@@ -28,7 +28,7 @@ public:
     bool has(std::string_view chunk_name) const;
     bool has(chunk_type chunk_type) const;
 
-    void add_chunk(chunk chunk);
+    void add_chunk(chunk& chunk);
 
     std::vector<chunk>::const_iterator end() const { return m_chunks.end(); }
 

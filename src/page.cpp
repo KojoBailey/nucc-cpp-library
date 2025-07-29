@@ -3,7 +3,7 @@
 
 using namespace nucc;
 
-void page::add_chunk(chunk chunk) {
+void page::add_chunk(chunk& chunk) {
     m_chunks.push_back(chunk);
 }
 

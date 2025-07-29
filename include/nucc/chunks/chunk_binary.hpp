@@ -7,9 +7,9 @@
 
 namespace nucc {
 
-class chunk_binary : chunk_meta {
+class chunk_binary : public chunk_meta {
 public:
-    size_t load(kojo::binary_view& input) override;
+    size_t load(kojo::binary_view input) override;
 
     std::uint32_t size() const { return m_size; }
 

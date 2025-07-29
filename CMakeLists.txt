@@ -22,7 +22,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC binary-cpp-library)
 target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/binary-lib/include)
 
 add_subdirectory(extern/logger)
-target_link_libraries(${PROJECT_NAME} PUBLIC kojo-logger)
+target_link_libraries(${PROJECT_NAME} PUBLIC kojo-log-lib)
 target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/logger/include)
 
 message(STATUS "SOURCES = ${SOURCES}")

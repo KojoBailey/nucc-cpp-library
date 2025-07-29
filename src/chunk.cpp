@@ -4,13 +4,21 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-chunk::chunk(const std::byte* input, size_t position, const xfbin* xfbin) {
-    load(input, position, xfbin);
+chunk::chunk(kojo::binary_view& input_data, const xfbin* xfbin) {
+    load(input_data, xfbin);
 }
 
-void chunk::load(const std::byte* input, size_t position, const xfbin* xfbin) {
-    kojo::binary_view input_data{input, position};
-    if (input_data.is_empty()) return;
+void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
+    log.show_debug = false;
+    log.debug(std::format("Parsing chunk \"{}\"...", m_name));
+    if (input_data.is_empty()) {
+        log.error(
+            kojo::logger::status::null_pointer,
+            "Data passed to chunk is null.",
+            "Ensure the data being passed is not a null memory."
+        );
+        return;
+    }
 
     auto size = input_data.read<u32>(std::endian::big);
     auto map_index = input_data.read<u32>(std::endian::big);
@@ -21,7 +29,22 @@ void chunk::load(const std::byte* input, size_t position, const xfbin* xfbin) {
     m_path = xfbin->get_path(map_index);
     m_name = xfbin->get_name(map_index);
 
-    size_t meta_size = m_meta->load(input_data);
+    log.debug(std::format("Type: {}, Path: {}, Name: {}", chunk_type_to_string(m_type), m_path, m_name));
 
-    m_data.load(input_data.data(), size - meta_size, input_data.get_pos());
+    size_t meta_size;
+    switch (m_type) {
+        case chunk_type::page:
+            m_meta = std::make_shared<chunk_page>();
+            break;
+        case chunk_type::binary:
+            m_meta = std::make_shared<chunk_binary>();
+            break;
+        default:
+            m_meta = std::make_shared<chunk_null>();
+            return;
+    }
+    meta_size = m_meta->load(input_data);
+
+    m_data.load(input_data.data(), size - meta_size, input_data.get_pos() + meta_size);
+    input_data.change_pos(size);
 }

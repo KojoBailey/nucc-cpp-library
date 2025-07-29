@@ -4,6 +4,7 @@
 #include <nucc/game.hpp>
 #include <nucc/page_new.hpp>
 
+#include <kojo/logger.hpp>
 #include <kojo/binary.hpp>
 
 namespace nucc {
@@ -12,6 +13,9 @@ class page;
 
 class xfbin {
 public:
+    friend class page;
+    friend class chunk;
+
     xfbin() = default;
     xfbin(const std::filesystem::path);
     xfbin(kojo::binary_view, size_t);
@@ -44,6 +48,8 @@ public:
     const chunk& operator[](chunk_type chunk_type) const { return get_chunk(chunk_type); }
 
 private:
+    kojo::logger log{"NUCC++ Library"};
+
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
     static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
     static constexpr std::uint32_t HEADER_SIZE{12};
@@ -69,9 +75,9 @@ private:
     std::vector<nucc::page> m_pages;
 
     void read(kojo::binary_view);
-    void read_header(kojo::binary_view);
-    void read_index(kojo::binary_view);
-    void read_chunks(kojo::binary_view);
+    void read_header(kojo::binary_view&);
+    void read_index(kojo::binary_view&);
+    void read_chunks(kojo::binary_view&);
 };
 
 }
