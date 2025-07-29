@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_CHUNK_NULL
 #define KOJO_NUCC_CHUNK_NULL
 
-#include <nucc/chunks/chunk_meta.hpp>
+#include <nucc/chunk_meta.hpp>
 
 #include <kojo/binary.hpp>
 

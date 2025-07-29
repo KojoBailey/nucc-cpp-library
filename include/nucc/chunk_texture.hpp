@@ -1,7 +1,7 @@
 #ifndef KOJO_NUCC_CHUNK_TEXTURE
 #define KOJO_NUCC_CHUNK_TEXTURE
 
-#include <nucc/chunks/chunk_meta.hpp>
+#include <nucc/chunk_meta.hpp>
 
 #include <kojo/binary.hpp>
 

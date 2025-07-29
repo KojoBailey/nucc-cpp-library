@@ -1,4 +1,4 @@
-#include <nucc/rgb.hpp>
+#include <nucc/utils/rgb.hpp>
 
 #include <format>
 #include <sstream>

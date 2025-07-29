@@ -1,4 +1,4 @@
-#include <nucc/crc32.hpp>
+#include <nucc/utils/crc32.hpp>
 
 #include <kojo/binary.hpp>
 

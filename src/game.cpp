@@ -1,5 +1,5 @@
 #include <nucc/game.hpp>
-#include <nucc/utils.hpp>
+#include <nucc/utils/utils.hpp>
 
 #include <unordered_map>
 

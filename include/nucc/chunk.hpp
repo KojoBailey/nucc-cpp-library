@@ -2,11 +2,11 @@
 #define KOJO_NUCC_CHUNK
 
 #include <nucc/chunk_type.hpp>
-#include <nucc/chunks/chunk_meta.hpp>
-#include <nucc/chunks/chunk_null.hpp>
-#include <nucc/chunks/chunk_page.hpp>
-#include <nucc/chunks/chunk_binary.hpp>
-#include <nucc/chunks/chunk_texture.hpp>
+
+#include <nucc/chunk_null.hpp>
+#include <nucc/chunk_page.hpp>
+#include <nucc/chunk_binary.hpp>
+#include <nucc/chunk_texture.hpp>
 
 #include <kojo/binary.hpp>
 #include <kojo/logger.hpp>
