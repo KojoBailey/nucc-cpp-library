@@ -1,28 +1,56 @@
 cmake_minimum_required(VERSION 3.19)
+project(nucc VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
 
-project(nucc-cpp-library VERSION 0.1.0 DESCRIPTION "C++ NUCC lib")
-
-# Find source files
 file(GLOB_RECURSE SOURCES src/*.cpp)
-
-# Create shared library
-add_library(nucc-cpp-library STATIC ${SOURCES})
-
-# Include header files
-target_include_directories(nucc-cpp-library PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-set_target_properties(nucc-cpp-library PROPERTIES CXX_STANDARD 23)
-
-add_subdirectory(extern/json)
-target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json)
-target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/json/include)
+add_library(nucc STATIC ${SOURCES})
+target_include_directories(nucc
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+)
+set_target_properties(nucc PROPERTIES CXX_STANDARD 23)
 
 add_subdirectory(extern/binary)
-target_link_libraries(${PROJECT_NAME} PUBLIC binary-cpp-library)
-target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/binary-lib/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC kojo::binary)
 
 add_subdirectory(extern/logger)
-target_link_libraries(${PROJECT_NAME} PUBLIC kojo-log-lib)
-target_include_directories(${PROJECT_NAME} PUBLIC include/nucc/external/logger/include)
+target_link_libraries(${PROJECT_NAME} PUBLIC kojo::logger)
 
-message(STATUS "SOURCES = ${SOURCES}")
+add_library(kojo::nucc ALIAS nucc)
+
+install(TARGETS nucc
+    EXPORT nuccTargets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
+
+install(DIRECTORY include/ DESTINATION include)
+
+install(EXPORT nuccTargets
+    FILE nuccTargets.cmake
+    NAMESPACE kojo::
+    DESTINATION lib/cmake/nucc
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/nuccConfigVersion.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+  "${CMAKE_CURRENT_LIST_DIR}/cmake/nuccConfig.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/nuccConfig.cmake"
+  INSTALL_DESTINATION lib/cmake/nucc
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/nuccConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/nuccConfigVersion.cmake"
+    DESTINATION lib/cmake/nucc
+)
+
+message(STATUS "NUCC++ Library build configured. To install: `cmake --install . --prefix <install_path>`")

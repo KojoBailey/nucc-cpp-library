@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/nuccTargets.cmake")
+
+# Dependencies
+find_package(binary REQUIRED)
+find_package(kojo-log REQUIRED)
