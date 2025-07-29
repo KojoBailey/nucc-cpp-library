@@ -39,6 +39,9 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
         case chunk_type::binary:
             m_meta = std::make_shared<chunk_binary>();
             break;
+        case chunk_type::texture:
+            m_meta = std::make_shared<chunk_texture>();
+            break;
         default:
             m_meta = std::make_shared<chunk_null>();
             return;
