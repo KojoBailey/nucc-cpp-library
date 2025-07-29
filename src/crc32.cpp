@@ -20,6 +20,6 @@ void crc32::load(std::string str) {
     }
 }
 
-std::string crc32::string() {
+std::string crc32::string() const {
     return std::format("{:08x}", m_id);
 }
