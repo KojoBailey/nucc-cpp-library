@@ -31,7 +31,32 @@ public:
     std::uint32_t version() const { return m_version; }
 
     template<typename T>
-    const T* meta() const { return dynamic_cast<T*>(m_meta.get()); }
+    const T* meta(const std::source_location& loc = std::source_location::current()) const { 
+        // !!! Need to complete error checking here.
+        if constexpr (std::is_same_v<T, chunk_texture>) {
+            if (m_type != chunk_type::texture) {
+                log.fatal(
+                    kojo::logger::status::type_mismatch,
+                    std::format("Told to return chunk meta of `nucc::chunk_texture`, but chunk's type is {}.", type_string()),
+                    "Specify a different type that matches the chunk's own type.",
+                    loc
+                );
+                return nullptr;
+            }
+        } else if constexpr (std::is_same_v<T, chunk_binary>) {
+            if (m_type != chunk_type::binary) {
+                log.fatal(
+                    kojo::logger::status::type_mismatch,
+                    std::format("Told to return chunk meta of `nucc::chunk_binary`, but chunk's type is {}.", type_string()),
+                    "Specify a different type that matches the chunk's own type.",
+                    loc
+                );
+                return nullptr;
+            }
+        }
+
+        return dynamic_cast<T*>(m_meta.get()); 
+    }
     
     size_t size() const { return m_data.size(); }
     const std::byte* data() const { return m_data.data(); }
