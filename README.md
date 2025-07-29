@@ -1,4 +1,6 @@
 # [NUCC++](https://github.com/KojoBailey/nucc-cpp-library/)
+**WARNING:** This documentation is horribly outdated! All will be updated once I'm done with it.
+
 Welcome to the **[NUCC C++ Library](https://github.com/KojoBailey/nucc-cpp-library/)**, a **multi-include** library of headers for **modern C++** (from **C++17**).
 
 Its purpose is to allow easy interaction with data from [CyberConnect2](https://jojomodding.miraheze.org/wiki/CyberConnect2)'s in-house **NUCC** engine, that mostly being data found in the [**XFBIN**](https://jojomodding.miraheze.org/wiki/XFBIN) container format, which sports the file signature: `NUCC` / `4E 55 43 43`.
