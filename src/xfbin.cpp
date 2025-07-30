@@ -15,9 +15,7 @@ xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::load(const std::filesystem::path input_path) {
-    log.show_debug = true;
     kojo::binary input_data{input_path};
-    log.debug(std::format("kojo::binary error: {}", (int)input_data.get_error_status()));
     if (input_data.is_empty())
         log.error(
             kojo::logger::status::null_file,
@@ -40,13 +38,9 @@ void xfbin::load(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::read(kojo::binary_view data) {
-    log.debug("Reading header.");
     read_header(data);
-    log.debug("Reading index.");
     read_index(data);
-    log.debug("Reading chunks.");
     read_chunks(data);
-    log.debug("Finished.");
 }
 void xfbin::read_header(kojo::binary_view& data) {
     auto magic_input = data.read<str>(4);
