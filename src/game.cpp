@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-using namespace nucc;
+namespace nucc {
 
 std::string game_to_string(game game) {
     switch (game) {
@@ -44,4 +44,6 @@ game string_to_game(std::string str) {
     if (iterator != string_game_map.end())
         return iterator->second;
     return game::unknown;
+}
+
 }
