@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    std::uint32_t m_id;
+    std::uint32_t m_id{0};
 };
 
 }
