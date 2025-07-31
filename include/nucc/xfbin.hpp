@@ -48,7 +48,7 @@ public:
     const chunk& operator[](chunk_type chunk_type) const { return get_chunk(chunk_type); }
 
 private:
-    kojo::logger log{"NUCC++ Library"};
+    kojo::logger log{"NUCC++ Library", true, true};
 
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
     static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.

@@ -1,8 +1,6 @@
 #include <nucc/xfbin.hpp>
 
-#include <stdexcept>
 #include <unordered_map>
-#include <unordered_set>
 
 using namespace nucc;
 using namespace kojo::binary_types;
@@ -15,6 +13,7 @@ xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::load(const std::filesystem::path input_path) {
+    log.verbose(std::format("Loading XFBIN from path \"{}\".", input_path.string()));
     kojo::binary input_data{input_path};
     if (input_data.is_empty())
         log.error(
@@ -27,6 +26,7 @@ void xfbin::load(const std::filesystem::path input_path) {
     read(input_data);
 }
 void xfbin::load(kojo::binary_view input_binary, size_t _size) {
+    log.verbose("Loading XFBIN from binary data.");
     if (input_binary.is_empty())
         log.error(
             kojo::logger::status::null_pointer,
@@ -38,9 +38,16 @@ void xfbin::load(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::read(kojo::binary_view data) {
+    log.verbose("Reading header...");
     read_header(data);
+
+    log.verbose("Reading index...");
     read_index(data);
+
+    log.verbose("Reading chunks...");
     read_chunks(data);
+
+    log.verbose("Reading complete!");
 }
 void xfbin::read_header(kojo::binary_view& data) {
     auto magic_input = data.read<str>(4);
@@ -78,7 +85,6 @@ void xfbin::read_index(kojo::binary_view& data) {
     auto map_indices_count = data.read<u32>(std::endian::big);
     auto extra_indices_count = data.read<u32>(std::endian::big);
 
-    // Store strings.
     for (size_t i = 0; i < type_count; i++)
         m_types.push_back(std::string(data.read<sv>()));
     for (size_t i = 0; i < path_count; i++)
@@ -88,7 +94,6 @@ void xfbin::read_index(kojo::binary_view& data) {
 
     data.align_by(4);
 
-    // Store maps.
     for (int i = 0; i < map_count; i++)
         maps.push_back({
             data.read<u32>(std::endian::big),

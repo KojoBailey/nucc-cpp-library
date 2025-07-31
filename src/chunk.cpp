@@ -8,8 +8,6 @@ chunk::chunk(kojo::binary_view& input_data, const xfbin* xfbin) {
 }
 
 void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
-    log.show_debug = false;
-    log.debug(std::format("Parsing chunk \"{}\"...", m_name));
     if (input_data.is_empty()) {
         log.error(
             kojo::logger::status::null_pointer,
@@ -28,7 +26,7 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
     m_path = xfbin->get_path(map_index);
     m_name = xfbin->get_name(map_index);
 
-    log.debug(std::format("Type: {}, Path: {}, Name: {}", chunk_type_to_string(m_type), m_path, m_name));
+    log.debug(std::format("Type: {}, Name: \"{}\", Path: \"{}\"", chunk_type_to_string(m_type), m_name, m_path));
 
     size_t meta_size;
     switch (m_type) {
@@ -43,7 +41,6 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
             break;
         default:
             m_meta = std::make_shared<chunk_null>();
-            return;
     }
     meta_size = m_meta->load(input_data);
 
