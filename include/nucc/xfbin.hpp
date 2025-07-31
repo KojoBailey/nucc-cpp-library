@@ -33,9 +33,9 @@ public:
     std::string_view get_path(std::uint32_t map_index) const;
     std::string_view get_name(std::uint32_t map_index) const;
 
-    const std::vector<std::string_view>& types() const { return m_types; }
-    const std::vector<std::string_view>& paths() const { return m_paths; }
-    const std::vector<std::string_view>& names() const { return m_names; }
+    const std::vector<std::string>& types() const { return m_types; }
+    const std::vector<std::string>& paths() const { return m_paths; }
+    const std::vector<std::string>& names() const { return m_names; }
 
     const std::vector<page>& pages() const { return m_pages; }
 
@@ -56,7 +56,7 @@ private:
 
     size_t size;
 
-    std::vector<std::string_view> m_types, m_paths, m_names;
+    std::vector<std::string> m_types, m_paths, m_names;
     struct chunk_map {
         std::uint32_t type_index;
         std::uint32_t path_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.

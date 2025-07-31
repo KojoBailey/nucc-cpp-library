@@ -80,11 +80,11 @@ void xfbin::read_index(kojo::binary_view& data) {
 
     // Store strings.
     for (size_t i = 0; i < type_count; i++)
-        m_types.push_back(data.read<sv>());
+        m_types.push_back(std::string(data.read<sv>()));
     for (size_t i = 0; i < path_count; i++)
-        m_paths.push_back(data.read<sv>());
+        m_paths.push_back(std::string(data.read<sv>()));
     for (size_t i = 0; i < name_count; i++)
-        m_names.push_back(data.read<sv>());
+        m_names.push_back(std::string(data.read<sv>()));
 
     data.align_by(4);
 
