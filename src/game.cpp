@@ -20,7 +20,7 @@ std::string game_to_string(game game) {
 }
 
 game string_to_game(std::string str) {
-    static const std::unordered_map<std::string_view, game> string_game_map = {
+    const std::unordered_map<std::string_view, game> string_game_map = {
         {"naruto shippuden: ultimate ninja storm 3", game::nsuns3},
         {"nsuns3", game::nsuns3},
         {"jojo's bizarre adventure: all-star battle", game::asb},
