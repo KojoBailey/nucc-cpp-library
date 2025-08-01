@@ -17,17 +17,17 @@ public:
     friend class chunk;
 
     xfbin() = default;
-    xfbin(const std::filesystem::path);
+    explicit xfbin(std::filesystem::path);
     xfbin(kojo::binary_view, size_t);
     ~xfbin() = default;
 
-    void load(const std::filesystem::path);
+    void load(std::filesystem::path);
     void load(kojo::binary_view, size_t);
 
     std::string filename;
     game game{game::unknown};
-    constexpr std::string_view magic() const { return MAGIC; }
-    constexpr std::uint32_t version() const { return VERSION; }
+    static constexpr std::string_view magic() { return MAGIC; }
+    static constexpr std::uint32_t version() { return VERSION; }
 
     chunk_type get_type(std::uint32_t map_index) const;
     std::string_view get_path(std::uint32_t map_index) const;
@@ -54,7 +54,7 @@ private:
     static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
     static constexpr std::uint32_t HEADER_SIZE{12};
 
-    size_t size;
+    size_t size{0};
 
     std::vector<std::string> m_types, m_paths, m_names;
     struct chunk_map {
