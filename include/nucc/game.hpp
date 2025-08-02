@@ -24,4 +24,4 @@ game string_to_game(std::string);
 
 }
 
-#endif // KOJO_NUCC_GAME
+#endif

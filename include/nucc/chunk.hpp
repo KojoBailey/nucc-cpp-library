@@ -3,7 +3,6 @@
 
 #include <nucc/chunk_type.hpp>
 
-#include <nucc/chunk_null.hpp>
 #include <nucc/chunk_page.hpp>
 #include <nucc/chunk_binary.hpp>
 #include <nucc/chunk_texture.hpp>
@@ -24,11 +23,11 @@ public:
 
     void load(kojo::binary_view& input_data, const xfbin* xfbin);
 
-    chunk_type type() const { return m_type; }
-    std::string type_string() const { return chunk_type_to_string(m_type); }
-    std::string path() const { return m_path; }
-    std::string name() const { return m_name; }
-    std::uint32_t version() const { return m_version; }
+    [[nodiscard]] chunk_type type() const { return m_type; }
+    [[nodiscard]] std::string type_string() const { return chunk_type_to_string(m_type); }
+    [[nodiscard]] std::string path() const { return m_path; }
+    [[nodiscard]] std::string name() const { return m_name; }
+    [[nodiscard]] std::uint32_t version() const { return m_version; }
 
     template<typename T>
     const T* meta(const std::source_location& loc = std::source_location::current()) const { 
@@ -75,9 +74,9 @@ public:
         return dynamic_cast<T*>(m_meta.get()); 
     }
     
-    size_t size() const { return m_data.size(); }
-    const std::byte* data() const { return m_data.data(); }
-    const kojo::binary* storage() const { return &m_data; }
+    [[nodiscard]] size_t size() const { return m_data.size(); }
+    [[nodiscard]] const std::byte* data() const { return m_data.data(); }
+    [[nodiscard]] const kojo::binary* storage() const { return &m_data; }
 
 private:
     kojo::logger log{"NUCC++ Library", true, true};
@@ -85,7 +84,7 @@ private:
     chunk_type m_type{chunk_type::null};
     std::string m_path;
     std::string m_name;
-    std::uint32_t m_version;
+    std::uint32_t m_version{};
 
     std::shared_ptr<chunk_meta> m_meta;
 
@@ -94,4 +93,4 @@ private:
 
 }
 
-#endif // KOJO_NUCC_CHUNK
+#endif

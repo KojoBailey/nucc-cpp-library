@@ -38,6 +38,7 @@ std::string chunk_type_to_string(chunk_type chunk_type) {
         case chunk_type::sprite2                : return "nuccChunkSprite2";
         case chunk_type::sprite2_anm            : return "nuccChunkSprite2Anm";
         case chunk_type::nub                    : return "nuccChunkNub";
+        default: break;
     }
     return "nuccChunkUnknown";
 }

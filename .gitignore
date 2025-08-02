@@ -1,7 +1,16 @@
+# Build
 build
 build/
 build.ninja
+
+# CMake
 CMakeCache.txt
 cmake_install.cmake
-CMakeFiles
-./vscode
+CMakeFiles/
+.cmake/
+nuccConfig.cmake
+nuccConfigVersion.cmake
+
+# IDE
+.vscode/
+.idea/

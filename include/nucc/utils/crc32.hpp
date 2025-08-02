@@ -29,23 +29,23 @@ constexpr std::array<std::uint32_t, 256> crc32_hash_table = generate_crc32_table
 class crc32 {
 public:
     crc32() = default;
-    crc32(std::uint32_t _id) : m_id(_id) {}
-    crc32(std::string str) {
+    explicit crc32(std::uint32_t _id) : m_id(_id) {}
+    explicit crc32(const std::string& str) {
         load(str);
     }
 
     void load(std::uint32_t _id);
-    void load(std::string str);
+    void load(const std::string& str);
 
-    std::uint32_t id() const { return m_id; }
-    std::string string() const;
+    [[nodiscard]] std::uint32_t id() const { return m_id; }
+    [[nodiscard]] std::string string() const;
 
     static constexpr std::uint32_t hash(std::string_view str) {
         std::uint32_t crc = 0xFFFFFFFF;
 
         for (std::size_t i = 0; i < str.length(); ++i) {
-            std::uint8_t byte = static_cast<std::uint8_t>(str[i]);
-            std::uint8_t index = static_cast<std::uint8_t>((crc >> 24) ^ byte);
+            auto byte = static_cast<std::uint8_t>(str[i]);
+            auto index = static_cast<std::uint8_t>((crc >> 24) ^ byte);
             crc = (crc << 8) ^ crc32_hash_table[index];
         }
 
@@ -58,4 +58,4 @@ private:
 
 }
 
-#endif // KOJO_NUCC_CRC32
+#endif

@@ -2,7 +2,7 @@
 
 using namespace nucc;
 
-void page::add_chunk(chunk& chunk) {
+void page::add_chunk(const chunk& chunk) {
     m_chunks.push_back(chunk);
 }
 
@@ -37,16 +37,12 @@ const chunk& page::fetch_last() const {
 }
 
 bool page::has(std::string_view chunk_name) const {
-    for (const chunk& m_chunk : m_chunks) {
-        if (m_chunk.name() == chunk_name)
-            return true;
-    }
-    return false;
+    return std::ranges::any_of(m_chunks, [chunk_name](const chunk& m_chunk) {
+        return m_chunk.name() == chunk_name;
+    });
 }
 bool page::has(chunk_type chunk_type) const {
-    for (const chunk& m_chunk : m_chunks) {
-        if (m_chunk.type() == chunk_type)
-            return true;
-    }
-    return false;
+    return std::ranges::any_of(m_chunks, [chunk_type](const chunk& m_chunk) {
+        return m_chunk.type() == chunk_type;
+    });
 }

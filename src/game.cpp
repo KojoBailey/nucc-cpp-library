@@ -15,6 +15,7 @@ std::string game_to_string(game game) {
         case game::nsuns4   : return "Naruto Shippuden: Ultimate Ninja Storm 4";
         case game::asbr     : return "JoJo's Bizarre Adventure: All-Star Battle R";
         case game::nxbunsc  : return "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS";
+        default:  break;
     }
     return "Unknown";
 }
