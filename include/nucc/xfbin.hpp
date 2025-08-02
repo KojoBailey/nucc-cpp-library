@@ -29,21 +29,21 @@ public:
     static constexpr std::string_view magic() { return MAGIC; }
     static constexpr std::uint32_t version() { return VERSION; }
 
-    chunk_type get_type(std::uint32_t map_index) const;
-    std::string_view get_path(std::uint32_t map_index) const;
-    std::string_view get_name(std::uint32_t map_index) const;
+    [[nodiscard]] chunk_type get_type(std::uint32_t map_index) const;
+    [[nodiscard]] std::string_view get_path(std::uint32_t map_index) const;
+    [[nodiscard]] std::string_view get_name(std::uint32_t map_index) const;
 
-    const std::vector<std::string>& types() const { return m_types; }
-    const std::vector<std::string>& paths() const { return m_paths; }
-    const std::vector<std::string>& names() const { return m_names; }
+    [[nodiscard]] const std::vector<std::string>& types() const { return m_types; }
+    [[nodiscard]] const std::vector<std::string>& paths() const { return m_paths; }
+    [[nodiscard]] const std::vector<std::string>& names() const { return m_names; }
 
-    const std::vector<page>& pages() const { return m_pages; }
+    [[nodiscard]] const std::vector<page>& pages() const { return m_pages; }
 
-    const page& get_page(size_t page_index = 0) const;
+    [[nodiscard]] const page& get_page(size_t page_index = 0) const;
     const page& operator[](size_t page_index) const { return get_page(page_index); }
 
-    const chunk& get_chunk(std::string_view chunk_name) const;
-    const chunk& get_chunk(chunk_type chunk_type) const;
+    [[nodiscard]] const chunk& get_chunk(std::string_view chunk_name) const;
+    [[nodiscard]] const chunk& get_chunk(chunk_type chunk_type) const;
     const chunk& operator[](std::string_view chunk_name) const { return get_chunk(chunk_name); }
     const chunk& operator[](chunk_type chunk_type) const { return get_chunk(chunk_type); }
 
@@ -82,4 +82,4 @@ private:
 
 }
 
-#endif // KOJO_NUCC_XFBIN
+#endif

@@ -8,7 +8,7 @@ namespace nucc {
 class chunk_meta {
 public:
     chunk_meta() = default;
-    ~chunk_meta() = default;
+    virtual ~chunk_meta() = default;
 
     virtual size_t load(kojo::binary_view input) = 0;
 };

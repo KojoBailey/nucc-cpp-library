@@ -47,4 +47,4 @@ chunk_type string_to_chunk_type(std::string_view);
 
 }
 
-#endif // KOJO_NUCC_CHUNK_TYPE
+#endif
