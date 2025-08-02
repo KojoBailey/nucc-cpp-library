@@ -1,4 +1,5 @@
 #include <nucc/xfbin.hpp>
+#include <nucc/chunk_null.hpp>
 
 using namespace nucc;
 using namespace kojo::binary_types;
@@ -20,15 +21,14 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
     auto size = input_data.read<u32>(std::endian::big);
     auto map_index = input_data.read<u32>(std::endian::big);
     m_version = input_data.read<u16>(std::endian::big);
-    auto unk = input_data.read<u16>(std::endian::big); // Potentially for animations.
+    input_data.read<u16>(std::endian::big); // Potentially for animations.
 
     m_type = xfbin->get_type(map_index);
     m_path = xfbin->get_path(map_index);
     m_name = xfbin->get_name(map_index);
 
-    log.debug(std::format("Type: {}, Name: \"{}\", Path: \"{}\"", chunk_type_to_string(m_type), m_name, m_path));
+    log.debug(std::format(R"(Type: {}, Name: "{}", Path: "{}")", chunk_type_to_string(m_type), m_name, m_path));
 
-    size_t meta_size;
     switch (m_type) {
         case chunk_type::page:
             m_meta = std::make_shared<chunk_page>();
@@ -42,7 +42,7 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
         default:
             m_meta = std::make_shared<chunk_null>();
     }
-    meta_size = m_meta->load(input_data);
+    size_t meta_size = m_meta->load(input_data);
 
     m_data.load(input_data.data(), size - meta_size, input_data.get_pos() + meta_size);
     input_data.change_pos(size);

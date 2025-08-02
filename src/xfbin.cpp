@@ -5,14 +5,14 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-xfbin::xfbin(const std::filesystem::path input_path) {
+xfbin::xfbin(const std::filesystem::path& input_path) {
     load(input_path);
 }
 xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
-    load(input_binary, _size);
+    load(std::move(input_binary), _size);
 }
 
-void xfbin::load(const std::filesystem::path input_path) {
+void xfbin::load(const std::filesystem::path& input_path) {
     log.verbose(std::format("Loading XFBIN from path \"{}\".", input_path.string()));
     kojo::binary input_data{input_path};
     if (input_data.is_empty())
@@ -34,7 +34,7 @@ void xfbin::load(kojo::binary_view input_binary, size_t _size) {
             "Ensure the address provided contains appropiate data."
         );
     size = _size;
-    read(input_binary);
+    read(std::move(input_binary));
 }
 
 void xfbin::read(kojo::binary_view data) {
@@ -75,22 +75,22 @@ void xfbin::read_header(kojo::binary_view& data) {
 void xfbin::read_index(kojo::binary_view& data) {
     data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
     auto type_count = data.read<u32>(std::endian::big);
-    auto type_size = data.read<u32>(std::endian::big);
+    data.read<u32>(std::endian::big); // type_size
     auto path_count = data.read<u32>(std::endian::big);
-    auto path_size = data.read<u32>(std::endian::big);
+    data.read<u32>(std::endian::big); // path_size
     auto name_count = data.read<u32>(std::endian::big);
-    auto name_size = data.read<u32>(std::endian::big);
+    data.read<u32>(std::endian::big); // name_size
     auto map_count = data.read<u32>(std::endian::big);
-    auto map_size = data.read<u32>(std::endian::big);
+    data.read<u32>(std::endian::big); // map_size
     auto map_indices_count = data.read<u32>(std::endian::big);
     auto extra_indices_count = data.read<u32>(std::endian::big);
 
     for (size_t i = 0; i < type_count; i++)
-        m_types.push_back(std::string(data.read<sv>()));
+        m_types.emplace_back(data.read<sv>());
     for (size_t i = 0; i < path_count; i++)
-        m_paths.push_back(std::string(data.read<sv>()));
+        m_paths.emplace_back(data.read<sv>());
     for (size_t i = 0; i < name_count; i++)
-        m_names.push_back(std::string(data.read<sv>()));
+        m_names.emplace_back(data.read<sv>());
 
     data.align_by(4);
 
@@ -110,14 +110,14 @@ void xfbin::read_index(kojo::binary_view& data) {
 }
 void xfbin::read_chunks(kojo::binary_view& data) {
     m_pages.clear();
-    for (size_t page_it = 0; !(data.get_pos() >= size); page_it++) {
+    for (size_t page_it = 0; data.get_pos() < size; page_it++) {
         m_pages.emplace_back();
         auto& page = m_pages[page_it];
 
         while (data.get_pos() < size) {
             chunk chunk{data, this};
             if (chunk.type() == chunk_type::page) {
-                const chunk_page* page_chunk = chunk.meta<chunk_page>();
+                const auto* page_chunk = chunk.meta<chunk_page>();
                 running_map_offset += page_chunk->chunk_map_offset();
                 running_extra_offset += page_chunk->extra_map_offset();
                 break;

@@ -17,11 +17,11 @@ public:
     friend class chunk;
 
     xfbin() = default;
-    explicit xfbin(std::filesystem::path);
+    explicit xfbin(const std::filesystem::path&);
     xfbin(kojo::binary_view, size_t);
     ~xfbin() = default;
 
-    void load(std::filesystem::path);
+    void load(const std::filesystem::path&);
     void load(kojo::binary_view, size_t);
 
     std::string filename;

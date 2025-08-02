@@ -11,7 +11,7 @@ using namespace nucc;
 void crc32::load(std::uint32_t _id) {
     m_id = _id;
 }
-void crc32::load(std::string str) {
+void crc32::load(const std::string& str) {
     if (std::regex_match(str, std::regex("^([0-9a-fA-F]{8})$"))) {
         m_id = std::stoul(str, nullptr, 16);
     } else {

@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
-#include <utility>
 
 namespace nucc {
 
@@ -31,12 +30,12 @@ class crc32 {
 public:
     crc32() = default;
     explicit crc32(std::uint32_t _id) : m_id(_id) {}
-    explicit crc32(std::string str) {
-        load(std::move(str));
+    explicit crc32(const std::string& str) {
+        load(str);
     }
 
     void load(std::uint32_t _id);
-    void load(std::string str);
+    void load(const std::string& str);
 
     [[nodiscard]] std::uint32_t id() const { return m_id; }
     [[nodiscard]] std::string string() const;
