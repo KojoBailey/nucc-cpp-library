@@ -33,7 +33,17 @@ public:
     template<typename T>
     const T* meta(const std::source_location& loc = std::source_location::current()) const { 
         // !!! Need to complete error checking here.
-        if constexpr (std::is_same_v<T, chunk_texture>) {
+        if constexpr (std::is_same_v<T, chunk_page>) {
+            if (m_type != chunk_type::page) {
+                log.fatal(
+                    kojo::logger::status::type_mismatch,
+                    std::format("Told to return chunk meta of `nucc::chunk_page`, but chunk's type is {}.", type_string()),
+                    "Specify a different type that matches the chunk's own type.",
+                    loc
+                );
+                return nullptr;
+            }
+        } else if constexpr (std::is_same_v<T, chunk_texture>) {
             if (m_type != chunk_type::texture) {
                 log.fatal(
                     kojo::logger::status::type_mismatch,
@@ -53,6 +63,13 @@ public:
                 );
                 return nullptr;
             }
+        } else {
+            log.fatal(
+                kojo::logger::status::bad_value,
+                std::format("Unsupported chunk type `{}`.", type_string()),
+                "Contact the author of this library to add support for this known chunk type.",
+                loc
+            );
         }
 
         return dynamic_cast<T*>(m_meta.get()); 
@@ -63,7 +80,7 @@ public:
     const kojo::binary* storage() const { return &m_data; }
 
 private:
-    kojo::logger log{"NUCC++ Library"};
+    kojo::logger log{"NUCC++ Library", true, true};
 
     chunk_type m_type{chunk_type::null};
     std::string m_path;

@@ -17,25 +17,25 @@ public:
     friend class chunk;
 
     xfbin() = default;
-    xfbin(const std::filesystem::path);
+    explicit xfbin(std::filesystem::path);
     xfbin(kojo::binary_view, size_t);
     ~xfbin() = default;
 
-    void load(const std::filesystem::path);
+    void load(std::filesystem::path);
     void load(kojo::binary_view, size_t);
 
     std::string filename;
     game game{game::unknown};
-    constexpr std::string_view magic() const { return MAGIC; }
-    constexpr std::uint32_t version() const { return VERSION; }
+    static constexpr std::string_view magic() { return MAGIC; }
+    static constexpr std::uint32_t version() { return VERSION; }
 
     chunk_type get_type(std::uint32_t map_index) const;
     std::string_view get_path(std::uint32_t map_index) const;
     std::string_view get_name(std::uint32_t map_index) const;
 
-    const std::vector<std::string_view>& types() const { return m_types; }
-    const std::vector<std::string_view>& paths() const { return m_paths; }
-    const std::vector<std::string_view>& names() const { return m_names; }
+    const std::vector<std::string>& types() const { return m_types; }
+    const std::vector<std::string>& paths() const { return m_paths; }
+    const std::vector<std::string>& names() const { return m_names; }
 
     const std::vector<page>& pages() const { return m_pages; }
 
@@ -48,15 +48,15 @@ public:
     const chunk& operator[](chunk_type chunk_type) const { return get_chunk(chunk_type); }
 
 private:
-    kojo::logger log{"NUCC++ Library"};
+    kojo::logger log{"NUCC++ Library", true, true};
 
     static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
     static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
     static constexpr std::uint32_t HEADER_SIZE{12};
 
-    size_t size;
+    size_t size{0};
 
-    std::vector<std::string_view> m_types, m_paths, m_names;
+    std::vector<std::string> m_types, m_paths, m_names;
     struct chunk_map {
         std::uint32_t type_index;
         std::uint32_t path_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.

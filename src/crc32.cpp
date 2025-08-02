@@ -16,10 +16,10 @@ void crc32::load(std::string str) {
         m_id = std::stoul(str, nullptr, 16);
     } else {
         m_id = hash(str);
-        kojo::binary::set_endian(m_id, std::endian::big);
+        m_id = kojo::binary::set_endian(m_id, std::endian::big);
     }
 }
 
-std::string crc32::string() {
+std::string crc32::string() const {
     return std::format("{:08x}", m_id);
 }

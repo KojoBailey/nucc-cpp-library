@@ -1,8 +1,6 @@
 #include <nucc/xfbin.hpp>
 
-#include <stdexcept>
 #include <unordered_map>
-#include <unordered_set>
 
 using namespace nucc;
 using namespace kojo::binary_types;
@@ -15,9 +13,8 @@ xfbin::xfbin(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::load(const std::filesystem::path input_path) {
-    log.show_debug = true;
+    log.verbose(std::format("Loading XFBIN from path \"{}\".", input_path.string()));
     kojo::binary input_data{input_path};
-    log.debug(std::format("kojo::binary error: {}", (int)input_data.get_error_status()));
     if (input_data.is_empty())
         log.error(
             kojo::logger::status::null_file,
@@ -29,6 +26,7 @@ void xfbin::load(const std::filesystem::path input_path) {
     read(input_data);
 }
 void xfbin::load(kojo::binary_view input_binary, size_t _size) {
+    log.verbose("Loading XFBIN from binary data.");
     if (input_binary.is_empty())
         log.error(
             kojo::logger::status::null_pointer,
@@ -40,13 +38,16 @@ void xfbin::load(kojo::binary_view input_binary, size_t _size) {
 }
 
 void xfbin::read(kojo::binary_view data) {
-    log.debug("Reading header.");
+    log.verbose("Reading header...");
     read_header(data);
-    log.debug("Reading index.");
+
+    log.verbose("Reading index...");
     read_index(data);
-    log.debug("Reading chunks.");
+
+    log.verbose("Reading chunks...");
     read_chunks(data);
-    log.debug("Finished.");
+
+    log.verbose("Reading complete!");
 }
 void xfbin::read_header(kojo::binary_view& data) {
     auto magic_input = data.read<str>(4);
@@ -84,17 +85,15 @@ void xfbin::read_index(kojo::binary_view& data) {
     auto map_indices_count = data.read<u32>(std::endian::big);
     auto extra_indices_count = data.read<u32>(std::endian::big);
 
-    // Store strings.
     for (size_t i = 0; i < type_count; i++)
-        m_types.push_back(data.read<sv>());
+        m_types.push_back(std::string(data.read<sv>()));
     for (size_t i = 0; i < path_count; i++)
-        m_paths.push_back(data.read<sv>());
+        m_paths.push_back(std::string(data.read<sv>()));
     for (size_t i = 0; i < name_count; i++)
-        m_names.push_back(data.read<sv>());
+        m_names.push_back(std::string(data.read<sv>()));
 
     data.align_by(4);
 
-    // Store maps.
     for (int i = 0; i < map_count; i++)
         maps.push_back({
             data.read<u32>(std::endian::big),

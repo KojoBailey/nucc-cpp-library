@@ -37,8 +37,8 @@ public:
     void load(std::uint32_t _id);
     void load(std::string str);
 
-    std::uint32_t id() { return m_id; }
-    std::string string();
+    std::uint32_t id() const { return m_id; }
+    std::string string() const;
 
     static constexpr std::uint32_t hash(std::string_view str) {
         std::uint32_t crc = 0xFFFFFFFF;
@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    std::uint32_t m_id;
+    std::uint32_t m_id{0};
 };
 
 }
