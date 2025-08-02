@@ -3,6 +3,7 @@ build/
 build.ninja
 CMakeCache.txt
 cmake_install.cmake
-CMakeFiles
+CMakeFiles/
+.cmake/
 .vscode/
 /.idea/
