@@ -47,3 +47,8 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
     m_data.load(input_data.data(), size - meta_size, input_data.get_pos() + meta_size);
     input_data.change_pos(size);
 }
+
+void chunk::update_data(const std::byte* _data, size_t size) {
+    m_data.load(_data, size);
+    m_meta->update(m_data.data());
+}

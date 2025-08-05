@@ -19,6 +19,8 @@ public:
     [[nodiscard]] std::uint16_t height() const { return m_height; }
     [[nodiscard]] std::uint32_t size() const { return m_size; }
 
+    void update(kojo::binary_view data) override {}
+
 private:
     std::uint16_t m_width{}, m_height{};
     std::uint32_t m_size{};

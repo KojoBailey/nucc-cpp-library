@@ -18,6 +18,8 @@ public:
     [[nodiscard]] std::uint32_t chunk_map_offset() const { return m_chunk_map_offset; }
     [[nodiscard]] std::uint32_t extra_map_offset() const { return m_extra_map_offset; }
 
+    void update(kojo::binary_view) override {}
+
 private:
     std::uint32_t m_chunk_map_offset{};
     std::uint32_t m_extra_map_offset{};

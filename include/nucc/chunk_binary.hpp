@@ -17,6 +17,8 @@ public:
 
     [[nodiscard]] std::uint32_t size() const { return m_size; }
 
+    void update(kojo::binary_view data) override;
+
 private:
     std::uint32_t m_size{};
 };
