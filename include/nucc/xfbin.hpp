@@ -26,6 +26,7 @@ public:
 
     std::string filename;
     game game{game::unknown};
+    std::string game_as_string() { return nucc::game_to_string(game); }
     static constexpr std::string_view magic() { return MAGIC; }
     static constexpr std::uint32_t version() { return VERSION; }
 

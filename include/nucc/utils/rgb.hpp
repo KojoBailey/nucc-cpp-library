@@ -8,7 +8,7 @@ namespace nucc {
 
 class rgb {
 public:
-    std::uint32_t red, green, blue, alpha;
+    std::uint32_t red{0}, green{0}, blue{0}, alpha{255};
 
     [[nodiscard]] std::uint32_t consolidate() const;
 
