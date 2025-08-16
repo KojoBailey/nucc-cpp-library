@@ -19,11 +19,11 @@ class xfbin;
 class chunk {
 public:
     chunk() = default;
-    chunk(kojo::binary_view& input_data, const xfbin* xfbin);
+    chunk(kojo::binary_view& input_data, xfbin* xfbin);
     explicit chunk(nucc::chunk_type _type, std::string_view _name =  "", std::string_view _path =  "")
         : m_type(_type), m_name(_name), m_path(_path) {}
 
-    void load(kojo::binary_view& input_data, const xfbin* xfbin);
+    void load(kojo::binary_view& input_data, xfbin* xfbin);
 
     [[nodiscard]] chunk_type type() const { return m_type; }
     [[nodiscard]] std::string type_string() const { return chunk_type_to_string(m_type); }

@@ -3,6 +3,7 @@
 
 #include <nucc/game.hpp>
 #include <nucc/page.hpp>
+#include <nucc/crypt.hpp>
 
 #include <kojo/logger.hpp>
 #include <kojo/binary.hpp>
@@ -17,16 +18,18 @@ public:
     friend class chunk;
 
     xfbin() = default;
-    explicit xfbin(const std::filesystem::path&);
-    xfbin(kojo::binary_view, size_t);
+    explicit xfbin(const std::filesystem::path& input_path, const uint8_t decryption_key[8] = {});
+    xfbin(kojo::binary_view input_binary, size_t _size, const uint8_t decryption_key[8] = {});
     ~xfbin() = default;
 
-    void load(const std::filesystem::path&);
-    void load(kojo::binary_view, size_t);
+    void load(const std::filesystem::path& input_path);
+    void load(kojo::binary_view input_binary, size_t _size);
+
+    void supply_decryption_key(const uint8_t crypt_key[8]);
 
     std::string filename;
     game game{game::unknown};
-    std::string game_as_string() { return nucc::game_to_string(game); }
+    [[nodiscard]] std::string game_as_string() const { return nucc::game_to_string(game); }
     static constexpr std::string_view magic() { return MAGIC; }
     static constexpr std::uint32_t version() { return VERSION; }
 
@@ -74,6 +77,9 @@ private:
     std::uint32_t running_extra_offset{0};     /** Running total for page extra map offsets. */
 
     std::vector<nucc::page> m_pages;
+
+    bool should_decrypt = false; /** Whether the XFBIN should be decrypted or not. (read from xfbin header flags) */
+    xfbin_cryptor cryptor; /** Cryptor used to decrypt the XFBIN if needed. */
 
     void read(kojo::binary_view);
     void read_header(kojo::binary_view&);

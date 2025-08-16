@@ -4,11 +4,11 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-chunk::chunk(kojo::binary_view& input_data, const xfbin* xfbin) {
+chunk::chunk(kojo::binary_view& input_data, xfbin* xfbin) {
     load(input_data, xfbin);
 }
 
-void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
+void chunk::load(kojo::binary_view& input_data, xfbin* xfbin) {
     if (input_data.is_empty()) {
         log.error(
             kojo::logger::status::null_pointer,
@@ -42,6 +42,17 @@ void chunk::load(kojo::binary_view& input_data, const xfbin* xfbin) {
         default:
             m_meta = std::make_shared<chunk_null>();
     }
+
+    // Technically the original implementation (ASBR) decrypts first the inner size of the nuccChunkBinary,
+    // then rest of the data, but since the size is always 4 bytes (which fits perfectly with the decryption alignment),
+    // we can just decrypt everything at once without any issues.
+    // TODO: maybe move this into the chunk_binary class?
+    if (m_type == chunk_type::binary && xfbin->should_decrypt && size > 0) {
+        log.verbose(std::format("Decrypting rest of chunk data... ({} bytes)", size));
+        uint8_t *data_ptr = (uint8_t*)input_data.data() + input_data.get_pos();
+        xfbin->cryptor.decrypt(data_ptr, data_ptr, size);
+    }
+
     size_t meta_size = m_meta->load(input_data);
 
     m_data.load(input_data.data(), size - meta_size, input_data.get_pos() + meta_size);
