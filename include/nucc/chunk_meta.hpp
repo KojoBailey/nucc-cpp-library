@@ -11,7 +11,6 @@ public:
     virtual ~chunk_meta() = default;
 
     virtual size_t load(kojo::binary_view input) = 0;
-
     virtual void update(kojo::binary_view data) = 0;
 };
 
