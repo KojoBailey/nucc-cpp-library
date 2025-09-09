@@ -9,6 +9,7 @@ void page::add_chunk(const chunk& chunk) {
 const chunk& page::get_chunk(size_t index) const {
     return m_chunks[index];
 }
+
 const chunk& page::get_chunk(chunk_type type, size_t index) const {
     size_t i = 0;
     for (const chunk& chunk : m_chunks) {
@@ -20,6 +21,7 @@ const chunk& page::get_chunk(chunk_type type, size_t index) const {
     }
     return fetch_last();
 }
+
 const chunk& page::get_chunk(std::string_view name, size_t index) const {
     size_t i = 0;
     for (const chunk& chunk : m_chunks) {
@@ -41,6 +43,7 @@ bool page::has(std::string_view chunk_name) const {
         return m_chunk.name() == chunk_name;
     });
 }
+
 bool page::has(chunk_type chunk_type) const {
     return std::ranges::any_of(m_chunks, [chunk_type](const chunk& m_chunk) {
         return m_chunk.type() == chunk_type;

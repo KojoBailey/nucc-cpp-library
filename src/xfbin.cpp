@@ -39,6 +39,7 @@ void xfbin::load(const std::filesystem::path& input_path) {
     filename = input_path.stem().string();
     read(input_data);
 }
+
 void xfbin::load(kojo::binary_view input_binary, size_t _size) {
     log.verbose("Loading XFBIN from binary data.");
     if (input_binary.is_empty())
@@ -63,6 +64,7 @@ void xfbin::read(kojo::binary_view data) {
 
     log.verbose("Reading complete!");
 }
+
 void xfbin::read_header(kojo::binary_view& data) {
     auto magic_input = data.read<str>(4);
     if (magic_input != MAGIC) {
