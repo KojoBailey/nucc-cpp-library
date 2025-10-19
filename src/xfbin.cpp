@@ -5,231 +5,248 @@
 using namespace nucc;
 using namespace kojo::binary_types;
 
-xfbin::xfbin(const std::filesystem::path& input_path, const uint8_t crypt_key[8]) {
-    supply_decryption_key(crypt_key);
-    load(input_path);
+xfbin::xfbin(const std::filesystem::path& input_path, const uint8_t crypt_key[8])
+{
+        supply_decryption_key(crypt_key);
+        load(input_path);
 }
 
-xfbin::xfbin(kojo::binary_view input_binary, const size_t _size, const uint8_t crypt_key[8]) {
-    supply_decryption_key(crypt_key);
-    load(std::move(input_binary), _size);
+xfbin::xfbin(kojo::binary_view input_binary, const size_t _size, const uint8_t crypt_key[8])
+{
+        supply_decryption_key(crypt_key);
+        load(std::move(input_binary), _size);
 }
 
-void xfbin::supply_decryption_key(const uint8_t crypt_key[8]) {
-    cryptor.initialize(crypt_key);
+void xfbin::supply_decryption_key(const uint8_t crypt_key[8])
+{
+        cryptor.initialize(crypt_key);
 }
 
-void xfbin::load(const std::filesystem::path& input_path) {
-    log.verbose(std::format("Loading XFBIN from path \"{}\".", input_path.string()));
+void xfbin::load(const std::filesystem::path& input_path)
+{
+        log.verbose(std::format("Loading XFBIN from path \"{}\".", input_path.string()));
 
-    cryptor.reset_state(); // Reset the cryptor state before loading a new file.
+        cryptor.reset_state(); // Reset the cryptor state before loading a new file.
 
-    kojo::binary input_data{input_path};
-    if (input_data.is_empty()) {
-        log.error(
-            kojo::logger::status::null_file,
-            std::format("Could not load file at path \"{}\".", input_path.string()),
-            "Ensure the file at the specified path exists and is a valid XFBIN."
-        );
+        kojo::binary input_data{input_path};
+        if (input_data.is_empty()) {
+                log.error(
+                        kojo::logger::status::null_file,
+                        std::format("Could not load file at path \"{}\".", input_path.string()),
+                        "Ensure the file at the specified path exists and is a valid XFBIN."
+                );
 
-        return; // This is a fatal error, needs to return
-    }
-
-    size = input_data.size();
-    filename = input_path.stem().string();
-    read(input_data);
-}
-
-void xfbin::load(kojo::binary_view input_binary, size_t _size) {
-    log.verbose("Loading XFBIN from binary data.");
-    if (input_binary.is_empty())
-        log.error(
-            kojo::logger::status::null_pointer,
-            "Could not load from null memory.",
-            "Ensure the address provided contains appropiate data."
-        );
-    size = _size;
-    read(std::move(input_binary));
-}
-
-void xfbin::read(kojo::binary_view data) {
-    log.verbose("Reading header...");
-    read_header(data);
-
-    log.verbose("Reading index...");
-    read_index(data);
-
-    log.verbose("Reading chunks...");
-    read_chunks(data);
-
-    log.verbose("Reading complete!");
-}
-
-void xfbin::read_header(kojo::binary_view& data) {
-    auto magic_input = data.read<str>(4);
-    if (magic_input != MAGIC) {
-        log.error(
-            kojo::logger::status::file_magic,
-            std::format("XFBIN \"{}\" has invalid magic, `{}`.", filename, magic_input),
-            std::format("Ensure its file signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
-        );
-        return;
-    }
-
-    auto version_input = data.read<u32>(std::endian::big);
-    if (version_input != VERSION) {
-        log.warn(
-            kojo::logger::status::version,
-            std::format("XFBIN \"{}\" has unknown version `{}`.", filename, version_input),
-            std::format("Ensure the format matches version `{}`, or errors may occur.", VERSION)
-        );
-    }
-
-    auto flags = data.read<u64>(std::endian::little); // Flags. Parse *all* of these at some point.
-
-    // Extract the second-lowest byte from flags
-    uint8_t decryption_flag = (flags >> 8) & 0xFF;
-    if (decryption_flag != 0) {
-        log.info(std::format("XFBIN \"{}\" is encrypted, will try decrypting!", filename)); // TODO: This message is ass
-        should_decrypt = true;
-    }
-}
-
-void xfbin::read_index(kojo::binary_view& data) {
-    if (should_decrypt) {
-        log.verbose("Decrypting index header... (52 bytes)");
-        uint8_t *data_ptr = (uint8_t*) data.data() + data.get_pos();
-
-        cryptor.decrypt(data_ptr, data_ptr, 52);
-    }
-
-    data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
-    auto type_count = data.read<u32>(std::endian::big);
-    auto type_size = data.read<u32>(std::endian::big); // type_size
-    auto path_count = data.read<u32>(std::endian::big);
-    auto path_size = data.read<u32>(std::endian::big); // path_size
-    auto name_count = data.read<u32>(std::endian::big);
-    auto name_size = data.read<u32>(std::endian::big); // name_size
-    auto map_count = data.read<u32>(std::endian::big);
-    auto map_size = data.read<u32>(std::endian::big); // map_size
-    auto map_indices_count = data.read<u32>(std::endian::big);
-    auto extra_indices_count = data.read<u32>(std::endian::big);
-
-    if (should_decrypt) {
-        uint8_t* data_ptr = (uint8_t*)data.data() + data.get_pos();
-
-        // Chunk Types
-        log.verbose(std::format("Decrypting chunk type data... ({} bytes)", type_size));
-        cryptor.decrypt(data_ptr, data_ptr, type_size);
-        data_ptr += type_size; // Move pointer to the next section
-
-        // File paths
-        log.verbose(std::format("Decrypting file path data... ({} bytes)", path_size));
-        cryptor.decrypt(data_ptr, data_ptr, path_size);
-        data_ptr += path_size;
-
-        // Chunk Names
-        log.verbose(std::format("Decrypting chunk name data... ({} bytes)", name_size));
-        cryptor.decrypt(data_ptr, data_ptr, name_size);
-        data_ptr += name_size;
-
-        // Align data_ptr to 4 bytes
-        data_ptr += 4 - ((((uint64_t)data_ptr - (uint64_t)data.data()) - 1) % 4) - 1;
-
-        // Chunk Maps
-        log.verbose(std::format("Decrypting chunk map data... ({} bytes)", map_size));
-        cryptor.decrypt(data_ptr, data_ptr, map_size);
-        data_ptr += map_size;
-
-        // Extra Indices
-        if (extra_indices_count > 0) {
-            log.verbose(std::format("Decrypting extra indices data... ({} bytes)", extra_indices_count * 8));
-            cryptor.decrypt(data_ptr, data_ptr, extra_indices_count * 8);
-            data_ptr += extra_indices_count * 8;
+                return; // This is a fatal error, needs to return
         }
 
-        if (map_indices_count > 0) {
-            log.verbose(std::format("Decrypting map indices data... ({} bytes)", map_indices_count * 4));
-            cryptor.decrypt(data_ptr, data_ptr, map_indices_count * 4);
+        size = input_data.size();
+        filename = input_path.stem().string();
+        read(input_data);
+}
+
+void xfbin::load(kojo::binary_view input_binary, size_t _size)
+{
+        log.verbose("Loading XFBIN from binary data.");
+        if (input_binary.is_empty()) {
+                log.error(
+                        kojo::logger::status::null_pointer,
+                        "Could not load from null memory.",
+                        "Ensure the address provided contains appropiate data."
+                );
         }
-    }
-
-    for (size_t i = 0; i < type_count; i++)
-        m_types.emplace_back(data.read<sv>());
-    for (size_t i = 0; i < path_count; i++)
-        m_paths.emplace_back(data.read<sv>());
-    for (size_t i = 0; i < name_count; i++)
-        m_names.emplace_back(data.read<sv>());
-
-    data.align_by(4);
-
-    for (int i = 0; i < map_count; i++)
-        maps.push_back({
-            data.read<u32>(std::endian::big),
-            data.read<u32>(std::endian::big),
-            data.read<u32>(std::endian::big)
-        });
-    for (int i = 0; i < extra_indices_count; i++)
-        extra_indices.push_back({
-            data.read<u32>(std::endian::big),
-            data.read<u32>(std::endian::big)
-        });
-    for (int i = 0; i < map_indices_count; i++)
-        map_indices.push_back(data.read<u32>(std::endian::big));
+        size = _size;
+        read(std::move(input_binary));
 }
 
-void xfbin::read_chunks(kojo::binary_view& data) {
-    m_pages.clear();
-    for (size_t page_it = 0; data.get_pos() < size; page_it++) {
-        m_pages.emplace_back();
-        auto& page = m_pages[page_it];
+void xfbin::read(kojo::binary_view data)
+{
+        log.verbose("Reading header...");
+        read_header(data);
 
-        while (data.get_pos() < size) {
-            chunk chunk{data, this};
-            if (chunk.type() == chunk_type::page) {
-                const auto* page_chunk = chunk.meta<chunk_page>();
-                running_map_offset += page_chunk->chunk_map_offset();
-                running_extra_offset += page_chunk->extra_map_offset();
-                break;
-            }
-            page.add_chunk(chunk);
+        log.verbose("Reading index...");
+        read_index(data);
+
+        log.verbose("Reading chunks...");
+        read_chunks(data);
+
+        log.verbose("Reading complete!");
+}
+
+void xfbin::read_header(kojo::binary_view& data)
+{
+        auto magic_input = data.read<str>(4);
+        if (magic_input != MAGIC) {
+                log.error(
+                        kojo::logger::status::file_magic,
+                        std::format("XFBIN \"{}\" has invalid magic, `{}`.", filename, magic_input),
+                        std::format("Ensure its file signature is `{}`, and that it is indeed an XFBIN file.", MAGIC)
+                );
+                return;
         }
-    }
+
+        auto version_input = data.read<u32>(std::endian::big);
+        if (version_input != VERSION) {
+                log.warn(
+                        kojo::logger::status::version,
+                        std::format("XFBIN \"{}\" has unknown version `{}`.", filename, version_input),
+                        std::format("Ensure the format matches version `{}`, or errors may occur.", VERSION)
+                );
+        }
+
+        auto flags = data.read<u64>(std::endian::little); // Flags. Parse *all* of these at some point.
+
+        // Extract the second-lowest byte from flags
+        uint8_t decryption_flag = (flags >> 8) & 0xFF;
+        if (decryption_flag != 0) {
+                log.info(std::format("XFBIN \"{}\" is encrypted, will try decrypting!", filename)); // TODO: This message is ass
+                should_decrypt = true;
+        }
 }
 
-chunk_type xfbin::get_type(std::uint32_t map_index) const {
-    return string_to_chunk_type(m_types[maps[map_indices[map_index + running_map_offset]].type_index]);
+void xfbin::read_index(kojo::binary_view& data)
+{
+        if (should_decrypt) {
+                log.verbose("Decrypting index header... (52 bytes)");
+                uint8_t *data_ptr = (uint8_t*) data.data() + data.get_pos();
+
+                cryptor.decrypt(data_ptr, data_ptr, 52);
+        }
+
+        data.change_pos(HEADER_SIZE); // Chunk header (useless for Index).
+        auto type_count = data.read<u32>(std::endian::big);
+        auto type_size = data.read<u32>(std::endian::big); // type_size
+        auto path_count = data.read<u32>(std::endian::big);
+        auto path_size = data.read<u32>(std::endian::big); // path_size
+        auto name_count = data.read<u32>(std::endian::big);
+        auto name_size = data.read<u32>(std::endian::big); // name_size
+        auto map_count = data.read<u32>(std::endian::big);
+        auto map_size = data.read<u32>(std::endian::big); // map_size
+        auto map_indices_count = data.read<u32>(std::endian::big);
+        auto extra_indices_count = data.read<u32>(std::endian::big);
+
+        if (should_decrypt) {
+                uint8_t* data_ptr = (uint8_t*)data.data() + data.get_pos();
+
+                // Chunk Types
+                log.verbose(std::format("Decrypting chunk type data... ({} bytes)", type_size));
+                cryptor.decrypt(data_ptr, data_ptr, type_size);
+                data_ptr += type_size; // Move pointer to the next section
+
+                // File paths
+                log.verbose(std::format("Decrypting file path data... ({} bytes)", path_size));
+                cryptor.decrypt(data_ptr, data_ptr, path_size);
+                data_ptr += path_size;
+
+                // Chunk Names
+                log.verbose(std::format("Decrypting chunk name data... ({} bytes)", name_size));
+                cryptor.decrypt(data_ptr, data_ptr, name_size);
+                data_ptr += name_size;
+
+                // Align data_ptr to 4 bytes
+                data_ptr += 4 - ((((uint64_t)data_ptr - (uint64_t)data.data()) - 1) % 4) - 1;
+
+                // Chunk Maps
+                log.verbose(std::format("Decrypting chunk map data... ({} bytes)", map_size));
+                cryptor.decrypt(data_ptr, data_ptr, map_size);
+                data_ptr += map_size;
+
+                // Extra Indices
+                if (extra_indices_count > 0) {
+                        log.verbose(std::format("Decrypting extra indices data... ({} bytes)", extra_indices_count * 8));
+                        cryptor.decrypt(data_ptr, data_ptr, extra_indices_count * 8);
+                        data_ptr += extra_indices_count * 8;
+                }
+
+                if (map_indices_count > 0) {
+                        log.verbose(std::format("Decrypting map indices data... ({} bytes)", map_indices_count * 4));
+                        cryptor.decrypt(data_ptr, data_ptr, map_indices_count * 4);
+                }
+        }
+
+        for (size_t i = 0; i < type_count; i++)
+                m_types.emplace_back(data.read<sv>());
+        for (size_t i = 0; i < path_count; i++)
+                m_paths.emplace_back(data.read<sv>());
+        for (size_t i = 0; i < name_count; i++)
+                m_names.emplace_back(data.read<sv>());
+
+        data.align_by(4);
+
+        for (int i = 0; i < map_count; i++)
+                maps.push_back({
+                        data.read<u32>(std::endian::big),
+                        data.read<u32>(std::endian::big),
+                        data.read<u32>(std::endian::big)
+                });
+        for (int i = 0; i < extra_indices_count; i++)
+                extra_indices.push_back({
+                        data.read<u32>(std::endian::big),
+                        data.read<u32>(std::endian::big)
+                });
+        for (int i = 0; i < map_indices_count; i++)
+                map_indices.push_back(data.read<u32>(std::endian::big));
 }
 
-std::string_view xfbin::get_path(std::uint32_t map_index) const {
-    return m_paths[maps[map_indices[map_index + running_map_offset]].path_index];
+void xfbin::read_chunks(kojo::binary_view& data)
+{
+        m_pages.clear();
+        for (size_t page_it = 0; data.get_pos() < size; page_it++) {
+                m_pages.emplace_back();
+                auto& page = m_pages[page_it];
+
+                while (data.get_pos() < size) {
+                        chunk chunk{data, this};
+                        if (chunk.type() == chunk_type::page) {
+                                const auto* page_chunk = chunk.meta<chunk_page>();
+                                running_map_offset += page_chunk->chunk_map_offset();
+                                running_extra_offset += page_chunk->extra_map_offset();
+                                break;
+                        }
+                        page.add_chunk(chunk);
+                }
+        }
 }
 
-std::string_view xfbin::get_name(std::uint32_t map_index) const {
-    return m_names[maps[map_indices[map_index + running_map_offset]].name_index];
+chunk_type xfbin::get_type(std::uint32_t map_index) const
+{
+        return string_to_chunk_type(m_types[maps[map_indices[map_index + running_map_offset]].type_index]);
 }
 
-const page& xfbin::get_page(size_t page_index) const {
-    return m_pages[page_index];
+std::string_view xfbin::get_path(std::uint32_t map_index) const
+{
+        return m_paths[maps[map_indices[map_index + running_map_offset]].path_index];
 }
 
-const chunk& xfbin::get_chunk(std::string_view chunk_name) const {
-    for (const page& m_page : m_pages) {
+std::string_view xfbin::get_name(std::uint32_t map_index) const
+{
+        return m_names[maps[map_indices[map_index + running_map_offset]].name_index];
+}
+
+const page& xfbin::get_page(size_t page_index) const
+{
+        return m_pages[page_index];
+}
+
+const chunk& xfbin::get_chunk(std::string_view chunk_name) const
+{
+        for (const page& m_page : m_pages) {
         if (m_page.has(chunk_name))
-            return m_page.get_chunk(chunk_name);
-    }
-    throw std::out_of_range(std::format("Chunk with name \"{}\" not found in {}.xfbin", chunk_name, filename));
+                return m_page.get_chunk(chunk_name);
+        }
+        throw std::out_of_range(std::format("Chunk with name \"{}\" not found in {}.xfbin", chunk_name, filename));
 }
 
-const chunk& xfbin::get_chunk(chunk_type chunk_type) const {
-    for (const page& m_page : m_pages) {
-        if (m_page.has(chunk_type))
-            return m_page.get_chunk(chunk_type);
-    }
-    throw std::out_of_range(std::format("Chunk with type \"{}\" not found in {}.xfbin", nucc::chunk_type_to_string(chunk_type), filename));
+const chunk& xfbin::get_chunk(chunk_type chunk_type) const
+{
+        for (const page& m_page : m_pages) {
+                if (m_page.has(chunk_type))
+                        return m_page.get_chunk(chunk_type);
+                }
+        throw std::out_of_range(std::format("Chunk with type \"{}\" not found in {}.xfbin", nucc::chunk_type_to_string(chunk_type), filename));
 }
 
-// void xfbin::calculate(Optimize optimize) {
+// void xfbin::calculate(Optimize optimize)
+// {
 //     std::unordered_map<std::string, std::uint32_t> type_tracker;
 //     std::unordered_map<std::string, std::uint32_t> path_tracker;
 //     std::unordered_map<std::string, std::uint32_t> name_tracker;
