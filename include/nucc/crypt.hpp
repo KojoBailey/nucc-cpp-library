@@ -1,9 +1,8 @@
-//
-// Created by kapil on 15.08.2025.
-//
+/* Created by Kapilarny, 2025-08-15 */
 
-#ifndef CRYPT_HPP
-#define CRYPT_HPP
+#ifndef KOJO_NUCC_CRYPT_HPP
+#define KOJO_NUCC_CRYPT_HPP
+
 #include <algorithm>
 #include <cstdint>
 
@@ -41,6 +40,7 @@ public:
                 v3 = (0x1da597 * v2) ^ ((v2 >> 5) + 0x10b9384);
                 v4 = (0x1da597 * v3) ^ ((v3 >> 5) + 0x1915d46);
         }
+
 private:
         uint32_t v1{};
         uint32_t v2{};
@@ -73,4 +73,4 @@ private:
         }
 };
 
-#endif //CRYPT_HPP
+#endif
