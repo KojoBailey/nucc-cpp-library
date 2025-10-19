@@ -56,8 +56,8 @@ public:
 private:
     kojo::logger log{"NUCC++ Library", true, true};
 
-    static constexpr std::string_view MAGIC{"NUCC"}; // Required of an XFBIN to start with these 4 bytes.
-    static constexpr std::uint32_t VERSION{121}; // Expected of all relevant XFBINs.
+    static constexpr std::string_view MAGIC{"NUCC"};    // Required of an XFBIN to start with these 4 bytes.
+    static constexpr std::uint32_t VERSION{121};        // Expected of all relevant XFBINs.
     static constexpr std::uint32_t HEADER_SIZE{12};
 
     size_t size{0};
@@ -79,13 +79,13 @@ private:
 
     std::vector<std::uint32_t> map_indices;
 
-    std::uint32_t running_map_offset{0};       /** Running total for page chunk map offsets. */
-    std::uint32_t running_extra_offset{0};     /** Running total for page extra map offsets. */
+    std::uint32_t running_map_offset{0};    // Running total for page chunk map offsets.
+    std::uint32_t running_extra_offset{0};  // Running total for page extra map offsets.
 
     std::vector<nucc::page> m_pages;
 
-    bool should_decrypt = false; /** Whether the XFBIN should be decrypted or not. (read from xfbin header flags) */
-    xfbin_cryptor cryptor; /** Cryptor used to decrypt the XFBIN if needed. */
+    bool should_decrypt = false;    // Whether the XFBIN should be decrypted or not. (read from xfbin header flags)
+    xfbin_cryptor cryptor;          // Cryptor used to decrypt the XFBIN if needed. */
 
     void read(kojo::binary_view);
     void read_header(kojo::binary_view&);
