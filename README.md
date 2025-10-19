@@ -56,3 +56,19 @@ int main(int argc, char* argv[])
         nucc::xfbin xfbin{data, data.size()};
 }
 ```
+
+### Getting chunk data
+```cpp
+#include <nucc/xfbin.hpp>
+#include <nucc/chunk_texture.hpp>
+
+int main(int argc, char* argv[])
+{
+        nucc::xfbin xfbin{argv[1]};
+        nucc::chunk chunk{xfbin.get_chunk(nucc::chunk_type::texture)};
+        nucc::chunk_texture texture{chunk.data()};
+
+        std::uint16_t width = texture.width();
+        std::uint16_t height = texture.height();
+}
+```
