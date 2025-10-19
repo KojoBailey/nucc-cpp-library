@@ -16,9 +16,9 @@ public:
         }
         size_t load(kojo::binary_view input) override;
 
-        [[nodiscard]] std::uint16_t width() const { return m_width; }
-        [[nodiscard]] std::uint16_t height() const { return m_height; }
-        [[nodiscard]] std::uint32_t size() const { return m_size; }
+        [[nodiscard]] std::uint16_t width() const noexcept { return m_width; }
+        [[nodiscard]] std::uint16_t height() const noexcept { return m_height; }
+        [[nodiscard]] std::uint32_t size() const noexcept { return m_size; }
 
         void update(kojo::binary_view data) override {}
 
