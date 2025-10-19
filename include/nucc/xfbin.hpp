@@ -1,5 +1,5 @@
-#ifndef KOJO_NUCC_XFBIN
-#define KOJO_NUCC_XFBIN
+#ifndef KOJO_NUCC_XFBIN_HPP
+#define KOJO_NUCC_XFBIN_HPP
 
 #include <nucc/game.hpp>
 #include <nucc/page.hpp>
@@ -28,7 +28,9 @@ public:
     void supply_decryption_key(const uint8_t crypt_key[8]);
 
     std::string filename;
+
     game game{game::unknown};
+    
     [[nodiscard]] std::string game_as_string() const { return nucc::game_to_string(game); }
     static constexpr std::string_view magic() { return MAGIC; }
     static constexpr std::uint32_t version() { return VERSION; }
@@ -61,18 +63,22 @@ private:
     size_t size{0};
 
     std::vector<std::string> m_types, m_paths, m_names;
+    
     struct chunk_map {
         std::uint32_t type_index;
         std::uint32_t path_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
         std::uint32_t name_index; // Note that index 0 is usually empty ("") due to nuccChunkNull.
     };
     std::vector<chunk_map> maps;
+
     struct extra_indices {
         std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
         std::uint32_t map_index;
     };
     std::vector<extra_indices> extra_indices; // Used (mostly) for animations.
+
     std::vector<std::uint32_t> map_indices;
+
     std::uint32_t running_map_offset{0};       /** Running total for page chunk map offsets. */
     std::uint32_t running_extra_offset{0};     /** Running total for page extra map offsets. */
 
