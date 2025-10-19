@@ -4,8 +4,9 @@
 
 namespace nucc {
 
-std::string chunk_type_to_string(chunk_type chunk_type) {
-    switch (chunk_type) {
+std::string chunk_type_to_string(chunk_type chunk_type)
+{
+        switch (chunk_type) {
         case chunk_type::index                  : return "nuccChunkIndex";
         case chunk_type::null                   : return "nuccChunkNull";
         case chunk_type::page                   : return "nuccChunkPage";
@@ -39,34 +40,35 @@ std::string chunk_type_to_string(chunk_type chunk_type) {
         case chunk_type::sprite2_anm            : return "nuccChunkSprite2Anm";
         case chunk_type::nub                    : return "nuccChunkNub";
         default: break;
-    }
-    return "nuccChunkUnknown";
+        }
+        return "nuccChunkUnknown";
 }
 
-chunk_type string_to_chunk_type(std::string_view str) {
-    static const std::unordered_map<std::string_view, chunk_type> string_chunk_type_map = {
-        {"nuccChunkIndex", chunk_type::index},
-        {"nuccChunkNull", chunk_type::null},
-        {"nuccChunkUnknown", chunk_type::unknown},
-        {"nuccChunkPage", chunk_type::page},
-        {"nuccChunkTexture", chunk_type::texture},
-        {"nuccChunkModel", chunk_type::model},
-        {"nuccChunkModelHit", chunk_type::model_hit},
-        {"nuccChunkMaterial", chunk_type::material},
-        {"nuccChunkCamera", chunk_type::camera},
-        {"nuccChunkAnm", chunk_type::anm},
-        {"nuccChunkBillboard", chunk_type::billboard},
-        {"nuccChunkCoord", chunk_type::coord},
-        {"nuccChunkSprite", chunk_type::sprite},
-        {"nuccChunkParticle", chunk_type::particle},
-        {"nuccChunkDynamics", chunk_type::dynamics},
-        {"nuccChunkBinary", chunk_type::binary}
-    };
+chunk_type string_to_chunk_type(std::string_view str)
+{
+        static const std::unordered_map<std::string_view, chunk_type> string_chunk_type_map = {
+                {"nuccChunkIndex", chunk_type::index},
+                {"nuccChunkNull", chunk_type::null},
+                {"nuccChunkUnknown", chunk_type::unknown},
+                {"nuccChunkPage", chunk_type::page},
+                {"nuccChunkTexture", chunk_type::texture},
+                {"nuccChunkModel", chunk_type::model},
+                {"nuccChunkModelHit", chunk_type::model_hit},
+                {"nuccChunkMaterial", chunk_type::material},
+                {"nuccChunkCamera", chunk_type::camera},
+                {"nuccChunkAnm", chunk_type::anm},
+                {"nuccChunkBillboard", chunk_type::billboard},
+                {"nuccChunkCoord", chunk_type::coord},
+                {"nuccChunkSprite", chunk_type::sprite},
+                {"nuccChunkParticle", chunk_type::particle},
+                {"nuccChunkDynamics", chunk_type::dynamics},
+                {"nuccChunkBinary", chunk_type::binary}
+        };
 
-    auto iterator = string_chunk_type_map.find(str);
-    if (iterator != string_chunk_type_map.end())
+        auto iterator = string_chunk_type_map.find(str);
+        if (iterator != string_chunk_type_map.end())
         return iterator->second;
-    return chunk_type::unknown;
+        return chunk_type::unknown;
 }
 
 }

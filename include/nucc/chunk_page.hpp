@@ -10,7 +10,8 @@ namespace nucc {
 class chunk_page : public chunk_meta {
 public:
         chunk_page() = default;
-        explicit chunk_page(kojo::binary_view input) {
+        explicit chunk_page(kojo::binary_view input)
+        {
                 chunk_page::load(std::move(input));
         }
         size_t load(kojo::binary_view input) override;

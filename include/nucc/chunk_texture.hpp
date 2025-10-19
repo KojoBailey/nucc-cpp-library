@@ -10,7 +10,8 @@ namespace nucc {
 class chunk_texture : public chunk_meta {
 public:
         chunk_texture() = default;
-        explicit chunk_texture(kojo::binary_view input) {
+        explicit chunk_texture(kojo::binary_view input)
+        {
                 chunk_texture::load(std::move(input));
         }
         size_t load(kojo::binary_view input) override;
