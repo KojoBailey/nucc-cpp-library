@@ -1,5 +1,5 @@
-#ifndef KOJO_NUCC_CHUNK_BINARY
-#define KOJO_NUCC_CHUNK_BINARY
+#ifndef KOJO_NUCC_CHUNK_BINARY_HPP
+#define KOJO_NUCC_CHUNK_BINARY_HPP
 
 #include <nucc/chunk_meta.hpp>
 
@@ -9,18 +9,18 @@ namespace nucc {
 
 class chunk_binary : public chunk_meta {
 public:
-    chunk_binary() = default;
-    explicit chunk_binary(kojo::binary_view input) {
-        chunk_binary::load(std::move(input));
-    }
-    size_t load(kojo::binary_view input) override;
+        chunk_binary() = default;
+        explicit chunk_binary(kojo::binary_view input) {
+                chunk_binary::load(std::move(input));
+        }
+        size_t load(kojo::binary_view input) override;
 
-    [[nodiscard]] std::uint32_t size() const { return m_size; }
+        [[nodiscard]] std::uint32_t size() const { return m_size; }
 
-    void update(kojo::binary_view data) override;
+        void update(kojo::binary_view data) override;
 
 private:
-    std::uint32_t m_size{};
+        std::uint32_t m_size{};
 };
 
 }
