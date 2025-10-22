@@ -2,14 +2,15 @@
 build
 build/
 build.ninja
-
-# CMake
 CMakeCache.txt
 cmake_install.cmake
 CMakeFiles/
 .cmake/
-nuccConfig.cmake
-nuccConfigVersion.cmake
+xfbinConfig.cmake
+xfbinConfigVersion.cmake
+
+# Testing
+test/
 
 # IDE
 .vscode/
