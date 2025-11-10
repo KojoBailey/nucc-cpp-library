@@ -62,6 +62,6 @@ message(STATUS "XFBIN++ build configured. To install: `cmake --install . --prefi
 # sandbox for manual testing
 option(BUILD_SANDBOX "Build the sandbox executable." ON)
 if (BUILD_SANDBOX)
-	add_executable(xfbin_lib_text test/main.cpp)
-	target_link_libraries(xfbin_lib_text PRIVATE xfbin)
+	add_executable(xfbin_lib_test test/main.cpp)
+	target_link_libraries(xfbin_lib_test PRIVATE xfbin)
 endif()
