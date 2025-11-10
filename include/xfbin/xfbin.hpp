@@ -1,7 +1,7 @@
 #ifndef KOJO_XFBIN_HPP
 #define KOJO_XFBIN_HPP
 
-#include <xfbin/error.hpp>
+#include <kojo/binary.hpp>
 
 #include <expected>
 #include <filesystem>
@@ -14,7 +14,28 @@ public:
 	xfbin() = default;
 	~xfbin() = default;
 
-	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<xfbin, xfbin_error>;
+	/* Error handling */
+
+	enum class error {
+		ok,
+		null_file,
+	};
+
+	[[nodiscard]] inline static constexpr std::string_view error_string(error code)
+	{
+		switch (code) {
+		case error::ok:
+			return "No errors detected.";
+		case error::null_file:
+			return "File does not exist.";
+		}
+
+		return "Unknown error code.";
+	}
+
+	/* Loading */
+
+	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<xfbin, error>;
 };
 
 }

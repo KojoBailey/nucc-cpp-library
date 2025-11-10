@@ -2,9 +2,10 @@
 
 namespace kojo {
 
-auto xfbin::load(const std::filesystem::path& path) -> std::expected<xfbin, xfbin_error>
+auto xfbin::load(const std::filesystem::path& path)
+-> std::expected<xfbin, error>
 {
-	return std::unexpected{xfbin_error::null_file};
+	return std::unexpected{error::null_file};
 }
 
 }
