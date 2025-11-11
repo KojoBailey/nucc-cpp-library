@@ -46,9 +46,9 @@ public:
 	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<xfbin, error>;
 
 private:
-	static constexpr std::string_view MAGIC{"NUCC"};    // Required of an XFBIN to start with these 4 bytes.
-        static constexpr std::uint32_t VERSION{121};        // Expected of all relevant XFBINs.
-        static constexpr std::uint32_t HEADER_SIZE{12};
+	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
+        static constexpr std::uint32_t EXPECTED_VERSION{121};
+        static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
 
 	size_t m_size{0};
 

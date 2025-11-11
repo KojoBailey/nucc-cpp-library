@@ -40,17 +40,17 @@ auto xfbin::read_header(kojo::binary_view& data)
 -> std::expected<void, error>
 {
 	auto magic_input = data.read<str>(4);
-        if (magic_input != MAGIC) {
+        if (magic_input != FILE_SIGNATURE) {
                 return std::unexpected{error::file_signature};
         }
 
         auto version_input = data.read<u32>(std::endian::big);
-        if (version_input != VERSION) {
+        if (version_input != EXPECTED_VERSION) {
 		return std::unexpected{error::version};
         }
 
 	auto is_encrypted = static_cast<bool>(data.read<u16>(std::endian::big));
-        data.change_pos(6) // Misc flags
+        data.change_pos(6); // Misc flags
 
         // Extract the second-lowest byte from flags
         // uint8_t decryption_flag = (flags >> 8) & 0xFF;
@@ -59,6 +59,12 @@ auto xfbin::read_header(kojo::binary_view& data)
         // }
 
 	return {};
+}
+
+auto xfbin::read_index(kojo::binary_view& data)
+-> std::expected<void, error>
+{
+
 }
 
 }
