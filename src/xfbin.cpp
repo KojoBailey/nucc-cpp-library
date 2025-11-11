@@ -64,7 +64,85 @@ auto xfbin::read_header(kojo::binary_view& data)
 auto xfbin::read_index(kojo::binary_view& data)
 -> std::expected<void, error>
 {
+	const auto error_return = std::unexpected{error::cut_short};
 
+	data.change_pos(CHUNK_HEADER_SIZE); // Useless data that exists fsr
+
+	struct CountsAndSizes {
+		u32 type_count;
+		[[maybe_unused]] u32 type_size;
+		u32 path_count;
+		[[maybe_unused]] u32 path_size;
+		u32 name_count;
+		[[maybe_unused]] u32 name_size;
+		u32 map_count;
+		[[maybe_unused]] u32 map_size;
+		u32 map_indices_count;
+		u32 extra_indices_count;
+	};
+	auto ints_buffer = data.read_struct<CountsAndSizes>();
+	if (!ints_buffer) {
+		return error_return;
+	}
+	auto ints = *ints_buffer;
+
+	m_types.reserve(ints.type_count);
+	for (size_t i = 0; i < ints.type_count; i++) {
+		auto buffer = data.read<sv>();
+		if (!buffer) {
+			return error_return;
+		}
+                m_types.emplace_back(*buffer);
+	}
+
+	m_paths.reserve(ints.path_count);
+        for (size_t i = 0; i < ints.path_count; i++) {
+                auto buffer = data.read<sv>();
+		if (!buffer) {
+			return error_return;
+		}
+                m_paths.emplace_back(*buffer);
+	}
+
+	m_names.reserve(ints.name_count);
+        for (size_t i = 0; i < ints.name_count; i++) {
+                auto buffer = data.read<sv>();
+		if (!buffer) {
+			return error_return;
+		}
+                m_names.emplace_back(*buffer);
+	}
+
+        data.align_by(4);
+
+	m_maps.reserve(ints.map_count);
+        for (int i = 0; i < ints.map_count; i++) {
+		auto buffer = data.read_struct<chunk_map>();
+		if (!buffer) {
+			return error_return;
+		}
+                m_maps.emplace_back(*buffer);
+	}
+
+	m_extra_indices.reserve(ints.extra_indices_count);
+        for (int i = 0; i < ints.extra_indices_count; i++) {
+                auto buffer = data.read_struct<chunk_map>();
+		if (!buffer) {
+			return error_return;
+		}
+                m_extra_indices.emplace_back(*buffer);
+	}
+
+	m_map_indices.reserve(ints.map_indices_count);
+        for (int i = 0; i < ints.map_indices_count; i++) {
+                auto buffer = data.read<u32>(std::endian::big);
+		if (!buffer) {
+			return error_return;
+		}
+                m_map_indices.emplace_back(*buffer);
+	}
+
+	return {};
 }
 
 }

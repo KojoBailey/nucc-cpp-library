@@ -64,15 +64,15 @@ private:
                 std::uint32_t path_index; // Index 0 is usually empty ("") due to nuccChunkNull.
                 std::uint32_t name_index; // Index 0 is usually empty ("") due to nuccChunkNull.
         };
-        std::vector<chunk_map> maps{};
+        std::vector<chunk_map> m_maps{};
 
         struct extra_indices {
                 std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
                 std::uint32_t map_index;
         };
-        std::vector<extra_indices> extra_indices{}; // Used (mostly) for animations.
+        std::vector<extra_indices> m_extra_indices{}; // Used (mostly) for animations.
 
-        std::vector<std::uint32_t> map_indices{};
+        std::vector<std::uint32_t> m_map_indices{};
 
 	auto read(kojo::binary_view) -> std::expected<void, error>;
 	auto read_header(kojo::binary_view&) -> std::expected<void, error>;
