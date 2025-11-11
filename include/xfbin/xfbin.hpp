@@ -3,6 +3,7 @@
 
 #include <kojo/binary.hpp>
 
+#include <array>
 #include <expected>
 #include <filesystem>
 #include <string>
@@ -73,6 +74,26 @@ private:
         std::vector<extra_indices> m_extra_indices{}; // Used (mostly) for animations.
 
         std::vector<std::uint32_t> m_map_indices{};
+
+	class decryptor {
+	public:
+		decryptor(const std::array<std::uint8_t, 8> key);
+
+       		void reset_state();
+
+		// In-place safe if data_out == data_in.
+		void decrypt(uint8_t* data_out, const uint8_t* data_in, size_t size);
+
+	private:
+		std::array<std::uint8_t, 8> m_key{};
+
+		std::uint32_t v1{};
+		std::uint32_t v2{};
+		std::uint32_t v3{};
+		std::uint32_t v4{};
+
+		void next_bytes(std::array<std::uint8_t, 4> ks); // keys?
+	};
 
 	auto read(kojo::binary_view) -> std::expected<void, error>;
 	auto read_header(kojo::binary_view&) -> std::expected<void, error>;

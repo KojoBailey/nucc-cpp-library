@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 23) # -std=c++23
 # .cpp source files
 set(SOURCES
   src/xfbin.cpp
+	src/cryptor.cpp
 )
 add_library(xfbin STATIC ${SOURCES})
 
