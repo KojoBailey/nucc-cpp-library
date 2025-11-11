@@ -49,7 +49,8 @@ auto xfbin::read_header(kojo::binary_view& data)
 		return std::unexpected{error::version};
         }
 
-        auto flags = data.read<u64>(std::endian::little); // !TODO Parse *all* of these at some point.
+	auto is_encrypted = static_cast<bool>(data.read<u16>(std::endian::big));
+        data.change_pos(6) // Misc flags
 
         // Extract the second-lowest byte from flags
         // uint8_t decryption_flag = (flags >> 8) & 0xFF;

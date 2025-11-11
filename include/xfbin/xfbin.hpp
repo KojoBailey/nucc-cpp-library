@@ -32,6 +32,10 @@ public:
 			return "No errors detected.";
 		case error::null_file:
 			return "File does not exist.";
+		case error::file_signature:
+			return "Invalid file signature. Should match \"NUCC\" (4E 55 43 43).";
+		case error::version:
+			return "Unknown file version. Expected 121.";
 		}
 
 		return "Unknown error code.";
