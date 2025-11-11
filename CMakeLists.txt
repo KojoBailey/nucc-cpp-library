@@ -20,10 +20,6 @@ target_include_directories(xfbin
 add_subdirectory(extern/binary)
 target_link_libraries(${PROJECT_NAME} PUBLIC kojo::binary)
 
-# submodule: KojoBailey/logger
-add_subdirectory(extern/logger)
-target_link_libraries(${PROJECT_NAME} PUBLIC kojo::logger)
-
 # namespaced alias for lib users
 add_library(kojo::xfbin ALIAS xfbin)
 
