@@ -23,6 +23,7 @@ public:
 		null_file,
 		file_signature,
 		version,
+		cut_short,
 	};
 
 	[[nodiscard]] inline static constexpr std::string_view error_string(error code)
@@ -36,6 +37,8 @@ public:
 			return "Invalid file signature. Should match \"NUCC\" (4E 55 43 43).";
 		case error::version:
 			return "Unknown file version. Expected 121.";
+		case error::cut_short:
+			return "File data (size) shorter than expected.";
 		}
 
 		return "Unknown error code.";
@@ -52,7 +55,25 @@ private:
 
 	size_t m_size{0};
 
-	/* Reading */
+	std::vector<std::string> m_types{};
+	std::vector<std::string> m_paths{};
+	std::vector<std::string> m_names{};
+
+        struct chunk_map {
+                std::uint32_t type_index;
+                std::uint32_t path_index; // Index 0 is usually empty ("") due to nuccChunkNull.
+                std::uint32_t name_index; // Index 0 is usually empty ("") due to nuccChunkNull.
+        };
+        std::vector<chunk_map> maps{};
+
+        struct extra_indices {
+                std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
+                std::uint32_t map_index;
+        };
+        std::vector<extra_indices> extra_indices{}; // Used (mostly) for animations.
+
+        std::vector<std::uint32_t> map_indices{};
+
 	auto read(kojo::binary_view) -> std::expected<void, error>;
 	auto read_header(kojo::binary_view&) -> std::expected<void, error>;
 	auto read_index(kojo::binary_view&) -> std::expected<void, error>;
