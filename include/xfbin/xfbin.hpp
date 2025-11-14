@@ -75,14 +75,18 @@ private:
 
         std::vector<std::uint32_t> m_map_indices{};
 
-	class decryptor {
+	class cryptor {
 	public:
-		decryptor(const std::array<std::uint8_t, 8> key);
+		cryptor() = default;
+
+		bool should_decrypt{false};
+
+		void load(const std::array<std::uint8_t, 8> key);
 
        		void reset_state();
 
 		// In-place safe if data_out == data_in.
-		void decrypt(uint8_t* data_out, const uint8_t* data_in, size_t);
+		void crypt(uint8_t* data_out, const size_t);
 
 	private:
 		std::array<std::uint8_t, 8> m_key{};
@@ -94,6 +98,7 @@ private:
 
 		void roll_key(std::array<std::uint8_t, 4> xor_key);
 	};
+	cryptor m_decryptor{};
 
 	auto read(kojo::binary_view) -> std::expected<void, error>;
 	auto read_header(kojo::binary_view&) -> std::expected<void, error>;

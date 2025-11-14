@@ -52,11 +52,9 @@ auto xfbin::read_header(kojo::binary_view& data)
 	auto is_encrypted = static_cast<bool>(data.read<u16>(std::endian::big));
         data.change_pos(6); // Misc flags
 
-        // Extract the second-lowest byte from flags
-        // uint8_t decryption_flag = (flags >> 8) & 0xFF;
-        // if (decryption_flag != 0) {
-        //         should_decrypt = true;
-        // }
+        if (is_encrypted) {
+                m_decryptor.should_decrypt = true;
+        }
 
 	return {};
 }
@@ -66,17 +64,22 @@ auto xfbin::read_index(kojo::binary_view& data)
 {
 	const auto error_return = std::unexpected{error::cut_short};
 
+	if (m_decryptor.should_decrypt) {
+		u8* data_ptr = (u8*)data.data() + data.get_pos();
+		m_decryptor.crypt(data_ptr, 52);
+        }
+
 	data.change_pos(CHUNK_HEADER_SIZE); // Useless data that exists fsr
 
 	struct CountsAndSizes {
 		u32 type_count;
-		[[maybe_unused]] u32 type_size;
+		u32 type_size;
 		u32 path_count;
-		[[maybe_unused]] u32 path_size;
+		u32 path_size;
 		u32 name_count;
-		[[maybe_unused]] u32 name_size;
+		u32 name_size;
 		u32 map_count;
-		[[maybe_unused]] u32 map_size;
+		u32 map_size;
 		u32 map_indices_count;
 		u32 extra_indices_count;
 	};
@@ -85,6 +88,34 @@ auto xfbin::read_index(kojo::binary_view& data)
 		return error_return;
 	}
 	auto ints = *ints_buffer;
+
+	if (m_decryptor.should_decrypt) {
+                u8* data_ptr = (u8*)data.data() + data.get_pos();
+
+                m_decryptor.crypt(data_ptr, ints.type_size);
+                data_ptr += ints.type_size;
+
+                m_decryptor.crypt(data_ptr, ints.path_size);
+                data_ptr += ints.path_size;
+
+                m_decryptor.crypt(data_ptr, ints.name_size);
+                data_ptr += ints.name_size;
+
+                // Align data_ptr to 4 bytes.
+                data_ptr += 4 - ((((u64)data_ptr - (u64)data.data()) - 1) % 4) - 1;
+
+                m_decryptor.crypt(data_ptr, ints.map_size);
+                data_ptr += ints.map_size;
+
+                if (ints.extra_indices_count > 0) {
+                        m_decryptor.crypt(data_ptr, ints.extra_indices_count * 8);
+                        data_ptr += ints.extra_indices_count * 8;
+                }
+
+                if (ints.map_indices_count > 0) {
+                        m_decryptor.crypt(data_ptr, ints.map_indices_count * 4);
+                }
+        }
 
 	m_types.reserve(ints.type_count);
 	for (size_t i = 0; i < ints.type_count; i++) {
