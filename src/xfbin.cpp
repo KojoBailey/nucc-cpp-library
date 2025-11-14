@@ -158,7 +158,7 @@ auto xfbin::read_index(kojo::binary_view& data)
 
 	m_extra_indices.reserve(ints.extra_indices_count);
         for (int i = 0; i < ints.extra_indices_count; i++) {
-                auto buffer = data.read_struct<chunk_map>();
+                auto buffer = data.read_struct<extra_indices>();
 		if (!buffer) {
 			return error_return;
 		}
