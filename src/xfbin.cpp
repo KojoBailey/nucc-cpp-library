@@ -8,7 +8,8 @@ auto xfbin::load(const std::filesystem::path& path)
 -> std::expected<xfbin, error>
 {
 	xfbin result;
-        // cryptor.reset_state(); // Reset the cryptor state before loading a new file.
+	
+        result.m_decryptor.reset_state();
 
         auto data_buffer = kojo::binary::load(path);
         if (!data_buffer) {
@@ -174,6 +175,13 @@ auto xfbin::read_index(kojo::binary_view& data)
 	}
 
 	return {};
+}
+
+
+auto xfbin::read_chunks(kojo::binary_view&)
+-> std::expected<void, error>
+{
+
 }
 
 }
