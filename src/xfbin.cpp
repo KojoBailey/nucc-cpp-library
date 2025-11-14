@@ -33,8 +33,8 @@ auto xfbin::read(kojo::binary_view data)
 -> std::expected<void, error>
 {
 	return read_header(data)
-		.and_then([&](auto&&) -> std::expected<void, error> { return read_index(data); })
-		.and_then([&](auto&&) -> std::expected<void, error> { return read_chunks(data); });
+		.and_then([&]() { return read_index(data); })
+		.and_then([&]() { return read_chunks(data); });
 }
 
 auto xfbin::read_header(kojo::binary_view& data)
