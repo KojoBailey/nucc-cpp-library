@@ -8,7 +8,7 @@ auto xfbin::load(const std::filesystem::path& path)
 -> std::expected<xfbin, error>
 {
 	xfbin result;
-	
+
         result.m_decryptor.reset_state();
 
         auto data_buffer = kojo::binary::load(path);
@@ -33,8 +33,8 @@ auto xfbin::read(kojo::binary_view data)
 -> std::expected<void, error>
 {
 	return read_header(data)
-		.and_then([&](auto) { return read_index(data); })
-		.and_then([&](auto) { return read_chunks(data); });
+		.and_then([&](auto&&) -> std::expected<void, error> { return read_index(data); })
+		.and_then([&](auto&&) -> std::expected<void, error> { return read_chunks(data); });
 }
 
 auto xfbin::read_header(kojo::binary_view& data)
@@ -181,7 +181,7 @@ auto xfbin::read_index(kojo::binary_view& data)
 auto xfbin::read_chunks(kojo::binary_view&)
 -> std::expected<void, error>
 {
-
+	return {};
 }
 
 }
