@@ -3,7 +3,7 @@
 
 ---
 
-Welcome to the **[NUCC C++ Library](https://github.com/KojoBailey/nucc-cpp-library/)** for **modern C++**, C++20 and onwards.
+Welcome to the **[NUCC C++ Library](https://github.com/KojoBailey/nucc-cpp-library/)** for **modern C++**, C++23 and onwards.
 
 Its purpose is to allow easy interaction with the [**XFBIN**](https://jojomodding.miraheze.org/wiki/XFBIN) container format (file sig: `NUCC` / `4E 55 43 43`), originating from [CyberConnect2](https://jojomodding.miraheze.org/wiki/CyberConnect2)'s in-house **NUCC** engine. 
 
