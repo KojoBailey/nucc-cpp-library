@@ -82,7 +82,7 @@ private:
        		void reset_state();
 
 		// In-place safe if data_out == data_in.
-		void decrypt(uint8_t* data_out, const uint8_t* data_in, size_t size);
+		void decrypt(uint8_t* data_out, const uint8_t* data_in, size_t);
 
 	private:
 		std::array<std::uint8_t, 8> m_key{};
@@ -92,7 +92,7 @@ private:
 		std::uint32_t v3{};
 		std::uint32_t v4{};
 
-		void next_bytes(std::array<std::uint8_t, 4> ks); // keys?
+		void roll_key(std::array<std::uint8_t, 4> xor_key);
 	};
 
 	auto read(kojo::binary_view) -> std::expected<void, error>;

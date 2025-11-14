@@ -24,7 +24,7 @@ void xfbin::decryptor::decrypt(u8* data_out, const u8* data_in, size_t size)
 	size_t i = 0;
 	while (i < size) {
 		std::array<u8, 4> ks;
-		next_bytes(ks);
+		roll_key(ks);
 
 		const auto n = std::min<size_t>(4, size - i);
 		for (size_t k = 0; k < n; ++k) {
@@ -34,7 +34,7 @@ void xfbin::decryptor::decrypt(u8* data_out, const u8* data_in, size_t size)
 	}
 }
 
-void xfbin::decryptor::next_bytes(std::array<u8, 4> ks)
+void xfbin::decryptor::roll_key(std::array<u8, 4> xor_key)
 {
 	// Save and rotate state
 	const u32 a = v1;
@@ -50,10 +50,10 @@ void xfbin::decryptor::next_bytes(std::array<u8, 4> ks)
 	v4 = v9;
 
 	// 4 keystream bytes used for up to 4 data bytes
-	ks[0] = static_cast<u8>(v7 >> 24); // HIBYTE(v7)
-	ks[1] = static_cast<u8>(v7 >> 16); // BYTE2(v7)
-	ks[2] = static_cast<u8>(v9 >>  8); // BYTE1(v9)
-	ks[3] = static_cast<u8>(v9 >>  0); // BYTE0(v9)
+	xor_key[0] = static_cast<u8>(v7 >> 24); // HIBYTE(v7)
+	xor_key[1] = static_cast<u8>(v7 >> 16); // BYTE2(v7)
+	xor_key[2] = static_cast<u8>(v9 >>  8); // BYTE1(v9)
+	xor_key[3] = static_cast<u8>(v9 >>  0); // BYTE0(v9)
 }
 
 }
