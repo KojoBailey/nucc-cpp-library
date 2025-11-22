@@ -10,16 +10,16 @@
 
 namespace kojo {
 
-class xfbin {
+class Xfbin {
 public:
-	xfbin() = default;
-	~xfbin() = default;
+	Xfbin() = default;
+	~Xfbin() = default;
 
 	std::string filename;
 
-	/* Error handling */
+	/* Error-handling */
 
-	enum class error {
+	enum class Error {
 		ok,
 		null_file,
 		file_signature,
@@ -27,18 +27,18 @@ public:
 		cut_short,
 	};
 
-	[[nodiscard]] inline static constexpr std::string_view error_string(error code)
+	[[nodiscard]] inline static constexpr std::string_view error_string(Error code)
 	{
 		switch (code) {
-		case error::ok:
+		case Error::ok:
 			return "No errors detected.";
-		case error::null_file:
+		case Error::null_file:
 			return "File does not exist.";
-		case error::file_signature:
+		case Error::file_signature:
 			return "Invalid file signature. Should match \"NUCC\" (4E 55 43 43).";
-		case error::version:
+		case Error::version:
 			return "Unknown file version. Expected 121.";
-		case error::cut_short:
+		case Error::cut_short:
 			return "File data (size) shorter than expected.";
 		}
 
@@ -47,7 +47,7 @@ public:
 
 	/* Loading */
 
-	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<xfbin, error>;
+	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<Xfbin, Error>;
 
 private:
 	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
@@ -100,10 +100,10 @@ private:
 	};
 	cryptor m_decryptor{};
 
-	auto read(kojo::binary_view) -> std::expected<void, error>;
-	auto read_header(kojo::binary_view&) -> std::expected<void, error>;
-	auto read_index(kojo::binary_view&) -> std::expected<void, error>;
-	auto read_chunks(kojo::binary_view&) -> std::expected<void, error>;
+	auto read(kojo::binary_view) -> std::expected<void, Error>;
+	auto read_header(kojo::binary_view&) -> std::expected<void, Error>;
+	auto read_index(kojo::binary_view&) -> std::expected<void, Error>;
+	auto read_chunks(kojo::binary_view&) -> std::expected<void, Error>;
 };
 
 }

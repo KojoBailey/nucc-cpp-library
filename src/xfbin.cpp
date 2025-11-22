@@ -4,17 +4,17 @@ using namespace kojo::binary_types;
 
 namespace kojo {
 
-auto xfbin::load(const std::filesystem::path& path)
--> std::expected<xfbin, error>
+auto Xfbin::load(const std::filesystem::path& path)
+-> std::expected<Xfbin, Error>
 {
-	xfbin result;
+	Xfbin result;
 
         result.m_decryptor.reset_state();
 
         auto data_buffer = kojo::binary::load(path);
         if (!data_buffer) {
 		// !TODO - elaborate on error cases
-                return std::unexpected{error::null_file};
+                return std::unexpected{Error::null_file};
         }
 	kojo::binary data = *data_buffer;
 
@@ -29,25 +29,25 @@ auto xfbin::load(const std::filesystem::path& path)
 	return result;
 }
 
-auto xfbin::read(kojo::binary_view data)
--> std::expected<void, error>
+auto Xfbin::read(kojo::binary_view data)
+-> std::expected<void, Error>
 {
 	return read_header(data)
 		.and_then([&]() { return read_index(data); })
 		.and_then([&]() { return read_chunks(data); });
 }
 
-auto xfbin::read_header(kojo::binary_view& data)
--> std::expected<void, error>
+auto Xfbin::read_header(kojo::binary_view& data)
+-> std::expected<void, Error>
 {
 	auto magic_input = data.read<str>(4);
         if (magic_input != FILE_SIGNATURE) {
-                return std::unexpected{error::file_signature};
+                return std::unexpected{Error::file_signature};
         }
 
         auto version_input = data.read<u32>(std::endian::big);
         if (version_input != EXPECTED_VERSION) {
-		return std::unexpected{error::version};
+		return std::unexpected{Error::version};
         }
 
 	auto is_encrypted = static_cast<bool>(data.read<u16>(std::endian::big));
@@ -60,10 +60,10 @@ auto xfbin::read_header(kojo::binary_view& data)
 	return {};
 }
 
-auto xfbin::read_index(kojo::binary_view& data)
--> std::expected<void, error>
+auto Xfbin::read_index(kojo::binary_view& data)
+-> std::expected<void, Error>
 {
-	const auto error_return = std::unexpected{error::cut_short};
+	const auto error_return = std::unexpected{Error::cut_short};
 
 	if (m_decryptor.should_decrypt) {
 		u8* data_ptr = (u8*)data.data() + data.get_pos();
@@ -178,8 +178,8 @@ auto xfbin::read_index(kojo::binary_view& data)
 }
 
 
-auto xfbin::read_chunks(kojo::binary_view&)
--> std::expected<void, error>
+auto Xfbin::read_chunks(kojo::binary_view&)
+-> std::expected<void, Error>
 {
 	return {};
 }
