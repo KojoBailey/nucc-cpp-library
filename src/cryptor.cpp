@@ -4,13 +4,13 @@ using namespace kojo::binary_types;
 
 namespace kojo {
 
-void Xfbin::cryptor::load(const std::array<u8, 8> key)
+void Xfbin::Cryptor::load(const std::array<u8, 8> key)
 {
 	m_key = key;
 	reset_state();
 }
 
-void Xfbin::cryptor::reset_state()
+void Xfbin::Cryptor::reset_state()
 {
 	v1 = (m_key[0] << 24) | (m_key[2] << 16) | (m_key[4] << 8) | m_key[6];
 	v1 = (0x1da597 * (v1 | m_key[6])) ^ ((v1 | m_key[6]) >> 5);
@@ -19,7 +19,7 @@ void Xfbin::cryptor::reset_state()
 	v4 = (0x1da597 * v3) ^ ((v3 >> 5) + 0x1915d46);
 }
 
-void Xfbin::cryptor::crypt(u8* data_out, const size_t size)
+void Xfbin::Cryptor::crypt(u8* data_out, const size_t size)
 {
 	const u8* data_in = data_out;
 
@@ -36,7 +36,7 @@ void Xfbin::cryptor::crypt(u8* data_out, const size_t size)
 	}
 }
 
-void Xfbin::cryptor::roll_key(std::array<u8, 4> xor_key)
+void Xfbin::Cryptor::roll_key(std::array<u8, 4> xor_key)
 {
 	// Save and rotate state
 	const u32 a = v1;

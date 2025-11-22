@@ -75,9 +75,9 @@ private:
 
         std::vector<std::uint32_t> m_map_indices{};
 
-	class cryptor {
+	class Cryptor {
 	public:
-		cryptor() = default;
+		Cryptor() = default;
 
 		bool should_decrypt{false};
 
@@ -98,7 +98,7 @@ private:
 
 		void roll_key(std::array<std::uint8_t, 4> xor_key);
 	};
-	cryptor m_decryptor{};
+	Cryptor m_decryptor{};
 
 	auto read(kojo::binary_view) -> std::expected<void, Error>;
 	auto read_header(kojo::binary_view&) -> std::expected<void, Error>;
