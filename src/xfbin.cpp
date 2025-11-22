@@ -177,10 +177,10 @@ auto Xfbin::read_index(kojo::binary_view& data)
 	return {};
 }
 
-
 auto Xfbin::read_chunks(kojo::binary_view&)
 -> std::expected<void, Error>
 {
+	// !TODO
 	return {};
 }
 

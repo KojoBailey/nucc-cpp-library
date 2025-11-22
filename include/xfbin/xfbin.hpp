@@ -86,7 +86,7 @@ private:
        		void reset_state();
 
 		// In-place safe if data_out == data_in.
-		void crypt(uint8_t* data_out, const size_t);
+		void crypt(std::uint8_t* data_out, const size_t);
 
 	private:
 		std::array<std::uint8_t, 8> m_key{};
