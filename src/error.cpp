@@ -36,7 +36,12 @@ XfbinError XfbinError::create_mismatched_version_error(
 	return result;
 }
 
-int XfbinError::code_as_int() const
+XfbinError::Code XfbinError::get_code() const
+{
+	return code;
+}
+
+int XfbinError::get_code_as_int() const
 {
 	return static_cast<int>(code);
 }

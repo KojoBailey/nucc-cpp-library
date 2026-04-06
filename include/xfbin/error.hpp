@@ -4,13 +4,17 @@
 
 namespace kojo {
 
-struct XfbinError {
+class XfbinError {
+public:
 	enum class Code {
 		NULL_FILE                 = 000,
 		CUT_SHORT                 = 001,
 		MISMATCHED_FILE_SIGNATURE = 100,
 		MISMATCHED_VERSION        = 101,
-	} code;
+	};
+
+private:
+	Code code;
 
 	union Data {
 		struct MismatchedFileSignature {
@@ -22,6 +26,7 @@ struct XfbinError {
 		} mismatched_version;
 	} data;
 
+public:
 	[[nodiscard]] static XfbinError create_null_file_error();
 	[[nodiscard]] static XfbinError create_cut_short_error();
 	[[nodiscard]] static XfbinError create_mismatched_file_signature_error(
@@ -31,7 +36,8 @@ struct XfbinError {
 		std::uint32_t given_version
 	);
 
-	[[nodiscard]] int code_as_int() const;
+	[[nodiscard]] Code get_code() const;
+	[[nodiscard]] int get_code_as_int() const;
 
 	[[nodiscard]] Data::MismatchedFileSignature get_mismatched_file_signature_data() const;
 	[[nodiscard]] Data::MismatchedVersion get_mismatched_version_data() const;
