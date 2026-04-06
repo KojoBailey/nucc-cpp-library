@@ -1,5 +1,8 @@
 #include <xfbin/error.hpp>
 
+#include <stdexcept>
+#include <variant>
+
 using namespace kojo;
 
 XfbinError XfbinError::create_null_file_error()
