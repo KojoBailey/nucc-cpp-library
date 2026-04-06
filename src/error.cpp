@@ -36,19 +36,19 @@ XfbinError XfbinError::create_mismatched_version_error(
 	return result;
 }
 
-int XfbinError::code_as_int()
+int XfbinError::code_as_int() const
 {
 	return static_cast<int>(code);
 }
 
-XfbinError::Data::MismatchedFileSignature XfbinError::get_mismatched_file_signature_data()
+XfbinError::Data::MismatchedFileSignature XfbinError::get_mismatched_file_signature_data() const
 {
 	if (code != Code::MISMATCHED_FILE_SIGNATURE)
 		throw std::bad_variant_access{};
 	return data.mismatched_file_signature;
 }
 
-XfbinError::Data::MismatchedVersion XfbinError::get_mismatched_version_data()
+XfbinError::Data::MismatchedVersion XfbinError::get_mismatched_version_data() const
 {
 	if (code != Code::MISMATCHED_VERSION)
 		throw std::bad_variant_access{};

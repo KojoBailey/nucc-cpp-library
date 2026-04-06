@@ -22,19 +22,19 @@ struct XfbinError {
 		} mismatched_version;
 	} data;
 
-	static XfbinError create_null_file_error();
-	static XfbinError create_cut_short_error();
-	static XfbinError create_mismatched_file_signature_error(
+	[[nodiscard]] static XfbinError create_null_file_error();
+	[[nodiscard]] static XfbinError create_cut_short_error();
+	[[nodiscard]] static XfbinError create_mismatched_file_signature_error(
 		std::uint32_t given_file_signature
 	);
-	static XfbinError create_mismatched_version_error(
+	[[nodiscard]] static XfbinError create_mismatched_version_error(
 		std::uint32_t given_version
 	);
 
-	int code_as_int();
+	[[nodiscard]] int code_as_int() const;
 
-	Data::MismatchedFileSignature get_mismatched_file_signature_data();
-	Data::MismatchedVersion get_mismatched_version_data();
+	[[nodiscard]] Data::MismatchedFileSignature get_mismatched_file_signature_data() const;
+	[[nodiscard]] Data::MismatchedVersion get_mismatched_version_data() const;
 };
 
 }
