@@ -1,20 +1,21 @@
 # metadata & version info
 cmake_minimum_required(VERSION 3.19)
 project(xfbin VERSION 0.1.0 DESCRIPTION "Library for interacting with CyberConnect2 XFBIN files.")
-set(CMAKE_CXX_STANDARD 23) # -std=c++23
+set(CMAKE_CXX_STANDARD 23)
 
 # .cpp source files
 set(SOURCES
-  src/xfbin.cpp
-	src/cryptor.cpp
+	src/xfbin.cpp
+	src/error.cpp
+	# src/cryptor.cpp
 )
 add_library(xfbin STATIC ${SOURCES})
 
 # .hpp header files
 target_include_directories(xfbin
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-		$<INSTALL_INTERFACE:include>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
 )
 
 # submodule: KojoBailey/binary-cpp-library

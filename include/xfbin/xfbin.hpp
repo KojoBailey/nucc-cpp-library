@@ -10,51 +10,29 @@
 
 namespace kojo {
 
+struct XfbinData {
+	std::string filename{};
+};
+
 class Xfbin {
 public:
 	Xfbin() = default;
 	~Xfbin() = default;
 
-	std::string filename;
-
-	/* Error-handling */
-
-	enum class Error {
-		ok,
-		null_file,
-		file_signature,
-		version,
-		cut_short,
-	};
-
-	[[nodiscard]] inline static constexpr std::string_view error_string(Error code)
-	{
-		switch (code) {
-		case Error::ok:
-			return "No errors detected.";
-		case Error::null_file:
-			return "File does not exist.";
-		case Error::file_signature:
-			return "Invalid file signature. Should match \"NUCC\" (4E 55 43 43).";
-		case Error::version:
-			return "Unknown file version. Expected 121.";
-		case Error::cut_short:
-			return "File data (size) shorter than expected.";
-		}
-
-		return "Unknown error code.";
-	}
+	std::string filename{};
 
 	/* Loading */
 
 	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<Xfbin, Error>;
+
+	[[nodiscard]] static constexpr std::uint32_t version() { return EXPECTED_VERSION; }
 
 private:
 	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
         static constexpr std::uint32_t EXPECTED_VERSION{121};
         static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
 
-	size_t m_size{0};
+	std::size_t m_size{0};
 
 	std::vector<std::string> m_types{};
 	std::vector<std::string> m_paths{};
@@ -86,7 +64,7 @@ private:
        		void reset_state();
 
 		// In-place safe if data_out == data_in.
-		void crypt(std::uint8_t* data_out, const size_t);
+		void crypt(std::uint8_t* data_out, const std::size_t);
 
 	private:
 		std::array<std::uint8_t, 8> m_key{};
