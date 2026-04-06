@@ -1,60 +1,89 @@
 #ifndef KOJO_XFBIN_HPP
 #define KOJO_XFBIN_HPP
 
-#include <kojo/binary.hpp>
+#include <xfbin/error.hpp>
 
 #include <array>
+#include <cstddef>
 #include <expected>
 #include <filesystem>
+#include <span>
 #include <string>
+#include <vector>
 
 namespace kojo {
 
-struct XfbinData {
-	std::string filename{};
-};
+Xfbin xfbin;
+
+Xfbin::FILE_SIGNATURE
+
+auto xfbin = Xfbin::read_from_path("path\\to\\file.xfbin");
+auto xfbin = Xfbin::read_from_span(vec);
+auto xfbin = Xfbin::read_from_pointer(&data);
+
+xfbin.get_version()
+
+xfbin.get_chunks();
+
+xfbin.write_to_file("path\\to\\output.xfbin");
+std::vector vec = xfbin.write_to_vector();
+std::array<std::byte, 2048> buffer;
+xfbin.write_to_memory(buffer.data());
 
 class Xfbin {
 public:
+	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
+
 	Xfbin() = default;
 	~Xfbin() = default;
 
-	std::string filename{};
+	[[nodiscard]] static auto read_from_path(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto read_from_span(std::span<std::byte> array) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto read_from_pointer(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>;
 
-	/* Loading */
+	[[nodiscard]] constexpr std::uint32_t get_version() const { return EXPECTED_VERSION; }
 
-	[[nodiscard]] static auto load(const std::filesystem::path& path) -> std::expected<Xfbin, Error>;
+	[[nodiscard]] auto get_chunks() const -> std::vector<Chunk>;
+	
+	[[nodiscard]] const Chunk& fetch_chunk(
+		std::string_view name,
+		std::string_view path,
+		std::string_view type,
+		std::size_t index = 0
+	) const;
+	[[nodiscard]] const Chunk& fetch_chunk_by_index(std::size_t index) const;
+	[[nodiscard]] const Chunk& fetch_chunk_by_name(std::string_view name, std::size_t index = 0) const;
+	[[nodiscard]] const Chunk& fetch_chunk_by_path(std::string_view path, std::size_t index = 0) const;
+	[[nodiscard]] const Chunk& fetch_chunk_by_type(std::string_view type, std::size_t index = 0) const;
 
-	[[nodiscard]] static constexpr std::uint32_t version() { return EXPECTED_VERSION; }
+	auto write_to_file(const std::filesystem::path& path) const -> std::expected<void, XfbinError>;
+	auto write_to_vector() const -> std::expected<std::vector, XfbinError>;
+	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
 
 private:
-	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
         static constexpr std::uint32_t EXPECTED_VERSION{121};
         static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
 
-	std::size_t m_size{0};
-
-	std::vector<std::string> m_types{};
-	std::vector<std::string> m_paths{};
-	std::vector<std::string> m_names{};
+	std::vector<std::string> types{};
+	std::vector<std::string> paths{};
+	std::vector<std::string> names{};
 
         struct chunk_map {
                 std::uint32_t type_index;
                 std::uint32_t path_index; // Index 0 is usually empty ("") due to nuccChunkNull.
                 std::uint32_t name_index; // Index 0 is usually empty ("") due to nuccChunkNull.
         };
-        std::vector<chunk_map> m_maps{};
+        std::vector<chunk_map> maps{};
 
         struct extra_indices {
                 std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
                 std::uint32_t map_index;
         };
-        std::vector<extra_indices> m_extra_indices{}; // Used (mostly) for animations.
+        std::vector<extra_indices> extra_indices{}; // Used (mostly) for animations.
 
-        std::vector<std::uint32_t> m_map_indices{};
+        std::vector<std::uint32_t> map_indices{};
 
-	class Cryptor {
-	public:
+	struct Cryptor {
 		Cryptor() = default;
 
 		bool should_decrypt{false};
@@ -66,7 +95,6 @@ private:
 		// In-place safe if data_out == data_in.
 		void crypt(std::uint8_t* data_out, const std::size_t);
 
-	private:
 		std::array<std::uint8_t, 8> m_key{};
 
 		std::uint32_t v1{};
@@ -76,12 +104,12 @@ private:
 
 		void roll_key(std::array<std::uint8_t, 4> xor_key);
 	};
-	Cryptor m_decryptor{};
+	Cryptor decryptor{};
 
-	auto read(kojo::binary_view) -> std::expected<void, Error>;
-	auto read_header(kojo::binary_view&) -> std::expected<void, Error>;
-	auto read_index(kojo::binary_view&) -> std::expected<void, Error>;
-	auto read_chunks(kojo::binary_view&) -> std::expected<void, Error>;
+	auto parse(kojo::binary_view) -> std::expected<void, Error>;
+	auto parse_header(kojo::binary_view&) -> std::expected<void, Error>;
+	auto parse_index(kojo::binary_view&) -> std::expected<void, Error>;
+	auto parse_chunks(kojo::binary_view&) -> std::expected<void, Error>;
 };
 
 }

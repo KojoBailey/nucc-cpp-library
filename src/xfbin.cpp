@@ -1,33 +1,31 @@
-// #include <xfbin/xfbin.hpp>
-//
-// using namespace kojo::binary_types;
-//
-// namespace kojo {
-//
-// auto Xfbin::load(const std::filesystem::path& path)
-// -> std::expected<Xfbin, Error>
-// {
-// 	Xfbin result;
-//
-//         result.m_decryptor.reset_state();
-//
-//         auto data_buffer = kojo::binary::load(path);
-//         if (!data_buffer) {
-// 		// !TODO - elaborate on error cases
-//                 return std::unexpected{Error::null_file};
-//         }
-// 	kojo::binary data = *data_buffer;
-//
-//         result.m_size = data.size();
-//         result.filename = path.stem().string();
-//
-//         auto error_check = result.read(data);
-// 	if (!error_check) {
-// 		return std::unexpected{error_check.error()};
-// 	}
-//
-// 	return result;
-// }
+#include <xfbin/xfbin.hpp>
+
+#include <kojo/binary.hpp>
+
+using namespace kojo;
+using namespace kojo::binary_types;
+
+auto Xfbin::load_from_path(const std::filesystem::path& path)
+	-> std::expected<Xfbin, XfbinError>
+{
+	Xfbin result;
+
+        result.decryptor.reset_state();
+
+        auto maybe_data = kojo::binary::load(path);
+        if (!maybe_data) {
+		// !TODO - elaborate on error cases
+                return std::unexpected{XfbinError::create_null_file_error()};
+        }
+	kojo::binary data = maybe_data.value();
+
+        auto error_check = result.read(data);
+	if (!error_check) {
+		return std::unexpected{error_check.error()};
+	}
+
+	return result;
+}
 //
 // auto Xfbin::read(kojo::binary_view data)
 // -> std::expected<void, Error>
@@ -187,6 +185,4 @@
 // {
 // 	// !TODO
 // 	return {};
-// }
-//
 // }

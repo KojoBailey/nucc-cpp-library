@@ -1,3 +1,6 @@
+#ifndef KOJO_XFBIN_ERROR_HPP
+#define KOJO_XFBIN_ERROR_HPP
+
 #include <cstdint>
 
 namespace kojo {
@@ -42,3 +45,5 @@ public:
 };
 
 }
+
+#endif
