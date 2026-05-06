@@ -1,39 +1,55 @@
 #include <xfbin/xfbin.hpp>
 
-#include <kojo/binary.hpp>
-
 using namespace kojo;
 using namespace kojo::binary_types;
 
-auto Xfbin::load_from_path(const std::filesystem::path& path)
-	-> std::expected<Xfbin, XfbinError>
+XfbinError binary_error_to_xfbin_error(kojo::binary::error err)
 {
-	Xfbin result;
+		switch (err) {
+		case kojo::binary::error::file_not_exist:
+			return XfbinError::create_null_file_error();
+		case kojo::binary::error::invalid_file:
+			return XfbinError::create_null_file_error();
+		case kojo::binary::error::file_not_open:
+			return XfbinError::create_null_file_error();
+		case kojo::binary::error::insufficient_memory:
+			return XfbinError::create_null_file_error();
+		}
+		return XfbinError::create_null_file_error();
+}
 
-        result.decryptor.reset_state();
-
+auto Xfbin::read_from_path(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>
+{
         auto maybe_data = kojo::binary::load(path);
         if (!maybe_data) {
-		// !TODO - elaborate on error cases
-                return std::unexpected{XfbinError::create_null_file_error()};
+		return std::unexpected{
+			binary_error_to_xfbin_error(maybe_data.error())
+		};
         }
 	kojo::binary data = maybe_data.value();
 
-        auto error_check = result.read(data);
-	if (!error_check) {
-		return std::unexpected{error_check.error()};
-	}
+	return parse(data);
+}
 
+auto Xfbin::read_from_span(std::span<const std::byte> span) -> std::expected<Xfbin, XfbinError>
+{
+	return parse(span);
+}
+
+auto Xfbin::read_from_pointer(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>
+{
+	return parse(ptr);
+}
+
+auto Xfbin::parse(kojo::binary_view data)
+	-> std::expected<Xfbin, XfbinError>
+{
+	Xfbin result;
+	result.parse_header(data)
+		.and_then([&]() { return result.parse_index(data); })
+		.and_then([&]() { return result.parse_chunks(data); });
 	return result;
 }
-//
-// auto Xfbin::read(kojo::binary_view data)
-// -> std::expected<void, Error>
-// {
-// 	return read_header(data)
-// 		.and_then([&]() { return read_index(data); })
-// 		.and_then([&]() { return read_chunks(data); });
-// }
 //
 // auto Xfbin::read_header(kojo::binary_view& data)
 // -> std::expected<void, Error>
