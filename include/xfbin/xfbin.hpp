@@ -22,9 +22,12 @@ public:
 	Xfbin() = default;
 	~Xfbin() = default;
 
-	[[nodiscard]] static auto from(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto from(std::span<const std::byte> span) -> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto from(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(const std::filesystem::path& path)
+		-> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(std::span<const std::byte> span)
+		-> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(const std::byte* ptr)
+		-> std::expected<Xfbin, XfbinError>;
 
 	[[nodiscard]] constexpr std::uint32_t get_version() const { return EXPECTED_VERSION; }
 
