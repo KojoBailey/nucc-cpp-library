@@ -9,9 +9,6 @@ CMakeFiles/
 xfbinConfig.cmake
 xfbinConfigVersion.cmake
 
-# Testing
-test/
-
 # IDE
 .vscode/
 .idea/
