@@ -46,15 +46,6 @@ auto Xfbin::from(const std::byte* ptr)
 	return XfbinReader{ptr}.parse();
 }
 
-auto XfbinReader::parse()
-	-> std::expected<Xfbin, XfbinError>
-{
-	return parse_header()
-		.and_then([&] { return parse_index(); })
-		.and_then([&] { return parse_chunks(); })
-		.transform([&] { return std::move(result); });
-}
-
 // auto Xfbin::read_header(kojo::binary_view& data)
 // -> std::expected<void, Error>
 // {
