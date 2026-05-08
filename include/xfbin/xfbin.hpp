@@ -90,11 +90,6 @@ private:
 	// 	void roll_key(std::array<std::uint8_t, 4> xor_key);
 	// };
 	// Cryptor decryptor{};
-
-	[[nodiscard]] static auto parse(kojo::binary_view) -> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] auto parse_header(kojo::binary_view) -> std::expected<void, XfbinError>;
-	[[nodiscard]] auto parse_index(kojo::binary_view) -> std::expected<void, XfbinError>;
-	[[nodiscard]] auto parse_chunks(kojo::binary_view) -> std::expected<void, XfbinError>;
 };
 
 }

@@ -31,32 +31,28 @@ auto Xfbin::from(const std::filesystem::path& path)
         if (!maybe_data) {
 		return std::unexpected{ XfbinError::from(maybe_data.error()) };
         }
-	return parse(*maybe_data);
+	return XfbinReader{*maybe_data}.parse();
 }
 
 auto Xfbin::from(std::span<const std::byte> span)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return parse(span);
+	return XfbinReader{span}.parse();
 }
 
 auto Xfbin::from(const std::byte* ptr)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return parse(ptr);
+	return XfbinReader{ptr}.parse();
 }
 
-auto Xfbin::parse(BinaryView data)
+auto XfbinReader::parse()
 	-> std::expected<Xfbin, XfbinError>
 {
-	Xfbin result;
-	result.parse_header(data)
-		.and_then([&]() { return result.parse_index(data); })
-		.and_then([&]() { return result.parse_chunks(data); });
-	return result;
-}
-
-auto Xfbin::parse_header(BinaryView data) {
+	return parse_header()
+		.and_then([&] { return parse_index(); })
+		.and_then([&] { return parse_chunks(); })
+		.transform([&] { return std::move(result); });
 }
 
 // auto Xfbin::read_header(kojo::binary_view& data)
