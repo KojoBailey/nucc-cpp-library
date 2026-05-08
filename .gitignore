@@ -8,6 +8,7 @@ CMakeFiles/
 .cmake/
 xfbinConfig.cmake
 xfbinConfigVersion.cmake
+Makefile
 
 # IDE
 .vscode/
