@@ -22,9 +22,9 @@ public:
 	Xfbin() = default;
 	~Xfbin() = default;
 
-	[[nodiscard]] static auto read_from_path(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto read_from_span(std::span<const std::byte> span) -> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto read_from_pointer(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(std::span<const std::byte> span) -> std::expected<Xfbin, XfbinError>;
+	[[nodiscard]] static auto from(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>;
 
 	[[nodiscard]] constexpr std::uint32_t get_version() const { return EXPECTED_VERSION; }
 
@@ -92,9 +92,9 @@ private:
 	// Cryptor decryptor{};
 
 	[[nodiscard]] static auto parse(kojo::binary_view) -> std::expected<Xfbin, XfbinError>;
-	auto parse_header(kojo::binary_view) -> std::expected<void, XfbinError>;
-	auto parse_index(kojo::binary_view) -> std::expected<void, XfbinError>;
-	auto parse_chunks(kojo::binary_view) -> std::expected<void, XfbinError>;
+	[[nodiscard]] auto parse_header(kojo::binary_view) -> std::expected<void, XfbinError>;
+	[[nodiscard]] auto parse_index(kojo::binary_view) -> std::expected<void, XfbinError>;
+	[[nodiscard]] auto parse_chunks(kojo::binary_view) -> std::expected<void, XfbinError>;
 };
 
 }

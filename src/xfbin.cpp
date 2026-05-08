@@ -1,47 +1,52 @@
 #include <xfbin/xfbin.hpp>
 
 using namespace kojo;
-using namespace kojo::binary_types;
+using namespace kojo::type_abbreviations;
 
-XfbinError binary_error_to_xfbin_error(kojo::binary::error err)
+XfbinError from(BinaryError err)
 {
-		switch (err) {
-		case kojo::binary::error::file_not_exist:
-			return XfbinError::create_null_file_error();
-		case kojo::binary::error::invalid_file:
-			return XfbinError::create_null_file_error();
-		case kojo::binary::error::file_not_open:
-			return XfbinError::create_null_file_error();
-		case kojo::binary::error::insufficient_memory:
-			return XfbinError::create_null_file_error();
+	return std::visit(overloaded{
+		[](const BinaryError::FileNotFound& err) {
+			return XfbinError::NullFile{err.path()};
+		},
+		[](const BinaryError::InvalidFile& err) {
+			return XfbinError::NullFile{err.path()};
+		},
+		[](const BinaryError::FileNotOpen& err) {
+			return XfbinError::NullFile{err.path()};
+		},
+		[](const BinaryError::InsufficientMemory& err) {
+			return XfbinError::NullFile{err.path()};
+		},
+		[](const auto& err) {
+			return XfbinError::Unknown{};
 		}
-		return XfbinError::create_null_file_error();
+	}, err);
 }
 
-auto Xfbin::read_from_path(const std::filesystem::path& path) -> std::expected<Xfbin, XfbinError>
+auto Xfbin::from(const std::filesystem::path& path)
+	-> std::expected<Xfbin, XfbinError>
 {
-        auto maybe_data = kojo::binary::load(path);
+        auto maybe_data = Binary::from(path);
         if (!maybe_data) {
-		return std::unexpected{
-			binary_error_to_xfbin_error(maybe_data.error())
-		};
+		return std::unexpected{ XfbinError::from(maybe_data.error()) };
         }
-	kojo::binary data = maybe_data.value();
-
-	return parse(data);
+	return parse(*maybe_data);
 }
 
-auto Xfbin::read_from_span(std::span<const std::byte> span) -> std::expected<Xfbin, XfbinError>
+auto Xfbin::from(std::span<const std::byte> span)
+	-> std::expected<Xfbin, XfbinError>
 {
 	return parse(span);
 }
 
-auto Xfbin::read_from_pointer(const std::byte* ptr) -> std::expected<Xfbin, XfbinError>
+auto Xfbin::from(const std::byte* ptr)
+	-> std::expected<Xfbin, XfbinError>
 {
 	return parse(ptr);
 }
 
-auto Xfbin::parse(kojo::binary_view data)
+auto Xfbin::parse(BinaryView data)
 	-> std::expected<Xfbin, XfbinError>
 {
 	Xfbin result;
@@ -50,7 +55,10 @@ auto Xfbin::parse(kojo::binary_view data)
 		.and_then([&]() { return result.parse_chunks(data); });
 	return result;
 }
-//
+
+auto Xfbin::parse_header(BinaryView data) {
+}
+
 // auto Xfbin::read_header(kojo::binary_view& data)
 // -> std::expected<void, Error>
 // {
