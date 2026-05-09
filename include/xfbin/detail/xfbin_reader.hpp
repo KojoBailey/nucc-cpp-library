@@ -1,4 +1,9 @@
+#ifndef KOJO_XFBIN_READER_HPP
+#define KOJO_XFBIN_READER_HPP
+
 #include <xfbin/xfbin.hpp>
+
+namespace kojo {
 
 struct XfbinReader {
 	BinaryView data;
@@ -11,3 +16,7 @@ struct XfbinReader {
 	[[nodiscard]] auto parse_index()  -> std::expected<void, XfbinError>;
 	[[nodiscard]] auto parse_chunks() -> std::expected<void, XfbinError>;
 };
+
+}
+
+#endif

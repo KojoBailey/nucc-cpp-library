@@ -1,35 +1,16 @@
-#include <xfbin/xfbin.hpp>
+#include <xfbin/detail/xfbin_reader.hpp>
 
 using namespace kojo;
 using namespace kojo::type_abbreviations;
-
-XfbinError from(BinaryError err)
-{
-	return err.visit(overloaded{
-		[](const BinaryError::FileNotFound& err) {
-			return XfbinError::NullFile{err.path()};
-		},
-		[](const BinaryError::InvalidFile& err) {
-			return XfbinError::NullFile{err.path()};
-		},
-		[](const BinaryError::FileNotOpen& err) {
-			return XfbinError::NullFile{err.path()};
-		},
-		[](const BinaryError::InsufficientMemory& err) {
-			return XfbinError::NullFile{err.path()};
-		},
-		[](const auto& err) {
-			return XfbinError::Unknown{};
-		}
-	});
-}
 
 auto Xfbin::from(const std::filesystem::path& path)
 	-> std::expected<Xfbin, XfbinError>
 {
         auto maybe_data = Binary::from(path);
         if (!maybe_data) {
-		return std::unexpected{ XfbinError::from(maybe_data.error()) };
+		return std::unexpected{
+			XfbinError::from(maybe_data.error().variant)
+		};
         }
 	return XfbinReader{*maybe_data}.parse();
 }

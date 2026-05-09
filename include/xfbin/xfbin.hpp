@@ -1,7 +1,7 @@
 #ifndef KOJO_XFBIN_HPP
 #define KOJO_XFBIN_HPP
 
-#include <xfbin/error.hpp>
+#include <xfbin/detail/error.hpp>
 
 #include <kojo/binary.hpp>
 
@@ -17,7 +17,7 @@ namespace kojo {
 
 class Xfbin {
 public:
-	static constexpr std::string_view FILE_SIGNATURE{"NUCC"};
+	static constexpr std::string_view FILE_SIGNATURE{"NUCC"}; // 4E 55 43 43 
 
 	Xfbin() = default;
 	~Xfbin() = default;
