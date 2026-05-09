@@ -5,7 +5,7 @@ using namespace kojo::type_abbreviations;
 
 XfbinError from(BinaryError err)
 {
-	return std::visit(overloaded{
+	return err.visit(overloaded{
 		[](const BinaryError::FileNotFound& err) {
 			return XfbinError::NullFile{err.path()};
 		},
@@ -21,7 +21,7 @@ XfbinError from(BinaryError err)
 		[](const auto& err) {
 			return XfbinError::Unknown{};
 		}
-	}, err);
+	});
 }
 
 auto Xfbin::from(const std::filesystem::path& path)
