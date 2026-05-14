@@ -27,7 +27,7 @@ auto XfbinReader::parse_header()
 			XfbinError::MismatchedFileSignature{file_signature}
 		};
 	}
-https://www.youtube.com/watch?v=bObtkwuxqAM&list=WL&index=3&t=25s
+
 	auto maybe_version = data.read<u32>(std::endian::big);
 	if (!maybe_version) {
 		return std::unexpected{
