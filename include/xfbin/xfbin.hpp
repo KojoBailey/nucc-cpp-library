@@ -18,6 +18,7 @@ namespace kojo {
 class Xfbin {
 public:
 	static constexpr std::string_view FILE_SIGNATURE{"NUCC"}; // 4E 55 43 43 
+        static constexpr std::uint32_t EXPECTED_VERSION{121};
 
 	Xfbin() = default;
 	~Xfbin() = default;
@@ -49,7 +50,6 @@ public:
 	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
 
 private:
-        static constexpr std::uint32_t EXPECTED_VERSION{121};
         static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
 
 	std::vector<std::string> types{};
