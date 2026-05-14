@@ -34,7 +34,7 @@ auto XfbinReader::parse_header()
 		};
 	}
 
-	TRY(is_encrypted, data.read<bool>(sizeof(u16))); // [TODO] Implement BinaryView::read<bool>()
+	TRY(is_encrypted, data.read<bool>(sizeof(u16)));
 	data.change_pos(sizeof(u16) * 3); // Skip misc flags.
 
 	/* [TODO] Activate the decryptor. */
@@ -45,9 +45,11 @@ auto XfbinReader::parse_header()
 auto XfbinReader::parse_index()
 	-> std::expected<void, XfbinError>
 {
+	return {};
 }
 
 auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
 {
+	return {};
 }
