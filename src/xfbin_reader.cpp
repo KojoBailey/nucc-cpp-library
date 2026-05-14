@@ -3,7 +3,7 @@
 using namespace kojo;
 using namespace kojo::type_abbreviations;
 
-auto XfbinReader::parse()
+auto XfbinReader::parse() &&
 	-> std::expected<Xfbin, XfbinError>
 {
 	return parse_header()
@@ -21,12 +21,37 @@ auto XfbinReader::parse_header()
 			XfbinError::from(maybe_file_signature.error())
 		};
 	}
-	std::string& file_signature = *maybe_file_signature;
-	if (file_signature != FILE_SIGNATURE) {
+	str& file_signature = *maybe_file_signature;
+	if (file_signature != Xfbin::FILE_SIGNATURE) {
 		return std::unexpected{
-			XfbinError::MismatchedFileSignature{file_signature};
+			XfbinError::MismatchedFileSignature{file_signature}
 		};
 	}
+https://www.youtube.com/watch?v=bObtkwuxqAM&list=WL&index=3&t=25s
+	auto maybe_version = data.read<u32>(std::endian::big);
+	if (!maybe_version) {
+		return std::unexpected{
+			XfbinError::from(maybe_file_signature.error())
+		};
+	}
+	u32 version = *maybe_version; 
+	if (version != Xfbin::EXPECTED_VERSION) {
+		return std::unexpected{
+			XfbinError::MismatchedVersion{version}
+		};
+	}
+
+	auto maybe_is_encrypted = data.read<bool>(sizeof(u16)); // [TODO] Implement BinaryView::read<bool>()
+	data.change_pos(sizeof(u16) * 3); // Skip misc flags.
+	if (!maybe_is_encrypted) {
+		return std::unexpected{
+			XfbinError::from(maybe_is_encrypted.error())
+		};
+	}
+	bool is_encrypted = *maybe_file_signature;
+	/* [TODO] Activate the decryptor. */
+
+	return {};
 }
 
 auto XfbinReader::parse_index()

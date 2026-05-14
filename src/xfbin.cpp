@@ -27,34 +27,6 @@ auto Xfbin::from(const std::byte* ptr)
 	return XfbinReader{ptr}.parse();
 }
 
-// auto Xfbin::read_header(kojo::binary_view& data)
-// -> std::expected<void, Error>
-// {
-// 	// [TODO] Handle binary_view::read errors properly
-// 	auto magic_input_buffer = data.read<str>(4);
-// 	if (!magic_input_buffer) {
-// 		return std::unexpected{Error::cut_short};
-// 	}
-// 	std::string magic_input = *magic_input_buffer;
-//         if (magic_input != FILE_SIGNATURE) {
-//                 return std::unexpected{Error::file_signature};
-//         }
-//
-//         auto version_input = data.read<u32>(std::endian::big);
-//         if (!version_input || *version_input != EXPECTED_VERSION) {
-// 		return std::unexpected{Error::version};
-//         }
-//
-// 	auto is_encrypted = static_cast<bool>(data.read<u16>(std::endian::big));
-//         data.change_pos(6); // Misc flags
-//
-//         if (is_encrypted) {
-//                 m_decryptor.should_decrypt = true;
-//         }
-//
-// 	return {};
-// }
-//
 // auto Xfbin::read_index(kojo::binary_view& data)
 // -> std::expected<void, Error>
 // {
