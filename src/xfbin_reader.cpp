@@ -12,29 +12,33 @@ auto XfbinReader::parse() &&
 		.transform([&] { return std::move(result); });
 }
 
-#define TRY(var, expr) \
-	auto&& _tmp_##var = (expr); \
-	if (!_tmp_##var) return std::unexpected{XfbinError::from(_tmp_##var.error())}; \
-	auto var = *_tmp_##var
+/* This macro restricts compilation to GCC and Clang.
+ * Otherwise usage would be `TRY(file_signature, data.read<str>(4));`
+ */
+#define TRY(expr) ({ \
+	auto&& _tmp = (expr); \
+	if (!_tmp) return std::unexpected{XfbinError::from(_tmp.error())}; \
+	*std::move(_tmp); \
+})
 
 auto XfbinReader::parse_header()
 	-> std::expected<void, XfbinError>
 {
-	TRY(file_signature, data.read<str>(4));
+	auto file_signature = TRY(data.read<str>(4));
 	if (file_signature != Xfbin::FILE_SIGNATURE) {
 		return std::unexpected{
 			XfbinError::MismatchedFileSignature{file_signature}
 		};
 	}
 
-	TRY(version, data.read<u32>(std::endian::big));
+	auto version = TRY(data.read<u32>(std::endian::big));
 	if (version != Xfbin::EXPECTED_VERSION) {
 		return std::unexpected{
 			XfbinError::MismatchedVersion{version}
 		};
 	}
 
-	TRY(is_encrypted, data.read<bool>(sizeof(u16)));
+	auto is_encrypted = TRY(data.read<bool>(sizeof(u16)));
 	data.change_pos(sizeof(u16) * 3); // Skip misc flags.
 
 	/* [TODO] Activate the decryptor. */
