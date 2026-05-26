@@ -54,32 +54,32 @@ auto XfbinReader::parse_index()
 
 	const auto sizes = TRY(data.read_struct<NuccIndexSizes>());
 
-	for (std::uint32_t i = 0; i < sizes.chunk_type_count; i++) {
+	for (u32 i = 0; i < sizes.chunk_type_count; i++) {
 		const auto chunk_type = TRY(data.read<sv>());
 		result.types.emplace_back(chunk_type);
 	}
 
-	for (std::uint32_t i = 0; i < sizes.file_path_count; i++) {
+	for (u32 i = 0; i < sizes.file_path_count; i++) {
 		const auto file_path = TRY(data.read<sv>());
 		result.paths.emplace_back(file_path);
 	}
 
-	for (std::uint32_t i = 0; i < sizes.chunk_name_count; i++) {
+	for (u32 i = 0; i < sizes.chunk_name_count; i++) {
 		const auto chunk_name = TRY(data.read<sv>());
 		result.names.emplace_back(chunk_name);
 	}
 
-	for (std::uint32_t i = 0; i < sizes.chunk_map_count; i++) {
+	for (u32 i = 0; i < sizes.chunk_map_count; i++) {
 		const auto chunk_map = TRY(data.read_struct<Xfbin::ChunkMap>());
 		result.maps.push_back(chunk_map);
 	}
 
-	for (std::uint32_t i = 0; i < sizes.extra_map_indices_count; i++) {
+	for (u32 i = 0; i < sizes.extra_map_indices_count; i++) {
 		const auto extra_map_indices = TRY(data.read_struct<Xfbin::ExtraIndices>());
 		result.extra_indices.push_back(extra_map_indices);
 	}
 
-	for (std::uint32_t i = 0; i < sizes.chunk_map_indices_count; i++) {
+	for (u32 i = 0; i < sizes.chunk_map_indices_count; i++) {
 		const auto map_index = TRY(data.read<u32>(std::endian::big));
 		result.map_indices.push_back(map_index);
 	}
