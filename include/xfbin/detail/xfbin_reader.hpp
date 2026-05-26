@@ -7,6 +7,8 @@ namespace kojo {
 
 class XfbinReader {
 public:
+        static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
+
 	BinaryView data;
 	Xfbin result;
 

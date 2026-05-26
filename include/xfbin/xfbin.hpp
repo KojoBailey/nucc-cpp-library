@@ -16,6 +16,7 @@
 namespace kojo {
 
 class Xfbin {
+	friend class XfbinReader;
 public:
 	static constexpr std::string_view FILE_SIGNATURE{"NUCC"}; // 4E 55 43 43 
         static constexpr std::uint32_t EXPECTED_VERSION{121};
@@ -50,24 +51,22 @@ public:
 	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
 
 private:
-        static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
-
 	std::vector<std::string> types{};
 	std::vector<std::string> paths{};
 	std::vector<std::string> names{};
 
-        struct chunk_map {
+        struct ChunkMap {
                 std::uint32_t type_index;
                 std::uint32_t path_index; // Index 0 is usually empty ("") due to nuccChunkNull.
                 std::uint32_t name_index; // Index 0 is usually empty ("") due to nuccChunkNull.
         };
-        std::vector<chunk_map> maps{};
+        std::vector<ChunkMap> maps{};
 
-        struct extra_indices {
+        struct ExtraIndices {
                 std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
                 std::uint32_t map_index;
         };
-        std::vector<extra_indices> extra_indices{}; // Used (mostly) for animations.
+        std::vector<ExtraIndices> extra_indices{}; // Used (mostly) for animations.
 
         std::vector<std::uint32_t> map_indices{};
 
