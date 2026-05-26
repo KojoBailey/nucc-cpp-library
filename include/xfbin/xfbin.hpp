@@ -50,6 +50,10 @@ public:
 	auto write_to_vector() const -> std::expected<std::vector<std::byte>, XfbinError>;
 	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
 
+	auto get_types() const -> std::span<const std::string> { return types; }
+	auto get_paths() const -> std::span<const std::string> { return paths; }
+	auto get_names() const -> std::span<const std::string> { return names; }
+
 private:
 	std::vector<std::string> types{};
 	std::vector<std::string> paths{};
