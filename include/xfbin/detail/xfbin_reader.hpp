@@ -5,7 +5,8 @@
 
 namespace kojo {
 
-struct XfbinReader {
+class XfbinReader {
+public:
 	BinaryView data;
 	Xfbin result;
 
