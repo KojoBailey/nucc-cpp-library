@@ -114,10 +114,10 @@ auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
 {
 	while (!data.is_at_end()) {
-		const auto chunk_size = TRY(data.read<u32>(std::endian::big));
-		const auto map_index = TRY(data.read<u32>(std::endian::big));
+		const auto chunk_size    = TRY(data.read<u32>(std::endian::big));
+		const auto map_index     = TRY(data.read<u32>(std::endian::big));
 		const auto chunk_version = TRY(data.read<u16>(std::endian::big));
-		const auto unk = TRY(data.read<u16>(std::endian::big));
+		const auto unk           = TRY(data.read<u16>(std::endian::big));
 
 		const auto chunk_type = *result.fetch_type_from_map_index(map_index);
 		const auto chunk_path = *result.fetch_path_from_map_index(map_index);
