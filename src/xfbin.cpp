@@ -28,6 +28,69 @@ auto Xfbin::from(const std::byte* ptr)
 	return XfbinReader{ptr}.parse();
 }
 
+auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) noexcept
+	-> std::expected<ChunkType, XfbinError>
+{
+	if (map_index >= map_indices.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{map_index, map_indices.size()}
+		};
+	}
+
+	const std::uint32_t true_map_index = map_indices[map_index];
+		
+	if (true_map_index >= maps.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{true_map_index, maps.size()}
+		};
+	}
+		
+	const ChunkMap& chunk_map = maps[true_map_index];
+	return types[chunk_map.type_index];
+}
+
+auto Xfbin::fetch_path_from_map_index(std::uint32_t map_index) noexcept
+	-> std::expected<std::string_view, XfbinError>
+{
+	if (map_index >= map_indices.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{map_index, map_indices.size()}
+		};
+	}
+
+	const std::uint32_t true_map_index = map_indices[map_index];
+		
+	if (true_map_index >= maps.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{true_map_index, maps.size()}
+		};
+	}
+		
+	const ChunkMap& chunk_map = maps[true_map_index];
+	return paths[chunk_map.path_index];
+}
+
+auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) noexcept
+	-> std::expected<std::string_view, XfbinError>
+{
+	if (map_index >= map_indices.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{map_index, map_indices.size()}
+		};
+	}
+
+	const std::uint32_t true_map_index = map_indices[map_index];
+		
+	if (true_map_index >= maps.size()) {
+		return std::unexpected{
+			XfbinError::MapIndexOutOfBounds{true_map_index, maps.size()}
+		};
+	}
+		
+	const ChunkMap& chunk_map = maps[true_map_index];
+	return names[chunk_map.name_index];
+}
+
 // auto Xfbin::read_index(kojo::binary_view& data)
 // -> std::expected<void, Error>
 // {

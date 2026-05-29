@@ -1,6 +1,7 @@
 #ifndef KOJO_XFBIN_HPP
 #define KOJO_XFBIN_HPP
 
+#include <xfbin/chunk.hpp>
 #include <xfbin/detail/error.hpp>
 
 #include <kojo/binary.hpp>
@@ -50,12 +51,21 @@ public:
 	auto write_to_vector() const -> std::expected<std::vector<std::byte>, XfbinError>;
 	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
 
-	auto get_types() const -> std::span<const std::string> { return types; }
+	auto get_types() const -> std::span<const ChunkType> { return types; }
 	auto get_paths() const -> std::span<const std::string> { return paths; }
 	auto get_names() const -> std::span<const std::string> { return names; }
 
+	auto get_chunks() const -> std::span<const Chunk> { return chunks; }
+
+	auto fetch_type_from_map_index(std::uint32_t map_index) noexcept
+		-> std::expected<ChunkType, XfbinError>;
+	auto fetch_path_from_map_index(std::uint32_t map_index) noexcept
+		-> std::expected<std::string_view, XfbinError>;
+	auto fetch_name_from_map_index(std::uint32_t map_index) noexcept
+		-> std::expected<std::string_view, XfbinError>;
+
 private:
-	std::vector<std::string> types{};
+	std::vector<ChunkType> types{};
 	std::vector<std::string> paths{};
 	std::vector<std::string> names{};
 
@@ -73,6 +83,8 @@ private:
         std::vector<ExtraIndices> extra_indices{}; // Used (mostly) for animations.
 
         std::vector<std::uint32_t> map_indices{};
+
+	std::vector<Chunk> chunks{};
 
 	// struct Cryptor {
 	// 	Cryptor() = default;

@@ -66,7 +66,14 @@ auto XfbinReader::parse_index()
 	sizes.extra_map_indices_count = TRY(data.read<u32>(std::endian::big));
 
 	for (u32 i = 0; i < sizes.chunk_type_count; i++) {
-		const auto chunk_type = TRY(data.read<sv>());
+		const auto chunk_type_str = TRY(data.read<sv>());
+		const auto maybe_chunk_type = chunk_type_from_string(chunk_type_str);
+		if (!maybe_chunk_type) {
+			return std::unexpected{
+				XfbinError::UnrecognizedChunkTypeString{chunk_type_str}
+			};
+		}
+		const auto chunk_type = *maybe_chunk_type;
 		result.types.emplace_back(chunk_type);
 	}
 
@@ -79,6 +86,8 @@ auto XfbinReader::parse_index()
 		const auto chunk_name = TRY(data.read<sv>());
 		result.names.emplace_back(chunk_name);
 	}
+
+	data.align_by(4);
 
 	for (u32 i = 0; i < sizes.chunk_map_count; i++) {
 		const auto type_index = TRY(data.read<u32>(std::endian::big));
@@ -104,5 +113,23 @@ auto XfbinReader::parse_index()
 auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
 {
+	while (!data.is_at_end()) {
+		const auto chunk_size = TRY(data.read<u32>(std::endian::big));
+		const auto map_index = TRY(data.read<u32>(std::endian::big));
+		const auto chunk_version = TRY(data.read<u16>(std::endian::big));
+		const auto unk = TRY(data.read<u16>(std::endian::big));
+
+		const auto chunk_type = *result.fetch_type_from_map_index(map_index);
+		const auto chunk_path = *result.fetch_path_from_map_index(map_index);
+		const auto chunk_name = *result.fetch_name_from_map_index(map_index);
+
+		const auto chunk_data = TRY(Binary::from(data, chunk_size, data.get_pos()));
+		
+		result.chunks.emplace_back(chunk_type, chunk_path, chunk_name,
+			chunk_version, unk, chunk_data);
+
+		data.change_pos(chunk_size);
+	}
+
 	return {};
 }
