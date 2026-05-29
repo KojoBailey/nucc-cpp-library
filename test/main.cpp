@@ -3,7 +3,7 @@
 #include <print>
 #include <iostream>
 
-using namespace kojo;
+using namespace kojo::nucc;
 
 int main(int argc, char* argv[])
 {

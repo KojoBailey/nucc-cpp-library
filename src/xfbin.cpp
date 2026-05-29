@@ -1,6 +1,7 @@
 #include <xfbin/detail/xfbin_reader.hpp>
 
 using namespace kojo;
+using namespace kojo::nucc;
 using namespace kojo::type_abbreviations;
 
 auto Xfbin::from(const std::filesystem::path& path)

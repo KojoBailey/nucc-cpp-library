@@ -1,0 +1,4 @@
+#ifndef KOJO_XFBIN_CHUNK_HPP
+#define KOJO_XFBIN_CHUNK_HPP
+
+#endif

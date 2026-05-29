@@ -2,6 +2,7 @@
 #include <xfbin/detail/index.hpp>
 
 using namespace kojo;
+using namespace kojo::nucc;
 using namespace kojo::type_abbreviations;
 
 auto XfbinReader::parse() &&

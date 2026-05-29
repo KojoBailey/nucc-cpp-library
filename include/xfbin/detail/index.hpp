@@ -3,7 +3,7 @@
 
 #include <kojo/binary.hpp>
 
-namespace kojo {
+namespace kojo::nucc {
 
 struct NuccIndexSizes {
 	std::uint32_t chunk_type_count;

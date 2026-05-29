@@ -1,6 +1,7 @@
 #include <xfbin/detail/error.hpp>
 
 using namespace kojo;
+using namespace kojo::nucc;
 
 XfbinError XfbinError::from(BinaryError err)
 {

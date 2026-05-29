@@ -3,7 +3,7 @@
 
 #include <xfbin/xfbin.hpp>
 
-namespace kojo {
+namespace kojo::nucc {
 
 class XfbinReader {
 public:

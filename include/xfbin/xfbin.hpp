@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace kojo {
+namespace kojo::nucc {
 
 class Xfbin {
 	friend class XfbinReader;

@@ -9,7 +9,7 @@
 #include <string>
 #include <variant>
 
-namespace kojo {
+namespace kojo::nucc {
 
 struct XfbinError {
 	template<typename T>
