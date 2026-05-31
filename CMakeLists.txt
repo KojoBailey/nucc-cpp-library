@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.19)
 project(xfbin VERSION 0.1.0 DESCRIPTION "Library for interacting with CyberConnect2 XFBIN files.")
 set(CMAKE_CXX_STANDARD 23)
 
+option(ENABLE_SANITIZERS "Enable ASan + UBSan" ON)
+
 # .cpp source files
 set(SOURCES
 	src/xfbin.cpp
@@ -58,9 +60,19 @@ install(FILES
 )
 message(STATUS "XFBIN++ build configured. To install: `cmake --install . --prefix <install_path>`")
 
+set(WARNING_FLAGS -Wall -Wextra -Wpedantic)
+target_compile_options(xfbin PRIVATE ${WARNING_FLAGS})
+
 # sandbox for manual testing
 option(BUILD_SANDBOX "Build the sandbox executable." ON)
 if (BUILD_SANDBOX)
 	add_executable(xfbin_lib_test test/main.cpp)
 	target_link_libraries(xfbin_lib_test PRIVATE xfbin)
+	target_compile_options(xfbin_lib_test PRIVATE ${WARNING_FLAGS})
+
+	if (ENABLE_SANITIZERS)
+		set(SANITIZER_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer)
+		target_compile_options(xfbin_lib_test PRIVATE ${SANITIZER_FLAGS})
+		target_link_options(xfbin_lib_test PRIVATE ${SANITIZER_FLAGS})
+	endif()
 endif()

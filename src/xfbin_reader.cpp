@@ -17,6 +17,14 @@ auto XfbinReader::parse() &&
 /* This macro restricts compilation to GCC and Clang.
  * Otherwise usage would be `TRY(file_signature, data.read<str>(4));`
  */
+#ifdef __clang__
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic push
+#	pragma GCC diagnostic ignored "-Wgnu-statement-expression"
+#endif
+
 #define TRY(expr) ({ \
 	auto&& _tmp = (expr); \
 	if (!_tmp) return std::unexpected{XfbinError::from(_tmp.error())}; \
@@ -148,3 +156,9 @@ auto XfbinReader::parse_chunks()
 
 	return {};
 }
+
+#ifdef __clang__
+#	pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#	pragma GCC diagnostic pop
+#endif

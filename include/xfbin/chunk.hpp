@@ -8,11 +8,11 @@
 namespace kojo::nucc {
 
 struct Chunk {
-	std::uint16_t version;
-	std::uint16_t unk;
 	ChunkType type;
 	std::string path;
 	std::string name;
+	std::uint16_t version;
+	std::uint16_t unk;
 	Binary data;
 
 	Chunk(const ChunkType _type, std::string_view _path, std::string_view _name,
