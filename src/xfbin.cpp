@@ -217,10 +217,3 @@ Page& Xfbin::add_page(const std::uint32_t chunk_map_offset, const std::uint32_t 
 //
 // 	return {};
 // }
-//
-// auto Xfbin::read_chunks(kojo::binary_view&)
-// -> std::expected<void, Error>
-// {
-// 	// !TODO
-// 	return {};
-// }

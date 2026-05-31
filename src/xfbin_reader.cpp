@@ -20,7 +20,7 @@ auto XfbinReader::parse() &&
 #ifdef __clang__
 #	pragma clang diagnostic push
 #	pragma clang diagnostic ignored "-Wgnu-statement-expression-from-macro-expansion"
-#elif defined(__GNUC__)
+#elifdef __GNUC__
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Wgnu-statement-expression"
 #endif

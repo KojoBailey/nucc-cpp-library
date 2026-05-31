@@ -65,7 +65,7 @@ public:
 		-> std::expected<std::string_view, XfbinError>;
 
 	Page& add_page();
-	Page& add_page(const std::uint32_t chunk_map_offset, const std::uint32_t extra_map_offset);
+	Page& add_page(std::uint32_t chunk_map_offset, std::uint32_t extra_map_offset);
 
 private:
 	std::vector<ChunkType> types{};
