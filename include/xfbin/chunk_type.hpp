@@ -1,12 +1,13 @@
 #ifndef KOJO_XFBIN_CHUNKTYPE_HPP
 #define KOJO_XFBIN_CHUNKTYPE_HPP
 
+#include <cstdint>
 #include <optional>
 #include <string_view>
 
 namespace kojo::nucc {
 
-enum class ChunkType {
+enum class ChunkType : std::uint8_t {
 	Null,
 	Page,
 	Index,
@@ -14,7 +15,7 @@ enum class ChunkType {
 	Texture,
 };
 
-constexpr std::string_view chunk_type_to_string(ChunkType type)
+constexpr auto chunk_type_to_string(ChunkType type) -> std::string_view
 {
 	switch (type) {
 	case ChunkType::Null:
@@ -31,17 +32,18 @@ constexpr std::string_view chunk_type_to_string(ChunkType type)
 	return "";
 }
 
-constexpr std::optional<ChunkType> chunk_type_from_string(std::string_view str)
+constexpr auto chunk_type_from_string(std::string_view str)
+	-> std::optional<ChunkType>
 {
 	if (str == "nuccChunkNull")
 		return ChunkType::Null;
-	else if (str == "nuccChunkPage") 
+	if (str == "nuccChunkPage") 
 		return ChunkType::Page;
-	else if (str == "nuccChunkIndex") 
+	if (str == "nuccChunkIndex") 
 		return ChunkType::Index;
-	else if (str == "nuccChunkBinary") 
+	if (str == "nuccChunkBinary") 
 		return ChunkType::Binary;
-	else if (str == "nuccChunkTexture") 
+	if (str == "nuccChunkTexture") 
 		return ChunkType::Texture;
 
 	return {};

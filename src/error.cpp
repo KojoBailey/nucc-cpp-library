@@ -3,10 +3,10 @@
 using namespace kojo;
 using namespace kojo::nucc;
 
-XfbinError XfbinError::from(BinaryError err)
+auto XfbinError::from(BinaryError err) -> XfbinError
 {
 	return std::visit(overloaded{
-		[](const auto& err) {
+		[](const auto& err) -> XfbinError {
 			return XfbinError::Unrecognized{err.to_string()};
 		}
 	}, err.variant);

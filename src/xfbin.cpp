@@ -91,12 +91,13 @@ auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) noexcept
 	return names[chunk_map.name_index];
 }
 
-Page& Xfbin::add_page()
+auto Xfbin::add_page() -> Page&
 {
 	return pages.emplace_back();
 }
 
-Page& Xfbin::add_page(const std::uint32_t chunk_map_offset, const std::uint32_t extra_map_offset)
+auto Xfbin::add_page(const std::uint32_t chunk_map_offset, const std::uint32_t extra_map_offset)
+	-> Page&
 {
 	return pages.emplace_back(chunk_map_offset, extra_map_offset);
 }

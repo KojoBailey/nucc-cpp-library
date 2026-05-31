@@ -11,7 +11,7 @@ auto XfbinReader::parse() &&
 	return parse_header()
 		.and_then([&] { return parse_index(); })
 		.and_then([&] { return parse_chunks(); })
-		.transform([&] { return std::move(result); });
+		.transform([&] { return result; });
 }
 
 /* This macro restricts compilation to GCC and Clang.
@@ -159,6 +159,6 @@ auto XfbinReader::parse_chunks()
 
 #ifdef __clang__
 #	pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#elifdef __GNUC__
 #	pragma GCC diagnostic pop
 #endif

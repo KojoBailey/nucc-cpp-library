@@ -12,7 +12,7 @@ public:
 	BinaryView data;
 	Xfbin result;
 
-	XfbinReader(BinaryView _data) : data(_data) {}
+	XfbinReader(BinaryView _data) : data(std::move(_data)) {}
 
 	[[nodiscard]] auto parse() && -> std::expected<Xfbin, XfbinError>;
 	[[nodiscard]] auto parse_header() -> std::expected<void, XfbinError>;

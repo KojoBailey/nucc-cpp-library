@@ -32,7 +32,8 @@ public:
 	[[nodiscard]] static auto from(const std::byte* ptr)
 		-> std::expected<Xfbin, XfbinError>;
 
-	[[nodiscard]] constexpr std::uint32_t get_version() const { return EXPECTED_VERSION; }
+	[[nodiscard]] static constexpr auto get_version()
+		-> std::uint32_t { return EXPECTED_VERSION; }
 
 	// [[nodiscard]] auto get_chunks() const -> std::vector<Chunk>;
 	// 
@@ -47,47 +48,54 @@ public:
 	// [[nodiscard]] const Chunk& fetch_chunk_by_path(std::string_view path, std::size_t index = 0) const;
 	// [[nodiscard]] const Chunk& fetch_chunk_by_type(std::string_view type, std::size_t index = 0) const;
 
-	auto write_to_file(const std::filesystem::path& path) const -> std::expected<void, XfbinError>;
-	auto write_to_vector() const -> std::expected<std::vector<std::byte>, XfbinError>;
-	auto write_to_memory(std::byte* ptr) const -> std::expected<void, XfbinError>;
+	[[nodiscard]] auto write_to_file(const std::filesystem::path& path) const
+		-> std::expected<void, XfbinError>;
+	[[nodiscard]] auto write_to_vector() const
+		-> std::expected<std::vector<std::byte>, XfbinError>;
+	[[nodiscard]] auto write_to_memory(std::byte* ptr) const
+		-> std::expected<void, XfbinError>;
 
-	auto get_types() const -> std::span<const ChunkType> { return types; }
-	auto get_paths() const -> std::span<const std::string> { return paths; }
-	auto get_names() const -> std::span<const std::string> { return names; }
+	[[nodiscard]] auto get_types() const
+		-> std::span<const ChunkType> { return types; }
+	[[nodiscard]] auto get_paths() const
+		-> std::span<const std::string> { return paths; }
+	[[nodiscard]] auto get_names() const
+		-> std::span<const std::string> { return names; }
 
-	auto get_pages() const -> std::span<const Page> { return pages; }
+	[[nodiscard]] auto get_pages() const
+		-> std::span<const Page> { return pages; }
 
-	auto fetch_type_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_type_from_map_index(std::uint32_t map_index) noexcept
 		-> std::expected<ChunkType, XfbinError>;
-	auto fetch_path_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_path_from_map_index(std::uint32_t map_index) noexcept
 		-> std::expected<std::string_view, XfbinError>;
-	auto fetch_name_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_name_from_map_index(std::uint32_t map_index) noexcept
 		-> std::expected<std::string_view, XfbinError>;
 
-	Page& add_page();
-	Page& add_page(std::uint32_t chunk_map_offset, std::uint32_t extra_map_offset);
+	auto add_page() -> Page&;
+	auto add_page(std::uint32_t chunk_map_offset, std::uint32_t extra_map_offset) -> Page&;
 
 private:
-	std::vector<ChunkType> types{};
-	std::vector<std::string> paths{};
-	std::vector<std::string> names{};
+	std::vector<ChunkType> types;
+	std::vector<std::string> paths;
+	std::vector<std::string> names;
 
         struct ChunkMap {
                 std::uint32_t type_index;
                 std::uint32_t path_index; // Index 0 is usually empty ("") due to nuccChunkNull.
                 std::uint32_t name_index; // Index 0 is usually empty ("") due to nuccChunkNull.
         };
-        std::vector<ChunkMap> maps{};
+        std::vector<ChunkMap> maps;
 
         struct ExtraIndices {
                 std::uint32_t name_index; // Used for clones of same clumps - optimisation feature.
                 std::uint32_t map_index;
         };
-        std::vector<ExtraIndices> extra_indices{}; // Used (mostly) for animations.
+        std::vector<ExtraIndices> extra_indices; // Used (mostly) for animations.
 
-        std::vector<std::uint32_t> map_indices{};
+        std::vector<std::uint32_t> map_indices;
 
-	std::vector<Page> pages{};
+	std::vector<Page> pages;
 
 	// struct Cryptor {
 	// 	Cryptor() = default;

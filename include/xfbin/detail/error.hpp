@@ -21,10 +21,10 @@ struct XfbinError {
 		const std::string msg;
 
 		Unrecognized() = delete;
-		Unrecognized(const std::string _msg)
-			: msg(_msg) {}
+		Unrecognized(std::string _msg)
+			: msg(std::move(_msg)) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return msg;
 		}
 	};
@@ -39,7 +39,7 @@ struct XfbinError {
 		InsufficientMemory(const std::byte* _address, const std::size_t _size)
 			: address(_address), size(_size) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("Failed to allocate sufficient memory to load the XFBIN. Address: {:08x}; Requested Size: {}.",
 				reinterpret_cast<std::size_t>(address), size
 			);
@@ -49,7 +49,7 @@ struct XfbinError {
 	struct UnexpectedEnd {
 		static const std::uint32_t code = 1;
 
-		std::string to_string() const {
+		[[nodiscard]] static auto to_string() -> std::string {
 			return "Reached unexpected end of XFBIN.";
 		}
 	};
@@ -60,10 +60,10 @@ struct XfbinError {
 		const std::filesystem::path path;
 
 		FileNotFound() = delete;
-		FileNotFound(const std::filesystem::path _path)
-			: path(_path) {}
+		FileNotFound(std::filesystem::path _path)
+			: path(std::move(_path)) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("XFBIN at \"{}\" could not be found.", path.string());
 		}
 	};
@@ -74,10 +74,10 @@ struct XfbinError {
 		const std::filesystem::path path;
 
 		InvalidFile() = delete;
-		InvalidFile(const std::filesystem::path _path)
-			: path(_path) {}
+		InvalidFile(std::filesystem::path _path)
+			: path(std::move(_path)) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("XFBIN at \"{}\" is not a valid file. It may be a directory instead.",
 				path.string()
 			);
@@ -90,10 +90,10 @@ struct XfbinError {
 		const std::filesystem::path path;
 
 		FileNotOpen() = delete;
-		FileNotOpen(const std::filesystem::path _path)
-			: path(_path) {}
+		FileNotOpen(std::filesystem::path _path)
+			: path(std::move(_path)) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("XFBIN at \"{}\" failed to open.", path.string());
 		}
 	};
@@ -104,10 +104,10 @@ struct XfbinError {
 		const std::string given_file_signature;
 
 		MismatchedFileSignature() = delete;
-		MismatchedFileSignature(const std::string _given_file_signature)
-			: given_file_signature(_given_file_signature) {}
+		MismatchedFileSignature(std::string _given_file_signature)
+			: given_file_signature(std::move(_given_file_signature)) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("Expected file signature `NUCC` (4E 55 43 43) but got `{}`.",
 				given_file_signature
 			);
@@ -123,7 +123,7 @@ struct XfbinError {
 		MismatchedVersion(const std::uint32_t _given_version)
 			: given_version(_given_version) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("Expected XFBIN version 121 but got {}.",
 				given_version
 			);
@@ -140,7 +140,7 @@ struct XfbinError {
 		MapIndexOutOfBounds(const std::uint32_t _given_index, const std::size_t _max_index)
 			: given_index(_given_index), max_index(_max_index) {}
 
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("Map index of {} out of bounds for map indices size {}.",
 				given_index, max_index
 			);
@@ -156,7 +156,7 @@ struct XfbinError {
 		UnrecognizedChunkTypeString(std::string_view _given_chunk_type)
 			: given_chunk_type(_given_chunk_type) {}
 		
-		std::string to_string() const {
+		[[nodiscard]] auto to_string() const -> std::string {
 			return std::format("Unrecognised chunk type: {}", given_chunk_type); 
 		}
 	};
@@ -174,15 +174,17 @@ struct XfbinError {
 		UnrecognizedChunkTypeString
 	> variant;
 
-	std::uint32_t to_code() const {
-		return std::visit([](const auto& err) { return err.code; }, variant);
+	[[nodiscard]] auto to_code() const -> std::uint32_t {
+		return std::visit([](const auto& err) -> std::uint32_t
+			{ return err.code; }, variant);
 	}
 
-	std::string to_string() const {
-		return std::visit([](const auto& err) { return err.to_string(); }, variant);
+	[[nodiscard]] auto to_string() const -> std::string {
+		return std::visit([](const auto& err) -> std::string
+			{ return err.to_string(); }, variant);
 	}
 
-	static XfbinError from(BinaryError err);
+	static auto from(BinaryError err) -> XfbinError;
 };
 
 }
