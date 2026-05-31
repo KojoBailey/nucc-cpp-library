@@ -110,10 +110,14 @@ auto XfbinReader::parse_index()
 	return {};
 }
 
+#include <iostream>
+
 auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
 {
-	while (!data.is_at_end()) {
+	result.add_page();
+
+	for (std::size_t page = 0; !data.is_at_end();) {
 		const auto chunk_size    = TRY(data.read<u32>(std::endian::big));
 		const auto map_index     = TRY(data.read<u32>(std::endian::big));
 		const auto chunk_version = TRY(data.read<u16>(std::endian::big));
@@ -123,12 +127,19 @@ auto XfbinReader::parse_chunks()
 		const auto chunk_path = *result.fetch_path_from_map_index(map_index);
 		const auto chunk_name = *result.fetch_name_from_map_index(map_index);
 
-		const auto chunk_data = TRY(Binary::from(data, chunk_size, data.get_pos()));
-		
-		result.chunks.emplace_back(chunk_type, chunk_path, chunk_name,
-			chunk_version, unk, chunk_data);
+		if (chunk_type == ChunkType::Page) {
+			const auto chunk_map_offset = TRY(data.read<u32>(std::endian::big));
+			const auto extra_map_offset = TRY(data.read<u32>(std::endian::big));
+			result.add_page(chunk_map_offset, extra_map_offset);
+			page++;
+		} else {
+			const auto chunk_data = TRY(Binary::from(data, chunk_size, data.get_pos()));
 
-		data.change_pos(chunk_size);
+			result.pages[page].add_chunk(chunk_type, chunk_path, chunk_name,
+				chunk_version, unk, chunk_data);
+
+			data.change_pos(chunk_size);
+		}
 	}
 
 	return {};

@@ -91,6 +91,16 @@ auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) noexcept
 	return names[chunk_map.name_index];
 }
 
+Page& Xfbin::add_page()
+{
+	return pages.emplace_back();
+}
+
+Page& Xfbin::add_page(const std::uint32_t chunk_map_offset, const std::uint32_t extra_map_offset)
+{
+	return pages.emplace_back(chunk_map_offset, extra_map_offset);
+}
+
 // auto Xfbin::read_index(kojo::binary_view& data)
 // -> std::expected<void, Error>
 // {

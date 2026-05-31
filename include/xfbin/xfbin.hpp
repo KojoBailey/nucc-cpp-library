@@ -1,7 +1,7 @@
 #ifndef KOJO_XFBIN_HPP
 #define KOJO_XFBIN_HPP
 
-#include <xfbin/chunk.hpp>
+#include <xfbin/page.hpp>
 #include <xfbin/detail/error.hpp>
 
 #include <kojo/binary.hpp>
@@ -55,7 +55,7 @@ public:
 	auto get_paths() const -> std::span<const std::string> { return paths; }
 	auto get_names() const -> std::span<const std::string> { return names; }
 
-	auto get_chunks() const -> std::span<const Chunk> { return chunks; }
+	auto get_pages() const -> std::span<const Page> { return pages; }
 
 	auto fetch_type_from_map_index(std::uint32_t map_index) noexcept
 		-> std::expected<ChunkType, XfbinError>;
@@ -63,6 +63,9 @@ public:
 		-> std::expected<std::string_view, XfbinError>;
 	auto fetch_name_from_map_index(std::uint32_t map_index) noexcept
 		-> std::expected<std::string_view, XfbinError>;
+
+	Page& add_page();
+	Page& add_page(const std::uint32_t chunk_map_offset, const std::uint32_t extra_map_offset);
 
 private:
 	std::vector<ChunkType> types{};
@@ -84,7 +87,7 @@ private:
 
         std::vector<std::uint32_t> map_indices{};
 
-	std::vector<Chunk> chunks{};
+	std::vector<Page> pages{};
 
 	// struct Cryptor {
 	// 	Cryptor() = default;

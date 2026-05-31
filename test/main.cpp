@@ -27,13 +27,15 @@ int main(int argc, char* argv[])
 	std::println("Version: {}", xfbin.get_version());
 	std::println();
 
-	const auto chunks = xfbin.get_chunks();
-	std::println("== Chunks ==");
-	std::println();
-	for (const auto chunk : chunks) {
-		std::println("Type: {}", chunk_type_to_string(chunk.type));
-		std::println("Path: {}", chunk.path);
-		std::println("Name: {}", chunk.name);
+	const auto pages = xfbin.get_pages();
+	for (const auto page : pages) {
+		std::println("== Page ==");
 		std::println();
+		for (const auto chunk : page.chunks) {
+			std::println("Type: {}", chunk_type_to_string(chunk.type));
+			std::println("Path: {}", chunk.path);
+			std::println("Name: {}", chunk.name);
+			std::println();
+		}
 	}
 }
