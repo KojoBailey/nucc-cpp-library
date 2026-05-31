@@ -65,6 +65,7 @@ auto XfbinReader::parse_index()
 	sizes.chunk_map_indices_count = TRY(data.read<u32>(std::endian::big));
 	sizes.extra_map_indices_count = TRY(data.read<u32>(std::endian::big));
 
+	result.maps.reserve(sizes.chunk_type_count);
 	for (u32 i = 0; i < sizes.chunk_type_count; i++) {
 		const auto chunk_type_str = TRY(data.read<sv>());
 		const auto maybe_chunk_type = chunk_type_from_string(chunk_type_str);
@@ -77,11 +78,13 @@ auto XfbinReader::parse_index()
 		result.types.emplace_back(chunk_type);
 	}
 
+	result.maps.reserve(sizes.file_path_count);
 	for (u32 i = 0; i < sizes.file_path_count; i++) {
 		const auto file_path = TRY(data.read<sv>());
 		result.paths.emplace_back(file_path);
 	}
 
+	result.maps.reserve(sizes.chunk_name_count);
 	for (u32 i = 0; i < sizes.chunk_name_count; i++) {
 		const auto chunk_name = TRY(data.read<sv>());
 		result.names.emplace_back(chunk_name);
@@ -89,6 +92,7 @@ auto XfbinReader::parse_index()
 
 	data.align_by(4);
 
+	result.maps.reserve(sizes.chunk_map_count);
 	for (u32 i = 0; i < sizes.chunk_map_count; i++) {
 		const auto type_index = TRY(data.read<u32>(std::endian::big));
 		const auto path_index = TRY(data.read<u32>(std::endian::big));
@@ -96,12 +100,14 @@ auto XfbinReader::parse_index()
 		result.maps.emplace_back(type_index, path_index, name_index);
 	}
 
+	result.maps.reserve(sizes.extra_map_indices_count);
 	for (u32 i = 0; i < sizes.extra_map_indices_count; i++) {
 		const auto name_index = TRY(data.read<u32>(std::endian::big));
 		const auto map_index = TRY(data.read<u32>(std::endian::big));
 		result.extra_indices.emplace_back(name_index, map_index);
 	}
 
+	result.maps.reserve(sizes.chunk_map_indices_count);
 	for (u32 i = 0; i < sizes.chunk_map_indices_count; i++) {
 		const auto map_index = TRY(data.read<u32>(std::endian::big));
 		result.map_indices.push_back(map_index);
@@ -109,8 +115,6 @@ auto XfbinReader::parse_index()
 
 	return {};
 }
-
-#include <iostream>
 
 auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
