@@ -1,6 +1,7 @@
 # Build
-build
 build/
+build-rel/
+build-release/
 build.ninja
 CMakeCache.txt
 cmake_install.cmake
@@ -9,6 +10,7 @@ CMakeFiles/
 xfbinConfig.cmake
 xfbinConfigVersion.cmake
 Makefile
+.clang-tidy
 
 # IDE
 .vscode/
