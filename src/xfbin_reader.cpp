@@ -48,10 +48,12 @@ auto XfbinReader::parse_header()
 		};
 	}
 
-	const auto is_encrypted = TRY(data.read<bool>(sizeof(u16)));
+	is_encrypted = TRY(data.read<bool>(sizeof(u16)));
 	data.change_pos(sizeof(u16) * 3); // Skip misc flags.
 
-	/* [TODO] Activate the decryptor. */
+	if (is_encrypted) {
+		cryptor = std::make_unique<Cryptor>(crypt_key);
+	}
 
 	return {};
 }
@@ -59,20 +61,27 @@ auto XfbinReader::parse_header()
 auto XfbinReader::parse_index()
 	-> std::expected<void, XfbinError>
 {
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(), CHUNK_HEADER_SIZE + sizeof(NuccIndexSizes));
+	}
+
 	data.change_pos(CHUNK_HEADER_SIZE); // Useless metadata.
 
 	NuccIndexSizes sizes;
 	sizes.chunk_type_count        = TRY(data.read<u32>(std::endian::big));
-	data.change_pos(sizeof(u32));
+	sizes.chunk_type_size         = TRY(data.read<u32>(std::endian::big));
 	sizes.file_path_count         = TRY(data.read<u32>(std::endian::big));
-	data.change_pos(sizeof(u32));
+	sizes.file_path_size          = TRY(data.read<u32>(std::endian::big));
 	sizes.chunk_name_count        = TRY(data.read<u32>(std::endian::big));
-	data.change_pos(sizeof(u32));
+	sizes.chunk_name_size         = TRY(data.read<u32>(std::endian::big));
 	sizes.chunk_map_count         = TRY(data.read<u32>(std::endian::big));
-	data.change_pos(sizeof(u32));
+	sizes.chunk_map_size          = TRY(data.read<u32>(std::endian::big));
 	sizes.chunk_map_indices_count = TRY(data.read<u32>(std::endian::big));
 	sizes.extra_map_indices_count = TRY(data.read<u32>(std::endian::big));
 
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(), sizes.chunk_type_size);
+	}
 	result.maps.reserve(sizes.chunk_type_count);
 	for (u32 i = 0; i < sizes.chunk_type_count; i++) {
 		const auto chunk_type_str = TRY(data.read<sv>());
@@ -86,12 +95,18 @@ auto XfbinReader::parse_index()
 		result.types.emplace_back(chunk_type);
 	}
 
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(), sizes.file_path_size);
+	}
 	result.maps.reserve(sizes.file_path_count);
 	for (u32 i = 0; i < sizes.file_path_count; i++) {
 		const auto file_path = TRY(data.read<sv>());
 		result.paths.emplace_back(file_path);
 	}
 
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(), sizes.chunk_name_size);
+	}
 	result.maps.reserve(sizes.chunk_name_count);
 	for (u32 i = 0; i < sizes.chunk_name_count; i++) {
 		const auto chunk_name = TRY(data.read<sv>());
@@ -100,6 +115,9 @@ auto XfbinReader::parse_index()
 
 	data.align_by(4);
 
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(), sizes.chunk_map_size);
+	}
 	result.maps.reserve(sizes.chunk_map_count);
 	for (u32 i = 0; i < sizes.chunk_map_count; i++) {
 		const auto type_index = TRY(data.read<u32>(std::endian::big));
@@ -108,13 +126,23 @@ auto XfbinReader::parse_index()
 		result.maps.emplace_back(type_index, path_index, name_index);
 	}
 
-	result.maps.reserve(sizes.extra_map_indices_count);
-	for (u32 i = 0; i < sizes.extra_map_indices_count; i++) {
-		const auto name_index = TRY(data.read<u32>(std::endian::big));
-		const auto map_index = TRY(data.read<u32>(std::endian::big));
-		result.extra_indices.emplace_back(name_index, map_index);
+	if (sizes.extra_map_indices_count > 0) {
+		if (is_encrypted) {
+			cryptor->crypt(data.get_pos_data(),
+				sizes.extra_map_indices_count * sizeof(Xfbin::ExtraIndices));
+		}
+		result.maps.reserve(sizes.extra_map_indices_count);
+		for (u32 i = 0; i < sizes.extra_map_indices_count; i++) {
+			const auto name_index = TRY(data.read<u32>(std::endian::big));
+			const auto map_index = TRY(data.read<u32>(std::endian::big));
+			result.extra_indices.emplace_back(name_index, map_index);
+		}
 	}
 
+	if (is_encrypted) {
+		cryptor->crypt(data.get_pos_data(),
+			sizes.chunk_map_indices_count * sizeof(u32));
+	}
 	result.maps.reserve(sizes.chunk_map_indices_count);
 	for (u32 i = 0; i < sizes.chunk_map_indices_count; i++) {
 		const auto map_index = TRY(data.read<u32>(std::endian::big));
@@ -145,6 +173,16 @@ auto XfbinReader::parse_chunks()
 			result.add_page(chunk_map_offset, extra_map_offset);
 			page++;
 		} else {
+			// ASBR's decryption first decrypts the nuccChunkBinary's size,
+			// and then the rest of its data, so could consider moving
+			// this logic to the Binary struct instead.
+			//
+			// Also, it's not just Binary that can be encrypted. It's just
+			// the only one that ASBR has encrypted fsr.
+			if (is_encrypted && chunk_type == ChunkType::Binary) {
+				cryptor->crypt(data.get_pos_data(), chunk_size);
+			}
+
 			const auto chunk_data = TRY(Binary::from(data, chunk_size, data.get_pos()));
 
 			result.pages[page].add_chunk(chunk_type, chunk_path, chunk_name,

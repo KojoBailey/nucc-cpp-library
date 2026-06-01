@@ -25,11 +25,14 @@ public:
 	Xfbin() = default;
 	~Xfbin() = default;
 
-	[[nodiscard]] static auto from(const std::filesystem::path& path)
+	[[nodiscard]] static auto from(const std::filesystem::path& path,
+			std::array<std::uint8_t, 8> crypt_key = {})
 		-> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto from(std::span<const std::byte> span)
+	[[nodiscard]] static auto from(std::span<const std::byte> span,
+			std::array<std::uint8_t, 8> crypt_key = {})
 		-> std::expected<Xfbin, XfbinError>;
-	[[nodiscard]] static auto from(const std::byte* ptr)
+	[[nodiscard]] static auto from(const std::byte* ptr,
+			std::array<std::uint8_t, 8> crypt_key = {})
 		-> std::expected<Xfbin, XfbinError>;
 
 	[[nodiscard]] static constexpr auto get_version()
@@ -96,29 +99,6 @@ private:
         std::vector<std::uint32_t> map_indices;
 
 	std::vector<Page> pages;
-
-	// struct Cryptor {
-	// 	Cryptor() = default;
-	//
-	// 	bool should_decrypt{false};
-	//
-	// 	void load(const std::array<std::uint8_t, 8> key);
-	//
- //       		void reset_state();
-	//
-	// 	// In-place safe if data_out == data_in.
-	// 	void crypt(std::uint8_t* data_out, const std::size_t);
-	//
-	// 	std::array<std::uint8_t, 8> m_key{};
-	//
-	// 	std::uint32_t v1{};
-	// 	std::uint32_t v2{};
-	// 	std::uint32_t v3{};
-	// 	std::uint32_t v4{};
-	//
-	// 	void roll_key(std::array<std::uint8_t, 4> xor_key);
-	// };
-	// Cryptor decryptor{};
 };
 
 }

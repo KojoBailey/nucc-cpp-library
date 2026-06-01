@@ -10,7 +10,7 @@ set(SOURCES
 	src/xfbin.cpp
 	src/error.cpp
 	src/xfbin_reader.cpp
-	# src/cryptor.cpp
+	src/cryptor.cpp
 )
 add_library(xfbin STATIC ${SOURCES})
 

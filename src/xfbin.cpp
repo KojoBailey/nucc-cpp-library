@@ -4,7 +4,7 @@ using namespace kojo;
 using namespace kojo::nucc;
 using namespace kojo::type_abbreviations;
 
-auto Xfbin::from(const std::filesystem::path& path)
+auto Xfbin::from(const std::filesystem::path& path, const std::array<u8, 8> crypt_key)
 	-> std::expected<Xfbin, XfbinError>
 {
         auto maybe_data = Binary::from(path);
@@ -13,19 +13,19 @@ auto Xfbin::from(const std::filesystem::path& path)
 			XfbinError::from(maybe_data.error().variant)
 		};
         }
-	return XfbinReader{*maybe_data}.parse();
+	return XfbinReader{*maybe_data, std::move(crypt_key)}.parse();
 }
 
-auto Xfbin::from(std::span<const std::byte> span)
+auto Xfbin::from(std::span<const std::byte> span, const std::array<u8, 8> crypt_key)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return XfbinReader{span}.parse();
+	return XfbinReader{span, std::move(crypt_key)}.parse();
 }
 
-auto Xfbin::from(const std::byte* ptr)
+auto Xfbin::from(const std::byte* ptr, const std::array<u8, 8> crypt_key)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return XfbinReader{ptr}.parse();
+	return XfbinReader{ptr, std::move(crypt_key)}.parse();
 }
 
 auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) noexcept

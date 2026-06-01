@@ -2,19 +2,29 @@
 #define KOJO_XFBIN_READER_HPP
 
 #include <xfbin/xfbin.hpp>
+#include <xfbin/detail/cryptor.hpp>
+
+#include <memory>
 
 namespace kojo::nucc {
 
 class XfbinReader {
 public:
-        static constexpr std::uint32_t CHUNK_HEADER_SIZE{12};
+	XfbinReader(BinaryView _data, std::array<std::uint8_t, Cryptor::KEY_SIZE> _crypt_key)
+		: data(_data), crypt_key(std::move(_crypt_key)) {}
+
+	[[nodiscard]] auto parse() && -> std::expected<Xfbin, XfbinError>;
+
+private:
+	static constexpr std::size_t CHUNK_HEADER_SIZE{12};
 
 	BinaryView data;
 	Xfbin result;
 
-	XfbinReader(BinaryView _data) : data(std::move(_data)) {}
+	bool is_encrypted{false};
+	const std::array<std::uint8_t, Cryptor::KEY_SIZE> crypt_key;
+	std::unique_ptr<Cryptor> cryptor;
 
-	[[nodiscard]] auto parse() && -> std::expected<Xfbin, XfbinError>;
 	[[nodiscard]] auto parse_header() -> std::expected<void, XfbinError>;
 	[[nodiscard]] auto parse_index()  -> std::expected<void, XfbinError>;
 	[[nodiscard]] auto parse_chunks() -> std::expected<void, XfbinError>;
