@@ -1,6 +1,8 @@
 #ifndef KOJO_XFBIN_ERROR_HPP
 #define KOJO_XFBIN_ERROR_HPP
 
+#include <xfbin/chunk_type.hpp>
+
 #include <kojo/binary.hpp>
 
 #include <cstdint>
@@ -157,7 +159,24 @@ struct XfbinError {
 			: given_chunk_type(_given_chunk_type) {}
 		
 		[[nodiscard]] auto to_string() const -> std::string {
-			return std::format("Unrecognised chunk type: {}", given_chunk_type); 
+			return std::format("Unrecognised chunk type: {}.", given_chunk_type); 
+		}
+	};
+
+	struct MismatchedChunkType {
+		static const std::uint32_t code = 202; // [TODO] Maybe make code u16?
+
+		const ChunkType expected_chunk_type;
+		const ChunkType given_chunk_type;
+
+		MismatchedChunkType() = delete;
+		MismatchedChunkType(ChunkType expected, ChunkType given)
+			: expected_chunk_type(expected), given_chunk_type(given) {}
+
+		[[nodiscard]] auto to_string() const -> std::string {
+			return std::format("Expected chunk type {} but got {}.",
+				chunk_type_to_string(expected_chunk_type),
+				chunk_type_to_string(given_chunk_type));
 		}
 	};
 
@@ -171,7 +190,8 @@ struct XfbinError {
 		MismatchedFileSignature,
 		MismatchedVersion,
 		MapIndexOutOfBounds,
-		UnrecognizedChunkTypeString
+		UnrecognizedChunkTypeString,
+		MismatchedChunkType
 	> variant;
 
 	[[nodiscard]] auto to_code() const -> std::uint32_t {

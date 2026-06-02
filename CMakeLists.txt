@@ -11,6 +11,7 @@ set(SOURCES
 	src/error.cpp
 	src/xfbin_reader.cpp
 	src/cryptor.cpp
+	src/chunk_binary.cpp
 )
 add_library(xfbin STATIC ${SOURCES})
 

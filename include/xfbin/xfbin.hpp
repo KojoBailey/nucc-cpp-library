@@ -38,25 +38,22 @@ public:
 	[[nodiscard]] static constexpr auto get_version()
 		-> std::uint32_t { return EXPECTED_VERSION; }
 
-	// [[nodiscard]] auto get_chunks() const -> std::vector<Chunk>;
-	// 
 	// [[nodiscard]] const Chunk& fetch_chunk(
 	// 	std::string_view name,
 	// 	std::string_view path,
 	// 	std::string_view type,
 	// 	std::size_t index = 0
 	// ) const;
-	// [[nodiscard]] const Chunk& fetch_chunk_by_index(std::size_t index) const;
 	// [[nodiscard]] const Chunk& fetch_chunk_by_name(std::string_view name, std::size_t index = 0) const;
 	// [[nodiscard]] const Chunk& fetch_chunk_by_path(std::string_view path, std::size_t index = 0) const;
 	// [[nodiscard]] const Chunk& fetch_chunk_by_type(std::string_view type, std::size_t index = 0) const;
 
-	[[nodiscard]] auto write_to_file(const std::filesystem::path& path) const
-		-> std::expected<void, XfbinError>;
-	[[nodiscard]] auto write_to_vector() const
-		-> std::expected<std::vector<std::byte>, XfbinError>;
-	[[nodiscard]] auto write_to_memory(std::byte* ptr) const
-		-> std::expected<void, XfbinError>;
+	// [[nodiscard]] auto write_to_file(const std::filesystem::path& path) const
+	// 	-> std::expected<void, XfbinError>;
+	// [[nodiscard]] auto write_to_vector() const
+	// 	-> std::expected<std::vector<std::byte>, XfbinError>;
+	// [[nodiscard]] auto write_to_memory(std::byte* ptr) const
+	// 	-> std::expected<void, XfbinError>;
 
 	[[nodiscard]] auto get_types() const
 		-> std::span<const ChunkType> { return types; }
@@ -68,12 +65,26 @@ public:
 	[[nodiscard]] auto get_pages() const
 		-> std::span<const Page> { return pages; }
 
-	[[nodiscard]] auto fetch_type_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_type_from_map_index(std::uint32_t map_index) const noexcept
 		-> std::expected<ChunkType, XfbinError>;
-	[[nodiscard]] auto fetch_path_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_path_from_map_index(std::uint32_t map_index) const noexcept
 		-> std::expected<std::string_view, XfbinError>;
-	[[nodiscard]] auto fetch_name_from_map_index(std::uint32_t map_index) noexcept
+	[[nodiscard]] auto fetch_name_from_map_index(std::uint32_t map_index) const noexcept
 		-> std::expected<std::string_view, XfbinError>;
+
+	[[nodiscard]] auto fetch_chunk(
+		std::optional<ChunkType> type,
+		std::optional<std::string_view> path,
+		std::optional<std::string_view> name,
+		std::size_t index = 0
+	) -> Chunk*;
+
+	[[nodiscard]] auto fetch_chunk(
+		std::optional<ChunkType> type,
+		std::optional<std::string_view> path,
+		std::optional<std::string_view> name,
+		std::size_t index = 0
+	) const -> const Chunk*;
 
 	auto add_page() -> Page&;
 	auto add_page(std::uint32_t chunk_map_offset, std::uint32_t extra_map_offset) -> Page&;

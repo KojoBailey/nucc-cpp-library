@@ -1,9 +1,10 @@
 #include <xfbin/xfbin.hpp>
+#include <xfbin/chunk_binary.hpp>
 
 #include <print>
 #include <iostream>
 
-using namespace kojo::nucc;
+using namespace kojo;
 
 int main(int argc, char* argv[])
 {
@@ -14,7 +15,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	const auto maybe_xfbin = Xfbin::from(argv[1]);
+	const auto maybe_xfbin = nucc::Xfbin::from(argv[1]);
 	if (!maybe_xfbin) {
 		std::println("Error {:03}: {}",
 				maybe_xfbin.error().to_code(),
@@ -22,20 +23,16 @@ int main(int argc, char* argv[])
 		);
 		return 1;
 	}
-	const Xfbin xfbin = *maybe_xfbin;
+	const auto xfbin = std::move(*maybe_xfbin);
 
 	std::println("Version: {}", xfbin.get_version());
 	std::println();
 
-	const auto pages = xfbin.get_pages();
-	for (const auto& page : pages) {
-		std::println("== Page ==");
-		std::println();
-		for (const auto& chunk : page.chunks) {
-			std::println("Type: {}", chunk_type_to_string(chunk.type));
-			std::println("Path: {}", chunk.path);
-			std::println("Name: {}", chunk.name);
-			std::println();
-		}
+	const nucc::Chunk* chunk = xfbin.fetch_chunk({}, {}, "PlayerColorParam");
+	auto maybe_binary = nucc::ChunkBinary::from(*chunk);
+	if (!maybe_binary) {
+		std::println(std::cerr, "[ERROR] {}", maybe_binary.error().to_string());
 	}
+	auto binary = std::move(*maybe_binary);
+	std::println("Size: {}", binary.size);
 }

@@ -28,7 +28,7 @@ auto Xfbin::from(const std::byte* ptr, const std::array<u8, 8> crypt_key)
 	return XfbinReader{ptr, std::move(crypt_key)}.parse();
 }
 
-auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) noexcept
+auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) const noexcept
 	-> std::expected<ChunkType, XfbinError>
 {
 	if (map_index >= map_indices.size()) {
@@ -49,7 +49,7 @@ auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) noexcept
 	return types[chunk_map.type_index];
 }
 
-auto Xfbin::fetch_path_from_map_index(std::uint32_t map_index) noexcept
+auto Xfbin::fetch_path_from_map_index(std::uint32_t map_index) const noexcept
 	-> std::expected<std::string_view, XfbinError>
 {
 	if (map_index >= map_indices.size()) {
@@ -70,7 +70,7 @@ auto Xfbin::fetch_path_from_map_index(std::uint32_t map_index) noexcept
 	return paths[chunk_map.path_index];
 }
 
-auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) noexcept
+auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) const noexcept
 	-> std::expected<std::string_view, XfbinError>
 {
 	if (map_index >= map_indices.size()) {
@@ -89,6 +89,66 @@ auto Xfbin::fetch_name_from_map_index(std::uint32_t map_index) noexcept
 		
 	const ChunkMap& chunk_map = maps[true_map_index];
 	return names[chunk_map.name_index];
+}
+
+auto Xfbin::fetch_chunk(
+	std::optional<ChunkType> type,
+	std::optional<std::string_view> path,
+	std::optional<std::string_view> name,
+	std::size_t index
+) -> Chunk*
+{
+	std::size_t i = 0;
+	for (auto& page : pages) {
+		for (auto& chunk : page.chunks) {
+			if (type.has_value() && chunk.type != type) {
+				continue;
+			}
+			if (path.has_value() && chunk.path != path) {
+				continue;
+			}
+			if (name.has_value() && chunk.name != name) {
+				continue;
+			}
+
+			if (i == index) {
+				return &chunk;
+			}
+			i++;
+		}
+	}
+
+	return nullptr;
+}
+
+auto Xfbin::fetch_chunk(
+	std::optional<ChunkType> type,
+	std::optional<std::string_view> path,
+	std::optional<std::string_view> name,
+	std::size_t index
+) const -> const Chunk*
+{
+	std::size_t i = 0;
+	for (const auto& page : pages) {
+		for (const auto& chunk : page.chunks) {
+			if (type.has_value() && chunk.type != type) {
+				continue;
+			}
+			if (path.has_value() && chunk.path != path) {
+				continue;
+			}
+			if (name.has_value() && chunk.name != name) {
+				continue;
+			}
+
+			if (i == index) {
+				return &chunk;
+			}
+			i++;
+		}
+	}
+
+	return nullptr;
 }
 
 auto Xfbin::add_page() -> Page&
