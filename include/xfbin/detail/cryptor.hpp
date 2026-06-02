@@ -9,7 +9,7 @@ class Cryptor {
 public:
 	static constexpr std::size_t KEY_SIZE = 8;
 
-	Cryptor(std::array<std::uint8_t, KEY_SIZE> _key) : key(_key)
+	Cryptor(std::array<std::uint8_t, KEY_SIZE> _key) : key{_key}
 	{
 		reset_state();
 	}
