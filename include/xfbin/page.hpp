@@ -17,11 +17,11 @@ struct Page {
 		: chunk_map_offset(_chunk_map_offset), extra_map_offset(_extra_map_offset) {}
 
 	auto add_chunk(const ChunkType type, std::string_view path, std::string_view name,
-		const std::uint16_t version, const std::uint16_t unk, Binary data)
+		const std::uint16_t version, const std::uint16_t unk, std::span<std::byte> data)
 		-> Chunk&
 	{
 		return chunks.emplace_back(type, std::string(path), std::string(name),
-			version, unk, std::move(data));
+			version, unk, data);
 	}
 };
 

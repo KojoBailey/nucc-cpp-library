@@ -183,7 +183,7 @@ auto XfbinReader::parse_chunks()
 				cryptor->crypt(data.get_pos_data(), chunk_size);
 			}
 
-			const auto chunk_data = TRY(Binary::from(data, chunk_size, data.get_pos()));
+			const std::span<std::byte> chunk_data{(std::byte*)data.get_pos_data(), chunk_size};
 
 			result.pages[page].add_chunk(chunk_type, chunk_path, chunk_name,
 				chunk_version, unk, chunk_data);
