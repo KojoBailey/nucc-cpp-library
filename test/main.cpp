@@ -29,10 +29,15 @@ int main(int argc, char* argv[])
 	std::println();
 
 	const nucc::Chunk* chunk = xfbin.fetch_chunk({}, {}, "PlayerColorParam");
-	auto maybe_binary = nucc::ChunkBinary::from(*chunk);
+	if (chunk == nullptr) {
+		std::println(std::cerr, "[ERROR] Could not find specified chunk.");
+		return 1;
+	}
+	const auto maybe_binary = nucc::ChunkBinary::from(*chunk);
 	if (!maybe_binary) {
 		std::println(std::cerr, "[ERROR] {}", maybe_binary.error().to_string());
+		return 1;
 	}
-	auto binary = std::move(*maybe_binary);
+	const auto binary = std::move(*maybe_binary);
 	std::println("Size: {}", binary.size);
 }
