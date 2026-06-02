@@ -11,7 +11,7 @@ namespace kojo::nucc {
 class XfbinReader {
 public:
 	XfbinReader(BinaryView _data, std::array<std::uint8_t, Cryptor::KEY_SIZE> _crypt_key)
-		: data(_data), crypt_key(std::move(_crypt_key)) {}
+		: data(_data), crypt_key(_crypt_key) {}
 
 	[[nodiscard]] auto parse() && -> std::expected<Xfbin, XfbinError>;
 

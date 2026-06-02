@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	const auto maybe_binary = nucc::ChunkBinary::from(*chunk);
-	if (!maybe_binary) {
+	if (!maybe_binary.has_value()) {
 		std::println(std::cerr, "[ERROR] {}", maybe_binary.error().to_string());
 		return 1;
 	}

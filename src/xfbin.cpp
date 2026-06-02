@@ -13,19 +13,19 @@ auto Xfbin::from(const std::filesystem::path& path, const std::array<u8, 8> cryp
 			XfbinError::from(maybe_data.error().variant)
 		};
         }
-	return XfbinReader{*maybe_data, std::move(crypt_key)}.parse();
+	return XfbinReader{*maybe_data, crypt_key}.parse();
 }
 
 auto Xfbin::from(std::span<const std::byte> span, const std::array<u8, 8> crypt_key)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return XfbinReader{span, std::move(crypt_key)}.parse();
+	return XfbinReader{span, crypt_key}.parse();
 }
 
 auto Xfbin::from(const std::byte* ptr, const std::array<u8, 8> crypt_key)
 	-> std::expected<Xfbin, XfbinError>
 {
-	return XfbinReader{ptr, std::move(crypt_key)}.parse();
+	return XfbinReader{ptr, crypt_key}.parse();
 }
 
 auto Xfbin::fetch_type_from_map_index(std::uint32_t map_index) const noexcept
