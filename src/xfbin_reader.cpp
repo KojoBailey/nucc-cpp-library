@@ -163,9 +163,9 @@ auto XfbinReader::parse_chunks()
 		const auto chunk_version = TRY(data.read<u16>(std::endian::big));
 		const auto unk           = TRY(data.read<u16>(std::endian::big));
 
-		const auto chunk_type = *result.fetch_type_from_map_index(map_index);
-		const auto chunk_path = *result.fetch_path_from_map_index(map_index);
-		const auto chunk_name = *result.fetch_name_from_map_index(map_index);
+		const ChunkType chunk_type = *result.fetch_type_from_map_index(map_index);
+		std::string_view chunk_path = *result.fetch_path_from_map_index(map_index);
+		std::string_view chunk_name = *result.fetch_name_from_map_index(map_index);
 
 		if (chunk_type == ChunkType::Page) {
 			const auto chunk_map_offset = TRY(data.read<u32>(std::endian::big));
@@ -183,10 +183,11 @@ auto XfbinReader::parse_chunks()
 				cryptor->crypt(data.get_pos_data(), chunk_size);
 			}
 
-			const std::span<std::byte> chunk_data{(std::byte*)data.get_pos_data(), chunk_size};
+			auto data_ptr = (std::byte*)data.get_pos_data();
+			std::vector<std::byte> chunk_data{data_ptr, data_ptr + chunk_size};
 
-			result.pages[page].add_chunk(chunk_type, chunk_path, chunk_name,
-				chunk_version, unk, chunk_data);
+			result.pages[page].add_chunk(chunk_type, std::string{chunk_path}, std::string{chunk_name},
+				chunk_version, unk, std::move(chunk_data));
 
 			data.change_pos(chunk_size);
 		}
