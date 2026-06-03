@@ -27,7 +27,7 @@ auto XfbinReader::parse() &&
 
 #define TRY(expr) ({ \
 	auto&& _tmp = (expr); \
-	if (!_tmp) return std::unexpected{XfbinError::from(_tmp.error())}; \
+	if (!_tmp) return std::unexpected{XfbinError::from(std::move(_tmp.error()))}; \
 	*std::move(_tmp); \
 })
 

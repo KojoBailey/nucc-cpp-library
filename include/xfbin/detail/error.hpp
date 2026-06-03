@@ -38,7 +38,7 @@ struct XfbinError {
 		const std::size_t size;
 
 		InsufficientMemory() = delete;
-		InsufficientMemory(const std::byte* _address, const std::size_t _size)
+		InsufficientMemory(const std::byte* _address, std::size_t _size)
 			: address{_address}, size{_size} {}
 
 		[[nodiscard]] auto to_string() const -> std::string {
