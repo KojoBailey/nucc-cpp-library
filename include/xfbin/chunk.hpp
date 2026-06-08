@@ -8,9 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
-#include <ranges>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace kojo::nucc {

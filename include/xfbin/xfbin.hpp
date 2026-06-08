@@ -79,6 +79,7 @@ public:
 		std::size_t index = 0
 	) -> Chunk*;
 
+
 	[[nodiscard]] auto fetch_chunk(
 		std::optional<ChunkType> type,
 		std::optional<std::string_view> path,
