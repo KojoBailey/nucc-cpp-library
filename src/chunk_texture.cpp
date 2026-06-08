@@ -38,8 +38,7 @@ auto ChunkTexture::from(const Chunk& chunk) noexcept
 	result.height = TRY(reader.read<u16>(std::endian::big));
 	result.unk06  = TRY(reader.read<u16>(std::endian::big));
 	result.size   = TRY(reader.read<u32>(std::endian::big));
-	// [TODO] This *can* throw an exception. Need to wrap in my binary lib.
-	result.data = std::span<const std::byte>{reader.get_pos_data(), result.size};
+	result.data = reader.get_pos_span();
 
 	return result;
 }

@@ -34,8 +34,7 @@ auto ChunkBinary::from(const Chunk& chunk) noexcept
 
 	BinaryView reader{chunk.data};
 	result.size = TRY(reader.read<u32>(std::endian::big));
-	// [TODO] This *can* throw an exception. Need to wrap in my binary lib.
-	result.data = std::span<const std::byte>{reader.get_pos_data(), result.size};
+	result.data = reader.get_pos_span();
 
 	return result;
 }
