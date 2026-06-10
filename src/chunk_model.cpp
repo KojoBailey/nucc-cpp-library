@@ -36,10 +36,10 @@ auto ChunkModel::from(const Chunk& chunk) noexcept
 	if (chunk.version > 115 && chunk.version < 118) {
 		/* [TODO] Fill out */
 	} else {
-		result.unk00        = TRY(reader.read<u16>(std::endian::big));
-		result.rigging_flag = TRY(reader.read<u16>(std::endian::big));
-		result.attributes   = TRY(reader.read<u16>(std::endian::big));
-		result.render_layer = TRY(reader.read<u8>(std::endian::big));
+		result.unk00         = TRY(reader.read<u16>(std::endian::big));
+		result.rigging_flag  = TRY(reader.read<u16>(std::endian::big));
+		result.attributes    = TRY(reader.read<u16>(std::endian::big));
+		result.render_layer  = TRY(reader.read<u8>(std::endian::big));
 		result.light_mode_id = TRY(reader.read<u8>(std::endian::big));
 		if (chunk.version > 115) {
 			result.light_category_flag = TRY(reader.read<u32>(std::endian::big));
@@ -53,7 +53,7 @@ auto ChunkModel::from(const Chunk& chunk) noexcept
 		if (result.attributes & 0x04) {
 			for (std::size_t i = 0; i < 6; i++) {
 				/* [TODO] Add native support for reading floats. */
-				auto f32_as_u32 = TRY(reader.read<u32>(std::endian::big));
+				const auto f32_as_u32 = TRY(reader.read<u32>(std::endian::big));
 				result.bounding_box[i] = *reinterpret_cast<f32*>(&f32_as_u32);
 			}
 		}
