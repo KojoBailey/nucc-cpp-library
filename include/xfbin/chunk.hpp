@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <stdfloat>
 #include <string>
 #include <vector>
 

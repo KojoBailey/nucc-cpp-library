@@ -13,6 +13,11 @@ enum class ChunkType : std::uint8_t {
 	Index,
 	Binary,
 	Texture,
+	Model,
+	Dynamics,
+	Clump,
+	Coord,
+	Material,
 };
 
 constexpr auto chunk_type_to_string(ChunkType type) -> std::string_view
@@ -28,6 +33,16 @@ constexpr auto chunk_type_to_string(ChunkType type) -> std::string_view
 		return "nuccChunkBinary";
 	case ChunkType::Texture:
 		return "nuccChunkTexture";
+	case ChunkType::Model:
+		return "nuccChunkModel";
+	case ChunkType::Dynamics:
+		return "nuccChunkDynamics";
+	case ChunkType::Clump:
+		return "nuccChunkClump";
+	case ChunkType::Coord:
+		return "nuccChunkCoord";
+	case ChunkType::Material:
+		return "nuccChunkMaterial";
 	}
 	return "";
 }
@@ -45,6 +60,16 @@ constexpr auto chunk_type_from_string(std::string_view str)
 		return ChunkType::Binary;
 	if (str == "nuccChunkTexture") 
 		return ChunkType::Texture;
+	if (str == "nuccChunkModel") 
+		return ChunkType::Model;
+	if (str == "nuccChunkDynamics") 
+		return ChunkType::Dynamics;
+	if (str == "nuccChunkClump") 
+		return ChunkType::Clump;
+	if (str == "nuccChunkCoord") 
+		return ChunkType::Coord;
+	if (str == "nuccChunkMaterial") 
+		return ChunkType::Material;
 
 	return {};
 }

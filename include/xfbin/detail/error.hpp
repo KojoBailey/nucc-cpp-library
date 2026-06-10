@@ -14,9 +14,6 @@
 namespace kojo::nucc {
 
 struct XfbinError {
-	template<typename T>
-	XfbinError(T&& err) : variant{std::forward<T>(err)} {}
-
 	struct Unrecognized {
 		static const std::uint32_t code = 999;
 
@@ -194,6 +191,10 @@ struct XfbinError {
 		MismatchedChunkType
 	> variant;
 
+	template<typename T>
+		requires std::is_constructible_v<decltype(variant), T>
+	XfbinError(T&& err) : variant{std::forward<T>(err)} {}
+
 	[[nodiscard]] auto to_code() const -> std::uint32_t {
 		return std::visit([](const auto& err) -> std::uint32_t
 			{ return err.code; }, variant);
@@ -204,7 +205,8 @@ struct XfbinError {
 			{ return err.to_string(); }, variant);
 	}
 
-	static auto from(BinaryError err) -> XfbinError;
+	static auto from(const XfbinError& err) -> XfbinError;
+	static auto from(const BinaryError& err) -> XfbinError;
 };
 
 }

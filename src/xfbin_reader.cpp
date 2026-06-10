@@ -155,6 +155,8 @@ auto XfbinReader::parse_index()
 auto XfbinReader::parse_chunks()
 	-> std::expected<void, XfbinError>
 {
+	u32 running_chunk_map_offset = 0;
+	u32 running_extra_map_offset = 0;
 	result.add_page();
 
 	for (std::size_t page = 0; !data.is_at_end();) {
@@ -163,14 +165,18 @@ auto XfbinReader::parse_chunks()
 		const auto chunk_version = TRY(data.read<u16>(std::endian::big));
 		const auto unk           = TRY(data.read<u16>(std::endian::big));
 
-		const ChunkType chunk_type = *result.fetch_type_from_map_index(map_index);
-		std::string_view chunk_path = *result.fetch_path_from_map_index(map_index);
-		std::string_view chunk_name = *result.fetch_name_from_map_index(map_index);
+		const u32 true_map_index = map_index + running_chunk_map_offset;
+
+		const ChunkType chunk_type = TRY(result.fetch_type_from_map_index(true_map_index));
+		std::string_view chunk_path = TRY(result.fetch_path_from_map_index(true_map_index));
+		std::string_view chunk_name = TRY(result.fetch_name_from_map_index(true_map_index));
 
 		if (chunk_type == ChunkType::Page) {
 			const auto chunk_map_offset = TRY(data.read<u32>(std::endian::big));
 			const auto extra_map_offset = TRY(data.read<u32>(std::endian::big));
 			result.add_page(chunk_map_offset, extra_map_offset);
+			running_chunk_map_offset += chunk_map_offset;
+			running_extra_map_offset += extra_map_offset;
 			page++;
 		} else {
 			// ASBR's decryption first decrypts the nuccChunkBinary's size,
