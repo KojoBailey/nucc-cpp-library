@@ -10,7 +10,6 @@ CMakeFiles/
 xfbinConfig.cmake
 xfbinConfigVersion.cmake
 Makefile
-.clang-tidy
 
 # IDE
 .vscode/
